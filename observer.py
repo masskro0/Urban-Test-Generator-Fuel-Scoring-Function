@@ -1,12 +1,15 @@
-from beamngpy import Vehicle
+from beamngpy import Vehicle, BeamNGpy
 from beamngpy.sensors import Electrics
 
 
+# TODO Add fuel type
 class MisbehaviourObserver:
-    def __init__(self, vehicle: Vehicle):
+    def __init__(self, bng: BeamNGpy, vehicle: Vehicle):
+        self.bng = bng
         self.vehicle = vehicle
+        self.sensors = None
         self.log = dict()
-        self.throttle_misbehavior = list()              
+        self.throttle_misbehavior = list()
         self.rpm_misbehavior = list()
         self.accelerate_and_stop_misbehavior = list()
         self.left_turn_misbehavior = list()
@@ -31,14 +34,18 @@ class MisbehaviourObserver:
     def get_results(self) -> dict:
         return self.log
 
-    def calculate_fuel_consumption(self, fuel_state):
+    def set_vehicle(self, vehicle: Vehicle) -> None:
+        self.vehicle = vehicle
+
+    def calculate_fuel_consumption(self, fuel_state) -> None:
         pass
 
     def _check_throttle_misbehavior(self) -> None:
         pass
 
     def _check_rpm_misbehavior(self) -> None:
-        pass
+        if self.sensors['electrics']['values']['rpm'] > 3000:   # Make dependent on Fuel type
+            self.rpm_misbehavior.append(self.vehicle.state['pos'])
 
     def _check_accelerate_and_stop_misbehavior(self) -> None:
         pass
@@ -62,6 +69,8 @@ class MisbehaviourObserver:
         pass
 
     def check_misbehavior(self) -> None:
+        self.vehicle.update_vehicle()
+        self.sensors = self.bng.poll_sensors(self.vehicle)
         self._check_accelerate_and_stop_misbehavior()
         self._check_brake_misbehavior()
         self._check_braking_distance_misbehavior()
