@@ -1,13 +1,12 @@
-from beamngpy import Vehicle, BeamNGpy
-from beamngpy.sensors import Electrics
+from engine_types import EngineType
 
 
-# TODO Add fuel type
 class MisbehaviourObserver:
-    def __init__(self, bng: BeamNGpy, vehicle: Vehicle):
-        self.bng = bng
-        self.vehicle = vehicle
-        self.sensors = None
+    def __init__(self, engine_type: EngineType = EngineType.PETROL):
+        """Class for observing faulty behavior of a car concerning fuel efficiency.
+        :param engine_type: Engine/Fuel type of a car. Check the file engine_types.py for more information.
+        """
+        self.engine_type = engine_type
         self.log = dict()
         self.throttle_misbehavior = list()
         self.rpm_misbehavior = list()
@@ -32,10 +31,10 @@ class MisbehaviourObserver:
         }
 
     def get_results(self) -> dict:
+        """Returns the log file with all logged misbehavior actions.
+        :return: log file as a dict.
+        """
         return self.log
-
-    def set_vehicle(self, vehicle: Vehicle) -> None:
-        self.vehicle = vehicle
 
     def calculate_fuel_consumption(self, fuel_state) -> None:
         pass
@@ -43,9 +42,14 @@ class MisbehaviourObserver:
     def _check_throttle_misbehavior(self) -> None:
         pass
 
-    def _check_rpm_misbehavior(self) -> None:
-        if self.sensors['electrics']['values']['rpm'] > 3000:   # Make dependent on Fuel type
-            self.rpm_misbehavior.append(self.vehicle.state['pos'])
+    def _check_rpm_misbehavior(self, rpm: int, vehicle_pos: int) -> None:
+        """Checks whether the rpm is above the allowed limit and logs the global position of the car.
+        :param rpm: Current rpm of the vehicle.
+        :param vehicle_pos: Current position of the car in the simulation.
+        :return: None.
+        """
+        if rpm > self.engine_type.get_rpm_shifting_sweetspots()['upper_limit']:
+            self.rpm_misbehavior.append(vehicle_pos)
 
     def _check_accelerate_and_stop_misbehavior(self) -> None:
         pass
@@ -68,15 +72,18 @@ class MisbehaviourObserver:
     def _check_engine_idle_misbehavior(self) -> None:
         pass
 
-    def check_misbehavior(self) -> None:
-        self.vehicle.update_vehicle()
-        self.sensors = self.bng.poll_sensors(self.vehicle)
+    def check_misbehavior(self, sensors, vehicle_state) -> None:
+        """Checks for faulty behaviors of a car at the current state and logs it.
+        :param sensors: Sensors of a car. Only the electrics sensor is needed.
+        :param vehicle_state: Vehicle state information in the simulation.
+        :return: None.
+        """
         self._check_accelerate_and_stop_misbehavior()
         self._check_brake_misbehavior()
         self._check_braking_distance_misbehavior()
         self._check_engine_idle_misbehavior()
         self._check_left_turn_misbehavior()
         self._check_right_turn_misbehavior()
-        self._check_rpm_misbehavior()
+        self._check_rpm_misbehavior(sensors['electrics']['values']['rpm'], vehicle_state['pos'])
         self._check_safety_distance_misbehavior()
         self._check_throttle_misbehavior()
