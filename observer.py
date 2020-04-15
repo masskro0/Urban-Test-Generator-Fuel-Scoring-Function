@@ -15,7 +15,7 @@ class MisbehaviourObserver:
         self.right_turn_misbehavior = list()
         self.brake_misbehavior = list()
         self.safety_distance_misbehavior = list()
-        self.braking_distance_misbehavior = list()
+        self.varying_speed = list()
         self.engine_idle_misbehavior = list()
         self.log = {
             "throttle_misbehavior": self.throttle_misbehavior,
@@ -26,7 +26,7 @@ class MisbehaviourObserver:
             "right_turn_misbehavior": self.right_turn_misbehavior,
             "brake_misbehavior": self.brake_misbehavior,
             "safety_distance_misbehavior": self.safety_distance_misbehavior,
-            "braking_distance_misbehavior": self.braking_distance_misbehavior,
+            "varying_speed": self.varying_speed,
             "engine_idle_misbehavior": self.engine_idle_misbehavior
         }
 
@@ -66,7 +66,7 @@ class MisbehaviourObserver:
     def _check_safety_distance_misbehavior(self) -> None:
         pass
 
-    def _check_braking_distance_misbehavior(self) -> None:
+    def _check_varying_speed(self) -> None:
         pass
 
     def _check_engine_idle_misbehavior(self) -> None:
@@ -80,10 +80,10 @@ class MisbehaviourObserver:
         """
         self._check_accelerate_and_stop_misbehavior()
         self._check_brake_misbehavior()
-        self._check_braking_distance_misbehavior()
         self._check_engine_idle_misbehavior()
         self._check_left_turn_misbehavior()
         self._check_right_turn_misbehavior()
         self._check_rpm_misbehavior(sensors['electrics']['values']['rpm'], vehicle_state['pos'])
         self._check_safety_distance_misbehavior()
         self._check_throttle_misbehavior()
+        self._check_varying_speed()
