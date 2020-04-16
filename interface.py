@@ -1,6 +1,6 @@
 from pathlib import Path
 from shutil import move
-from test_generator import TestGenerator
+from safety_test_generator import TestGenerator
 import os
 from utils.xml_to_bng_files import convert_test
 

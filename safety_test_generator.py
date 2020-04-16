@@ -31,7 +31,7 @@ class TestGenerator:
         self.files_name = "exampleTest"
         self.SPLINE_DEGREE = 5              # Sharpness of curves
         self.MAX_TRIES = 500                # Maximum number of invalid generated points/segments
-        self.POPULATION_SIZE = 3            # Minimum number of generated roads for each generation
+        self.POPULATION_SIZE = 1            # Minimum number of generated roads for each generation
         self.NUMBER_ELITES = 1              # Number of best kept roads
         self.MIN_SEGMENT_LENGTH = 28        # Minimum length of a road segment
         self.MAX_SEGMENT_LENGTH = 45        # Maximum length of a road segment

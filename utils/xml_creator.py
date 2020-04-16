@@ -7,21 +7,18 @@ from utils.dbe_xml_builder import DBEBuilder
 from utils.dbc_xml_builder import DBCBuilder
 
 
-def build_environment_xml(control_points, file_name="exampleTest"):
+def build_environment_xml(control_points, file_name="exampleTest", left_lanes=0, right_lanes=0, obstacles=[]):
     """Creates a dbe xml file.
+    :param obstacles: List with obstacles.
+    :param right_lanes: Number of right lanes.
+    :param left_lanes: Number of left lanes.
     :param control_points: List of control points as tuples.
     :param file_name: Name of this dbe file.
     """
     dbe = DBEBuilder()
-    dbe.add_lane(control_points)
-    stopsign1 = ["stopsign", "20", "20", "10"]
-    stopsign2 = ["stopsign", "25", "20", "10", "45"]
-    trafficlightsingle1 = ["trafficlightsingle", "15", "15", "10"]
-    trafficlightsingle2 = ["trafficlightsingle", "15", "20", "10", "45"]
-    trafficlightdouble1 = ["trafficlightdouble", "10", "10", "10"]
-    trafficlightdouble2 = ["trafficlightdouble", "25", "10", "10", "45"]
-    #dbe.add_obstacles([stopsign1, stopsign2, trafficlightsingle1, trafficlightsingle2, trafficlightdouble1,
-    #                   trafficlightdouble2])
+    dbe.add_lane(control_points, left_lanes=left_lanes, right_lanes=right_lanes)
+    if len(obstacles) > 0:
+        dbe.add_obstacles(obstacles)
     dbe.save_xml(file_name)
 
 
@@ -69,34 +66,36 @@ def _add_width(control_points, width):
     return new_list
 
 
-def build_xml(control_points, name, width):
+def build_xml(control_points, name, width, left_lanes=0, right_lanes=0, obstacles=[]):
     """Builds an environment and criteria xml file out of a list of control points.
+    :param obstacles: List of obstacles to place.
+    :param right_lanes: Number of right lanes.
+    :param left_lanes: Number of left lanes.
     :param width: Desired width of each road segment.
     :param control_points: List of control points as tuples.
     :param name: Name of this file.
     :return: Void.
     """
     temp_list = _add_width(control_points, width)
-    build_environment_xml(temp_list, name)
+    build_environment_xml(temp_list, name, left_lanes=left_lanes, right_lanes=right_lanes, obstacles=obstacles)
 
-    init_state = [temp_list[0][0], temp_list[0][1], 0, "AUTONOMOUS", 50]
+    init_state = [temp_list[0][0], temp_list[0][1], 0, "_BEAMNG", 50]
 
     waypoints = []
 
     # Comment this block in to add waypoints for every point in the list, e.g. for beamng ai.
 
-    # waypoint = temp_list.pop(0)
-    # waypoint = [waypoint[0], waypoint[1], 2, "AUTONOMOUS"]
-    # waypoints.append(waypoint)
+    waypoint = temp_list.pop(0)
+    waypoint = [waypoint[0], waypoint[1], 2, "_BEAMNG"]
+    waypoints.append(waypoint)
+    if len(temp_list) > 20:
+        for x in range(0, 5):
+            temp_list.pop(0)
+    for point in temp_list:
+        waypoint = [point[0], point[1], 2, "_BEAMNG"]
+        waypoints.append(waypoint)
 
-    #if len(temp_list) > 20:
-    #    for x in range(0, 5):
-    #        temp_list.pop(0)
-    #for point in temp_list:
-    #    waypoint = [point[0], point[1], 2, "_BEAMNG"]
-    #    waypoints.append(waypoint)
-
-    waypoints.append([temp_list[-1][0], temp_list[-1][1], 2, "AUTONOMOUS"])
+    waypoints.append([temp_list[-1][0], temp_list[-1][1], 2, "_BEAMNG"])
     car = [init_state, waypoints]
     build_criteria_xml(temp_list[0], car, name, name)
 
@@ -111,5 +110,5 @@ def build_all_xml(population, width, files_name="exampleXML"):
     iterator = 0
     while iterator < len(population):
         file_name = files_name + str(iterator)
-        build_xml(population[iterator][0], file_name, width)
+        build_xml(population[iterator][0], file_name, width, population[iterator])
         iterator += 1

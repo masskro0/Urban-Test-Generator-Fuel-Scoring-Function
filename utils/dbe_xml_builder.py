@@ -52,45 +52,45 @@ class DBEBuilder:
         :return: Void.
         """
         obstacles = ElementTree.SubElement(self.root, "obstacles")
-        # TODO Mit get abfragen statt auf reihenfolge achten
         for obstacle in obstacle_list:
-            if obstacle[0] == "cube":
-                ElementTree.SubElement(obstacles, 'cube x="{}" y="{}" width="{}" length="{}"'
-                                                  ' height="{}"'
-                                       .format(obstacle[1], obstacle[2], obstacle[3], obstacle[4],
-                                               obstacle[5]))
-            elif obstacle[0] == "cylinder":
-                ElementTree.SubElement(obstacles, 'cylinder x="{}" y="{}" radius="{}" height="{}"'
-                                       .format(obstacle[1], obstacle[2], obstacle[3], obstacle[4]))
-            elif obstacle[0] == "cone":
-                ElementTree.SubElement(obstacles, 'cone x="{}" y="{}" height="{}" baseRadius="{}"'
-                                       .format(obstacle[1], obstacle[2], obstacle[3], obstacle[4]))
-            elif obstacle[0] == "bump":
-                ElementTree.SubElement(obstacles, 'bump x="{}" y="{}" width="{}" length="{}" height="{}"'
-                                                  ' upperLength="{}" upperWidth="{}"'
-                                       .format(obstacle[1], obstacle[2], obstacle[3], obstacle[4],
-                                               obstacle[5], obstacle[6], obstacle[7]))
-            elif obstacle[0] == "stopsign":
-                if len(obstacle) == 4:
-                    ElementTree.SubElement(obstacles, 'stopsign x="{}" y="{}" height="{}"'
-                                       .format(obstacle[1], obstacle[2], obstacle[3]))
-                elif len(obstacle) == 5:
-                    ElementTree.SubElement(obstacles, 'stopsign x="{}" y="{}" height="{}" zRot="{}"'
-                                           .format(obstacle[1], obstacle[2], obstacle[3], obstacle[4]))
-            elif obstacle[0] == "trafficlightsingle":
-                if len(obstacle) == 4:
-                    ElementTree.SubElement(obstacles, 'trafficlightsingle x="{}" y="{}" height="{}"'
-                                       .format(obstacle[1], obstacle[2], obstacle[3]))
-                elif len(obstacle) == 5:
-                    ElementTree.SubElement(obstacles, 'trafficlightsingle x="{}" y="{}" height="{}" zRot="{}"'
-                                           .format(obstacle[1], obstacle[2], obstacle[3], obstacle[4]))
-            elif obstacle[0] == "trafficlightdouble":
-                if len(obstacle) == 4:
-                    ElementTree.SubElement(obstacles, 'trafficlightdouble x="{}" y="{}" height="{}"'
-                                       .format(obstacle[1], obstacle[2], obstacle[3]))
-                elif len(obstacle) == 5:
-                    ElementTree.SubElement(obstacles, 'trafficlightdouble x="{}" y="{}" height="{}" zRot="{}"'
-                                           .format(obstacle[1], obstacle[2], obstacle[3], obstacle[4]))
+            name = obstacle.get("name")
+            x = obstacle.get("x")
+            y = obstacle.get("y")
+            z = obstacle.get("z")
+            xRot = obstacle.get("xRot")
+            yRot = obstacle.get("yRot")
+            zRot = obstacle.get("zRot")
+            width = obstacle.get("width")
+            length = obstacle.get("length")
+            height = obstacle.get("height")
+            radius = obstacle.get("radius")
+            baseRadius = obstacle.get("baseRadius")
+            upperWidth = obstacle.get("upperWidth")
+            upperLength = obstacle.get("upperLength")
+            full_string = '' + name + ' x="' + str(x) + '" y="' + str(y) + '"'
+            if z:
+                full_string += ' z="' + str(z) + '"'
+            if xRot:
+                full_string += ' xRot="' + str(xRot) + '"'
+            if yRot:
+                full_string += ' yRot="' + str(yRot) + '"'
+            if zRot:
+                full_string += ' zRot="' + str(zRot) + '"'
+            if width:
+                full_string += ' width="' + str(width) + '"'
+            if length:
+                full_string += ' length="' + str(length) + '"'
+            if height:
+                full_string += ' height="' + str(height) + '"'
+            if radius:
+                full_string += ' radius="' + str(radius) + '"'
+            if baseRadius:
+                full_string += ' baseRadius="' + str(baseRadius) + '"'
+            if upperWidth:
+                full_string += ' upperWidth="' + str(upperWidth) + '"'
+            if upperLength:
+                full_string += ' upperLength="' + str(upperLength) + '"'
+            ElementTree.SubElement(obstacles, full_string)
 
     def add_lane(self, segments, markings=True, left_lanes=0, right_lanes=0):
         """Adds a lane and road segments.
