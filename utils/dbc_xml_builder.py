@@ -68,26 +68,33 @@ class DBCBuilder:
         aifreq = ElementTree.SubElement(self.root, "aiFrequency")
         aifreq.text = str(frequency)
 
-    def add_car(self, init_state, waypoints, participant_id="ego", model="ETK800"):
+    def add_car(self, participant):
         """Adds a car to this test case. At least one car (the ego car) should be added.
-        :param init_state: Array with initial states. Contains: x-coordinate (int), y-coordinate (int),
+        :param participant: Dict which contains init_state, waypoints, participant_id and model. See the lines below
+                            for more information:
+                init_state: Array with initial states. Contains: x-coordinate (int), y-coordinate (int),
                      orientation (int), movementMode (MANUAL, _BEAMNG, AUTONOMOUS, TRAINING),
                      speed (int)
-        :param waypoints: Array with waypoints. One waypoint contains: x-coordinate (int),
+                waypoints: Array with waypoints. One waypoint contains: x-coordinate (int),
                      y-coordinate (int), tolerance (int), movementMode (see above),
                      speedLimit (int) (optional)
-        :param participant_id: unique ID of this participant as String.
-        :param model: BeamNG model car as String. See beamngpy documentation for more models.
+                participant_id: unique ID of this participant as String.
+                model: BeamNG model car as String. See beamngpy documentation for more models.
         :return: Void
         """
+        participant_id = participant.get("id")
+        init_state = participant.get("init_state")
+        waypoints = participant.get("waypoints")
+        model = participant.get("model")
         participant = ElementTree.SubElement(self.participants, "participant")
         participant.set("id", participant_id)
         participant.set("model", model)
         ElementTree.SubElement(participant, 'initialState x="{}" y="{}"'
                                             ' orientation="{}" movementMode="{}"'
                                             ' speed="{}"'
-                               .format(str(init_state[0]), str(init_state[1]), str(init_state[2]),
-                                       init_state[3], str(init_state[4])))
+                               .format(str(init_state.get("x")), str(init_state.get("y")),
+                                       str(init_state.get("orientation")), init_state.get("movementMode"),
+                                       str(init_state.get("speed"))))
 
         ai = ElementTree.SubElement(participant, "ai")
         ElementTree.SubElement(ai, 'roadCenterDistance id="{}"'.format("egoLaneDist"))
@@ -98,37 +105,40 @@ class DBCBuilder:
         for waypoint in waypoints:
             waypoint_tag = ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}"'
                                                             ' movementMode="{}"'
-                                                  .format(str(waypoint[0]), str(waypoint[1]),
-                                                          str(waypoint[2]), waypoint[3]))
-            if len(waypoint) == 5:
-                waypoint_tag.set("speedLimit", str(waypoint[4]))
+                                                  .format(str(waypoint.get("x")), str(waypoint.get("y")),
+                                                          str(waypoint.get("tolerance")),
+                                                          waypoint.get("movementMode")))
+            if waypoint.get("speedLimit"):
+                waypoint_tag.set("speedLimit", str(waypoint.get("speedLimit")))
 
     def add_precond_partic_sc_speed(self, vc_pos, sc_speed):
         """Adds a precondition for a position, which must be satisfied in order to continue the test.
         This method requires a lower speed bound, which must be reached.
-        :param vc_pos: Position of the precondition. Array contains: participant id (string),
+        :param vc_pos: Position of the precondition. Dict contains: participant id (string),
                 xPos (int), yPos (int), tolerance (int) defines a circle which must be entered.
-        :param sc_speed: Lower speed bound. Array contains: participant id (string), limit (int).
+        :param sc_speed: Lower speed bound as integer.
         :return: Void
         """
         vc_position = ElementTree.SubElement(self.preconditions, 'vcPosition')
-        vc_position.set("participant", vc_pos[0])
-        vc_position.set("x", str(vc_pos[1]))
-        vc_position.set("y", str(vc_pos[2]))
-        vc_position.set("tolerance", str(vc_pos[3]))
+        vc_position.set("participant", vc_pos.get("id"))
+        vc_position.set("x", str(vc_pos.get("x")))
+        vc_position.set("y", str(vc_pos.get("y")))
+        vc_position.set("tolerance", str(vc_pos.get("tolerance")))
 
         not_tag = ElementTree.SubElement(vc_position, "not")
         ElementTree.SubElement(not_tag, 'scSpeed participant="{}" limit="{}"'
-                               .format(vc_pos[0], str(sc_speed[1])))
+                               .format(vc_pos.get("id"), str(sc_speed)))
 
-    def add_success_point(self, sc_pos):
-        """Defines when a test was successfully finished.
-        :param sc_pos: Array of success states. Array contains: participant id (string), xPos (int),
-                yPos (int), tolerance (int) which defines a circle.
+    def add_success_point(self, participant_id, success_point):
+        """Point when reached a test was successfully finished.
+        :param: participant_id: ID of the participant as a string.
+        :param success_point: Dict of success states. Contains: x (int), y (int), tolerance (int) which defines a
+               circle.
         :return: Void
         """
         ElementTree.SubElement(self.success, 'scPosition participant="{}" x="{}" y="{}" tolerance="{}"'
-                               .format(sc_pos[0], str(sc_pos[1]), str(sc_pos[2]), str(sc_pos[3])))
+                               .format(participant_id, str(success_point.get("x")), str(success_point.get("y")),
+                                       str(success_point.get("tolerance"))))
 
     def add_failure_damage(self, participant_id):
         """Adds damage observation as a test failure condition.

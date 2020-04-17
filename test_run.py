@@ -21,6 +21,7 @@ bng = beamng.open()
 bng.load_scenario(scenario)
 bng.start_scenario()
 vehicle.ai_set_mode('span')
+vehicle.ai_set_aggression(0.4)
 observer = MisbehaviourObserver()
 for _ in range(2000):
     vehicle.update_vehicle()

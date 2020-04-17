@@ -3,13 +3,12 @@ from os import path
 from pathlib import Path
 from random import randint, random, sample
 from copy import deepcopy
-from operator import itemgetter
 from typing import Optional, Tuple
 
 from drivebuildclient.AIExchangeService import AIExchangeService
 from termcolor import colored
 from utils.xml_creator import build_all_xml, build_xml
-from utils.plotter import plot_all, plotter
+from utils.plotter import plot_all
 from utils.validity_checks import *
 from utils.utility_functions import convert_points_to_lines
 
@@ -17,6 +16,34 @@ from shapely.geometry import LineString
 from shapely import affinity
 import numpy as np
 import scipy.interpolate as si
+
+
+def _add_ego_car(individual):
+    """Adds the ego car to the criteria xml file. Movement mode can be assigned manually. Each control point is one
+    waypoint.
+    :param individual: Individual of the population.
+    :return: Void.
+    """
+    control_points = individual.get("control_points")
+    waypoints = []
+    for point in control_points:
+        waypoint = {"x": point.get("x"),
+                    "y": point.get("y"),
+                    "tolerance": 2,
+                    "movementMode": "_BEAMNG"}
+        waypoints.append(waypoint)
+    init_state = {"x": control_points[0].get("x"),
+                  "y": control_points[0].get("y"),
+                  "orientation": 0,
+                  "movementMode": "_BEAMNG",
+                  "speed": 50}
+    model = "ETK800"
+    ego = {"id": "ego",
+           "init_state": init_state,
+           "waypoints": waypoints,
+           "model": model}
+    participants = [ego]
+    individual["participants"] = participants
 
 
 class TestGenerator:
@@ -31,8 +58,8 @@ class TestGenerator:
         self.files_name = "exampleTest"
         self.SPLINE_DEGREE = 5              # Sharpness of curves
         self.MAX_TRIES = 500                # Maximum number of invalid generated points/segments
-        self.POPULATION_SIZE = 1            # Minimum number of generated roads for each generation
-        self.NUMBER_ELITES = 1              # Number of best kept roads
+        self.POPULATION_SIZE = 8            # Minimum number of generated roads for each generation
+        self.NUMBER_ELITES = 4              # Number of best kept roads
         self.MIN_SEGMENT_LENGTH = 28        # Minimum length of a road segment
         self.MAX_SEGMENT_LENGTH = 45        # Maximum length of a road segment
         self.WIDTH_OF_STREET = 4            # Width of all segments
@@ -43,12 +70,15 @@ class TestGenerator:
 
     def _bspline(self, control_points, samples=75):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
-        :param control_points: Array of control points.
+        :param control_points: List of control points.
         :param samples: Number of samples to return.
         :return: Array with samples, representing a bspline of the given function as a numpy array.
         """
-        control_points = np.asarray(control_points)
-        count = len(control_points)
+        point_list = []
+        for point in control_points:
+            point_list.append((point.get("x"), point.get("y")))
+        point_list = np.asarray(point_list)
+        count = len(point_list)
         degree = np.clip(self.SPLINE_DEGREE, 1, count - 1)
 
         # Calculate knot vector.
@@ -58,7 +88,7 @@ class TestGenerator:
         u = np.linspace(False, (count - degree), samples)
 
         # Calculate result.
-        return np.array(si.splev(u, (kv, control_points.T, degree))).T
+        return np.array(si.splev(u, (kv, point_list.T, degree))).T
 
     def set_difficulty(self, difficulty):
         difficulty = difficulty.upper()
@@ -67,24 +97,45 @@ class TestGenerator:
             self.MIN_SEGMENT_LENGTH = 30
             self.MAX_SEGMENT_LENGTH = 50
             self.WIDTH_OF_STREET = 4
-            self.MIN_NODES = 18
-            self.MAX_NODES = 26
+            self.MIN_NODES = 8
+            self.MAX_NODES = 12
         elif difficulty == "MEDIUM":
             self.SPLINE_DEGREE = 6
             self.MIN_SEGMENT_LENGTH = 25
             self.MAX_SEGMENT_LENGTH = 45
             self.WIDTH_OF_STREET = 4
-            self.MIN_NODES = 14
-            self.MAX_NODES = 20
+            self.MIN_NODES = 12
+            self.MAX_NODES = 16
         elif difficulty == "HARD":
             self.SPLINE_DEGREE = 2
             self.MIN_SEGMENT_LENGTH = 20
             self.MAX_SEGMENT_LENGTH = 40
             self.WIDTH_OF_STREET = 5
-            self.MIN_NODES = 15
-            self.MAX_NODES = 20
+            self.MIN_NODES = 14
+            self.MAX_NODES = 22
         else:
             print(colored("Invalid difficulty level. Choosing default difficulty.", 'blue'))
+
+    def _generate_random_point(self, last_point):
+        """Generates a random point within a given range.
+        :param last_point: Last point of the control point list as dict type.
+        :return: A new random point as dict type.
+        """
+        last_point_tmp = (last_point.get("x"), last_point.get("y"))
+        last_point_tmp = np.asarray(last_point_tmp)
+        x_min = last_point.get("x") - self.MAX_SEGMENT_LENGTH
+        x_max = last_point.get("x") + self.MAX_SEGMENT_LENGTH
+        y_min = last_point.get("y") - self.MAX_SEGMENT_LENGTH
+        y_max = last_point.get("y") + self.MAX_SEGMENT_LENGTH
+        tries = 0
+        while tries < self.MAX_TRIES / 10:
+            x_pos = randint(x_min, x_max)
+            y_pos = randint(y_min, y_max)
+            point = (x_pos, y_pos)
+            dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
+            if self.MAX_SEGMENT_LENGTH >= dist >= self.MIN_SEGMENT_LENGTH:
+                return {"x": point[0], "y": point[1]}
+            tries += 1
 
     def _generate_random_points(self):
         """Generates random valid points and returns when the list is full or
@@ -93,8 +144,10 @@ class TestGenerator:
         """
 
         # Generating the first two points by myself.
-        p0 = (1, 0)
-        p1 = (65, 0)
+        p0 = {"x": 1,
+              "y": 0}
+        p1 = {"x": 65,
+              "y": 0}
         control_points = [p0, p1]
         tries = 0
         while len(control_points) != self.MAX_NODES and tries <= self.MAX_TRIES:
@@ -114,87 +167,69 @@ class TestGenerator:
         spline_list = self._bspline(control_points, 100)
         if spline_intersection_check(spline_list):
             control_points.pop()
-        if len(control_points) < self.MIN_NODES or intersection_check_all(spline_list):
+        if len(control_points) < self.MIN_NODES or intersection_check_all_np(spline_list):
             print(colored("Couldn't create enough valid nodes. Restarting...", "blue"))
         else:
             print(colored("Finished list!", "blue"))
             return control_points
 
-    def _generate_random_point(self, last_point):
-        """Generates a random point within a given range.
-        :param last_point: Last point of the control point list.
-        :return: A new random point
-        """
-        last_point_tmp = (last_point[0], last_point[1])
-        last_point_tmp = np.asarray(last_point_tmp)
-        x_min = last_point[0] - self.MAX_SEGMENT_LENGTH
-        x_max = last_point[0] + self.MAX_SEGMENT_LENGTH
-        y_min = last_point[1] - self.MAX_SEGMENT_LENGTH
-        y_max = last_point[1] + self.MAX_SEGMENT_LENGTH
-        tries = 0
-        while tries < self.MAX_TRIES / 10:
-            x_pos = randint(x_min, x_max)
-            y_pos = randint(y_min, y_max)
-            point = (x_pos, y_pos)
-            dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
-            if self.MAX_SEGMENT_LENGTH >= dist >= self.MIN_SEGMENT_LENGTH:
-                return point
-            tries += 1
-
     def _create_start_population(self):
-        """Creates and returns start population."""
+        """Creates and returns an initial population."""
         startpop = []
         iterator = 0
         while len(startpop) < self.POPULATION_SIZE:
             point_list = self._generate_random_points()
             if point_list is not None:
-                startpop.append([point_list, 0])
-                build_xml(point_list, self.files_name + str(iterator), self.WIDTH_OF_STREET)
+                individual = {"control_points": point_list,
+                              "file_name": self.files_name,
+                              "fitness": 0}
+                startpop.append(individual)
                 iterator += 1
         return startpop
 
     def _mutation(self, individual):
         """Mutates a road by randomly picking one point and replacing it with
-         a new, valid one.
-         :param individual: Individual in the form of [control_points, fitness_value].
+         a new, valid one. There is a chance that the individual will be not mutated at all.
+         :param individual: Individual of the population.
          :return: Mutated individual.
          """
         probability = 0.25
         print(colored("Mutating individual...", "blue"))
         iterator = 2
-        while iterator < len(individual[0]):
+        while iterator < len(individual.get("control_points")):
             if random() <= probability:
                 valid = False
                 tries = 0
                 while not valid and tries < self.MAX_TRIES / 10:
-                    new_point = self._generate_random_point(individual[0][iterator - 1])
-                    new_point = (new_point[0], new_point[1])
-                    temp_list = deepcopy(individual[0])
+                    new_point = self._generate_random_point(individual.get("control_points")[iterator - 1])
+                    new_point = {"x": new_point.get("x"),
+                                 "y": new_point.get("y")}
+                    temp_list = deepcopy(individual.get("control_points"))
                     temp_list[iterator] = new_point
                     spline_list = self._bspline(temp_list, 60)
                     control_points_lines = convert_points_to_lines(spline_list)
                     linestring_list = self._get_width_lines(spline_list)
-                    if not (intersection_check_all(spline_list)
+                    if not (intersection_check_all_np(spline_list)
                             or intersection_check_width(linestring_list, control_points_lines)):
                         valid = True
-                        individual[0][iterator] = new_point
+                        individual.get("control_points")[iterator] = new_point
                     tries += 1
             iterator += 1
-        individual[1] = 0
+        individual["fitness"] = 0
         return individual
 
     def _crossover(self, parent1, parent2):
-        """Performs a crossover between two parents.
-        :param parent1: First parent
-        :param parent2: Second parent
+        """Performs a crossover between two parents. There is a chance that no crossover will happen.
+        :param parent1: First parent.
+        :param parent2: Second parent.
         :return: Valid children, which can be equal or different from the parents.
         """
         print(colored("Performing crossover of two individuals...", "blue"))
         probability = 0.25
-        if len(parent1[0]) <= len(parent2[0]):
-            smaller_index = len(parent1[0])
+        if len(parent1.get("control_points")) <= len(parent2.get("control_points")):
+            smaller_index = len(parent1.get("control_points"))
         else:
-            smaller_index = len(parent2[0])
+            smaller_index = len(parent2.get("control_points"))
         iterator = 1
         tries = 0
         while tries < self.MAX_TRIES / 5:
@@ -202,15 +237,15 @@ class TestGenerator:
                 child1 = deepcopy(parent1)
                 child2 = deepcopy(parent2)
                 if random() <= probability:
-                    children = self._recombination(child1[0], child2[0], iterator)
+                    children = self._recombination(child1, child2, iterator)
                     child1 = children[0]
                     child2 = children[1]
-                    width_list1 = self._get_width_lines(self._bspline(child1[0]))
-                    width_list2 = self._get_width_lines(self._bspline(child2[0]))
-                    control_lines1 = convert_points_to_lines(self._bspline(child1[0]))
-                    control_lines2 = convert_points_to_lines(self._bspline(child2[0]))
-                    if not (intersection_check_all(child1[0])
-                            or intersection_check_all(child2[0])
+                    width_list1 = self._get_width_lines(self._bspline(child1.get("control_points")))
+                    width_list2 = self._get_width_lines(self._bspline(child2.get("control_points")))
+                    control_lines1 = convert_points_to_lines(self._bspline(child1.get("control_points")))
+                    control_lines2 = convert_points_to_lines(self._bspline(child2.get("control_points")))
+                    if not (intersection_check_all(child1.get("control_points"))
+                            or intersection_check_all(child2.get("control_points"))
                             or intersection_check_width(width_list1, control_lines1)
                             or intersection_check_width(width_list2, control_lines2)):
                         return [child1, child2]
@@ -222,26 +257,30 @@ class TestGenerator:
     def _recombination(parent1, parent2, separation_index):
         """Helper method of the crossover method. Recombinates two individuals
         on a given point. Can be seen as a single crossover.
-        :param parent1: First parent
-        :param parent2: Second parent
+        :param parent1: First parent.
+        :param parent2: Second parent.
         :param separation_index: Point where the crossover should happen.
         :return: Return the two recombinated children. Can be invalid.
         """
-        child1 = []
-        child2 = []
+        child1_control_points = []
+        child2_control_points = []
         iterator = 0
         while iterator <= separation_index:
-            child1.append(parent1[iterator])
-            child2.append(parent2[iterator])
+            child1_control_points.append(parent1.get("control_points")[iterator])
+            child2_control_points.append(parent2.get("control_points")[iterator])
             iterator += 1
-        while iterator < len(parent2):
-            child1.append(parent2[iterator])
+        while iterator < len(parent2.get("control_points")):
+            child1_control_points.append(parent2.get("control_points")[iterator])
             iterator += 1
         iterator = separation_index + 1
-        while iterator < len(parent1):
-            child2.append(parent1[iterator])
+        while iterator < len(parent1.get("control_points")):
+            child2_control_points.append(parent1.get("control_points")[iterator])
             iterator += 1
-        children = [[child1, 0], [child2, 0]]
+        child1 = deepcopy(parent1)
+        child1["control_points"] = child1_control_points
+        child2 = deepcopy(parent2)
+        child2["control_points"] = child2_control_points
+        children = [child1, child2]
         return children
 
     def _calculate_fitness_value(self, distances, ticks):
@@ -255,7 +294,7 @@ class TestGenerator:
         while iterator < self.POPULATION_SIZE:
             time = ticks / 60
             cumulative_distance = sum(distances)
-            self.population_list[iterator][1] = cumulative_distance / time
+            self.population_list[iterator]["fitness"] = cumulative_distance / time
 
             # Comment the three above lines and comment out the two following lines to use maximum distance as the
             # fitness function.
@@ -266,10 +305,10 @@ class TestGenerator:
 
     def _choose_elite(self, population):
         """Chooses the roads with the best fitness values.
-        :param population: List of control points and its corresponding fitness values.
-        :return: List of best x control points and its corresponding fitness values.
+        :param population: List of individuals.
+        :return: List of best x individuals according to their fitness value.
         """
-        population.sort(key=itemgetter(1))
+        population = sorted(population, key=lambda k: k['fitness'])
         elite = []
         iterator = 0
         while iterator < self.NUMBER_ELITES:
@@ -281,7 +320,7 @@ class TestGenerator:
         """Returns the resize factor for the width lines so all lines have
         one specific length.
         :param length: Length of a LineString.
-        :return: Resize factor
+        :return: Resize factor.
         """
         if length == 0:
             return 0
@@ -290,7 +329,7 @@ class TestGenerator:
     def _get_width_lines(self, control_points):
         """Determines the width lines of the road by flipping the LineString
          between two points by 90 degrees in both directions.
-        :param control_points: List of control points
+        :param control_points: List of control points.
         :return: List of LineStrings which represent the width of the road.
         """
         spline_list = deepcopy(control_points)
@@ -334,17 +373,49 @@ class TestGenerator:
             iterator += 1
         return linestring_list
 
+    def _add_width(self, individual):
+        """Adds the width value for each control point.
+        :param individual: Individual of the population.
+        :return: Void.
+        """
+        for point in individual.get("control_points"):
+            point["width"] = self.WIDTH_OF_STREET
+
     def _spline_population(self, population_list):
         """Converts the control points list of every individual to a bspline
-         list and adds the width parameter.
-        :param population_list: List of individuals
+         list and adds the width parameter as well as the ego car.
+        :param population_list: List of individuals.
         :return: List of individuals with bsplined control points.
         """
         iterator = 0
         while iterator < len(population_list):
-            population_list[iterator][0] = self._bspline(population_list[iterator][0])
+            splined_list = self._bspline(population_list[iterator].get("control_points"))
+            jterator = 0
+            control_points = []
+            while jterator < len(splined_list):
+                point = {"x": splined_list[jterator][0],
+                         "y": splined_list[jterator][1]}
+                control_points.append(point)
+                jterator += 1
+                population_list[iterator]["control_points"] = control_points
+                _add_ego_car(population_list[iterator])
+                self._add_width(population_list[iterator])
             iterator += 1
         return population_list
+
+    def _add_newcomer(self):
+        """Adds one new individual into the population.
+        :return: Void.
+        """
+        control_points = None
+        while control_points is None:
+            control_points = self._generate_random_points()
+        individual = {"control_points": control_points,
+                      "file_name": self.files_name,
+                      "fitness": 0}
+        self._add_width(individual)
+        _add_ego_car(individual)
+        self.population_list.append(individual)
 
     def genetic_algorithm(self):
         """The main algorithm to generate valid roads. Utilizes a genetic
@@ -368,17 +439,14 @@ class TestGenerator:
         print(colored("Population finished.", "blue"))
         temp_list = deepcopy(self.population_list)
         temp_list = self._spline_population(temp_list)
-        build_all_xml(temp_list, self.WIDTH_OF_STREET, self.files_name)
+        build_all_xml(temp_list)
 
-        # Comment out if you want to see the generated roads (blocks until you close all images)
-        # plot_all(temp_list)
+        # Comment out if you want to see the generated roads (blocks until you close all images).
+        plot_all(temp_list)
         self.population_list = self._choose_elite(self.population_list)
 
         # Introduce new individuals in the population.
-        # new_child1 = self._generate_random_points()
-        # self.population_list.append([new_child1, 0])
-        # new_child2 = self._generate_random_points()
-        # self.population_list.append([new_child2, 0])
+        self._add_newcomer()
 
     def set_files_name(self, new_name):
         """Sets a new name for the created xml files."""
@@ -393,7 +461,7 @@ class TestGenerator:
         matches = glob(xml_names)
         iterator = 0
         self.genetic_algorithm()
-        while iterator < self.POPULATION_SIZE * 2:
+        while iterator < self.POPULATION_SIZE * 2 - 1:
             yield Path(matches[iterator + 1]), Path(matches[iterator])
             iterator += 2
 

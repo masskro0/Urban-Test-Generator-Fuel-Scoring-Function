@@ -6,14 +6,17 @@ import numpy as np
 
 def plotter(control_points):
     """Plots every point and lines between them. Used to visualize a road.
-    :param control_points: List of points as tuples [(x, y),...]
+    :param control_points: List of points as dict type.
     :return: Void.
     """
-    control_points = np.asarray(control_points)
-    x = control_points[:, 0]
-    y = control_points[:, 1]
+    point_list = []
+    for point in control_points:
+        point_list.append((point.get("x"), point.get("y")))
+    point_list = np.asarray(point_list)
+    x = point_list[:, 0]
+    y = point_list[:, 1]
 
-    plt.plot(x, y, '-og', markersize=10, linewidth=7)
+    plt.plot(x, y, '-og', markersize=10, linewidth=control_points[0].get("width"))
     plt.xlim([min(x) - 0.3, max(x) + 0.3])
     plt.ylim([min(y) - 0.3, max(y) + 0.3])
 
@@ -23,12 +26,12 @@ def plotter(control_points):
 
 def plot_all(population):
     """Plots a whole population. Method starts a new figure for every individual.
-    :param population: Population in form of [[control_points, fitness_value],...]
+    :param population: Population with individuals in dict form containing another dict type called control_points.
     :return: Void
     """
     iterator = 0
     while iterator < len(population):
-        plotter(population[iterator][0])
+        plotter(population[iterator].get("control_points"))
         iterator += 1
 
 

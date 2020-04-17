@@ -47,8 +47,8 @@ class DBEBuilder:
 
     def add_obstacles(self, obstacle_list):
         """Adds obstacles to the XML files.
-        :param obstacle_list: Array of obstacles. First value is the shape/name of the obstacles,
-                              the other parameters are defining the obstacle.
+        :param obstacle_list: List of obstacles. Each obstacle is a dict and must contain x and y position. Check
+                              generator.py in simnode in DriveBuild to see which object needs which properties.
         :return: Void.
         """
         obstacles = ElementTree.SubElement(self.root, "obstacles")
@@ -92,25 +92,24 @@ class DBEBuilder:
                 full_string += ' upperLength="' + str(upperLength) + '"'
             ElementTree.SubElement(obstacles, full_string)
 
-    def add_lane(self, segments, markings=True, left_lanes=0, right_lanes=0):
+    def add_lane(self, segments, markings: bool = True, left_lanes: int = 0, right_lanes: int = 0):
         """Adds a lane and road segments.
-        :param segments: Array of tuples containing nodes to generate road segments. Segments must have
-                         x-coordinate, y-coordinate and width.
+        :param segments: List of dicts containing x-coordinate, y-coordinate and width.
         :param markings: {@code True} Enables road markings, {@code False} makes them invisible.
-        :param left_lanes: number of left lanes (int)
-        :param right_lanes: number of right lanes (int)
+        :param left_lanes: number of left lanes
+        :param right_lanes: number of right lanes
         :return: Void
         """
         lane = ElementTree.SubElement(self.lanes, "lane")
         if markings:
             lane.set("markings", "true")
-        if left_lanes != 0:
+        if left_lanes != 0 and left_lanes is not None:
             lane.set("leftLanes", str(left_lanes))
-        if right_lanes != 0:
+        if right_lanes != 0 and right_lanes is not None:
             lane.set("rightLanes", str(right_lanes))
         for segment in segments:
             ElementTree.SubElement(lane, 'laneSegment x="{}" y="{}" width="{}"'
-                                   .format(segment[0], segment[1], segment[2]))
+                                   .format(segment.get("x"), segment.get("y"), segment.get("width")))
 
     def save_xml(self, name):
         """Creates and saves the XML file, and moves it to the scenario folder.

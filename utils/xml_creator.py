@@ -9,106 +9,90 @@ from utils.dbc_xml_builder import DBCBuilder
 
 def build_environment_xml(control_points, file_name="exampleTest", left_lanes=0, right_lanes=0, obstacles=[]):
     """Creates a dbe xml file.
-    :param obstacles: List with obstacles.
-    :param right_lanes: Number of right lanes.
-    :param left_lanes: Number of left lanes.
-    :param control_points: List of control points as tuples.
+    :param control_points: List of dicts containing control points.
     :param file_name: Name of this dbe file.
+    :param left_lanes: Number of left lanes.
+    :param right_lanes: Number of right lanes.
+    :param obstacles: List of dicts containing obstacles.
     """
     dbe = DBEBuilder()
     dbe.add_lane(control_points, left_lanes=left_lanes, right_lanes=right_lanes)
-    if len(obstacles) > 0:
+    if obstacles is not None and len(obstacles) > 0:
         dbe.add_obstacles(obstacles)
     dbe.save_xml(file_name)
 
 
-def build_criteria_xml(snd_point, car, file_name="exampleTest", env_name="exampleTest",
-                       name="Example Test", fps="60", frequency="6", car_id="ego"):
+def build_criteria_xml(participants: list, ego_car: dict, success_points: list, vc_pos, sc_speed, file_name: str ="exampleTest",
+                       name: str ="Example Test", fps: str ="60", frequency: str ="6"):
     """Creates a dbc xml file. Failure, success and preconditions are controlled
       manually for this test generation since the road_generator creates simple
       lane following tests.
-    :param snd_point: Second point of the control point list, needed for precondition.
-    :param car: List of car states. See build_xml method for more details.
-    :param file_name: Name of this file.
-    :param env_name: Name of the environment file without extensions.
+    :param sc_speed: Speed condition that has to be met at vc_pos.
+    :param vc_pos: Position which must be entered at a specific speed by a specific participant.
+    :param participants: List of dicts of car states. See the add_car method in dbc_xml_builder.py for more
+                         information.
+    :param ego_car: The test subject as dict. Contains the same information as any other participant.
+    :param success_points: List with points of success. Each one is a dict with x, y and tolerance.
+    :param file_name: Name of this dbc file. Should be the same as the environment file (laziness).
     :param name: Self defined description name of this file.
-    :param fps: frames per second
+    :param fps: Frames per second.
     :param frequency: Frequency of the AI to compute the next step.
-    :param car_id: Unique identifier for the participant car.
     :return: Void.
     """
     dbc = DBCBuilder()
     dbc.define_name(name)
-    dbc.environment_name(env_name)
+    dbc.environment_name(file_name)
     dbc.steps_per_second(fps)
     dbc.ai_freq(frequency)
-
-    dbc.add_car(car[0], car[1])
-    vc_pos = [car_id, snd_point[0], snd_point[1], 4]
-    sc_speed = [car_id, 15]
-
+    for participant in participants:
+        dbc.add_car(participant)
+    for success_point in success_points:
+        dbc.add_success_point(ego_car.get("id"), success_point)
+    dbc.add_failure_conditions(ego_car.get("id"), "offroad")
     dbc.add_precond_partic_sc_speed(vc_pos, sc_speed)
-    dbc.add_success_point([car_id, car[1][-1][0], car[1][-1][1], car[1][-1][2]])
-    dbc.add_failure_conditions(car_id, "offroad")
     dbc.save_xml(file_name)
 
 
-def _add_width(control_points, width):
-    """Adds the width parameter for the whole list of control points.
-    :param control_points: List of control points.
-    :return: List of control points with the width parameter added.
-    """
-    new_list = []
-    iterator = 0
-    while iterator < len(control_points):
-        new_list.append([control_points[iterator][0], control_points[iterator][1], width])
-        iterator += 1
-    return new_list
-
-
-def build_xml(control_points, name, width, left_lanes=0, right_lanes=0, obstacles=[]):
+def build_xml(individual, iterator: int = 0):
     """Builds an environment and criteria xml file out of a list of control points.
-    :param obstacles: List of obstacles to place.
-    :param right_lanes: Number of right lanes.
-    :param left_lanes: Number of left lanes.
-    :param width: Desired width of each road segment.
-    :param control_points: List of control points as tuples.
-    :param name: Name of this file.
+    :param individual: obstacles (list), number of right lanes (int), number of left lanes (int),
+                        control points (list), file name (string), participants (list)
+    :param iterator: Unique index of a population.
     :return: Void.
     """
-    temp_list = _add_width(control_points, width)
-    build_environment_xml(temp_list, name, left_lanes=left_lanes, right_lanes=right_lanes, obstacles=obstacles)
+    obstacles = individual.get("obstacles")
+    right_lanes = individual.get("right_lanes")
+    left_lanes = individual.get("left_lanes")
+    control_points = individual.get("control_points")
+    file_name = individual.get("file_name")
+    participants = individual.get("participants")
+    file_name = file_name + str(iterator)
+    success_point = {"x": control_points[-1].get("x"),
+                     "y": control_points[-1].get("y"),
+                     "tolerance": control_points[-1].get("width") / 2}
+    success_points = [success_point]
+    ego = None
+    for participant in participants:
+        if participant.get("id") is "ego":
+            ego = participant
+            break
+    vc_pos = {"id": ego.get("id"),
+              "tolerance": 3,
+              "x": control_points[1].get("x"),
+              "y": control_points[1].get("y")}
+    sc_speed = 10
+    build_environment_xml(control_points=control_points, file_name=file_name, left_lanes=left_lanes,
+                          right_lanes=right_lanes, obstacles=obstacles)
+    build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,
+                       file_name=file_name, vc_pos=vc_pos, sc_speed=sc_speed)
 
-    init_state = [temp_list[0][0], temp_list[0][1], 0, "_BEAMNG", 50]
 
-    waypoints = []
-
-    # Comment this block in to add waypoints for every point in the list, e.g. for beamng ai.
-
-    waypoint = temp_list.pop(0)
-    waypoint = [waypoint[0], waypoint[1], 2, "_BEAMNG"]
-    waypoints.append(waypoint)
-    if len(temp_list) > 20:
-        for x in range(0, 5):
-            temp_list.pop(0)
-    for point in temp_list:
-        waypoint = [point[0], point[1], 2, "_BEAMNG"]
-        waypoints.append(waypoint)
-
-    waypoints.append([temp_list[-1][0], temp_list[-1][1], 2, "_BEAMNG"])
-    car = [init_state, waypoints]
-    build_criteria_xml(temp_list[0], car, name, name)
-
-
-def build_all_xml(population, width, files_name="exampleXML"):
+def build_all_xml(population):
     """Calls the build_xml method for each individual.
-    :param width: Desired width of each road segment.
     :param population: List of individuals containing control points and a fitness value for each one.
-    :param files_name: Name of this file.
     :return: Void.
     """
     iterator = 0
     while iterator < len(population):
-        file_name = files_name + str(iterator)
-        build_xml(population[iterator][0], file_name, width, population[iterator])
+        build_xml(population[iterator], iterator)
         iterator += 1

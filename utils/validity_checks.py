@@ -6,17 +6,18 @@ from shapely.geometry import LineString
 def intersection_check_last(control_points, point):
     """Checks for intersections between the line of the last two points and
      every other possible line.
-    :param control_points: List of control points as a tuple.
+    :param control_points: List of dicts containing points.
     :param point: Last inserted point, which should be checked for validity.
     :return: {@code True} if the last line intersects with another one, {@code False} if not.
     """
     iterator = 0
     while iterator <= (len(control_points) - 3):
-        p1 = (control_points[iterator][0], control_points[iterator][1])
-        p2 = (control_points[iterator + 1][0], control_points[iterator + 1][1])
+        p1 = (control_points[iterator].get("x"), control_points[iterator].get("y"))
+        p2 = (control_points[iterator + 1].get("x"), control_points[iterator + 1].get("y"))
         line1 = LineString([p1, p2])
-        p3 = (control_points[-1][0], control_points[-1][1])
-        line2 = LineString([p3, point])
+        p3 = (control_points[-1].get("x"), control_points[-1].get("y"))
+        tmp_point = (point.get("x"), point.get("y"))
+        line2 = LineString([p3, tmp_point])
         if line1.intersects(line2):
             return True
         iterator += 1
@@ -50,7 +51,7 @@ def intersection_check_width(width_lines, control_points_lines):
 def spline_intersection_check(control_points):
     """Checks for intersection of a splined list. New point must be already
      added to the list.
-    :param control_points: List of points as a tuple, containing the new added point.
+    :param control_points: List of dicts containing points.
     :return: {@code True} if the last line intersects with any other, {@code False} if not.
     """
     iterator = 0
@@ -69,7 +70,28 @@ def spline_intersection_check(control_points):
 
 def intersection_check_all(control_points):
     """Checks for intersection between all lines of two connected control points.
-    :param control_points: List of points in tuple form.
+    :param control_points: List of dicts containing points.
+    :return: {@code True} if two lines intersects, {@code False} if not.
+    """
+    iterator = 0
+    while iterator < (len(control_points) - 1):
+        jterator = iterator + 2
+        p1 = (control_points[iterator].get("x"), control_points[iterator].get("y"))
+        p2 = (control_points[iterator + 1].get("x"), control_points[iterator + 1].get("y"))
+        line1 = LineString([p1, p2])
+        while jterator < (len(control_points) - 1):
+            p3 = (control_points[jterator].get("x"), control_points[jterator].get("y"))
+            p4 = (control_points[jterator + 1].get("x"), control_points[jterator + 1].get("y"))
+            line2 = LineString([p3, p4])
+            if line1.intersects(line2):
+                return True
+            jterator += 1
+        iterator += 1
+    return False
+
+def intersection_check_all_np(control_points):
+    """Checks for intersection between all lines of two connected control points.
+    :param control_points: Numpy array containing points.
     :return: {@code True} if two lines intersects, {@code False} if not.
     """
     iterator = 0
