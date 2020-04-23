@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 
 from drivebuildclient.AIExchangeService import AIExchangeService
 from termcolor import colored
-from utils.xml_creator import build_all_xml, build_xml
+from utils.xml_creator import build_all_xml
 from utils.plotter import plot_all
 from utils.validity_checks import *
 from utils.utility_functions import convert_points_to_lines
@@ -16,6 +16,10 @@ from shapely.geometry import LineString
 from shapely import affinity
 import numpy as np
 import scipy.interpolate as si
+from math import degrees, atan2
+
+MIN_DEGREES = 70
+MAX_DEGREES = 290
 
 
 def _add_ego_car(individual):
@@ -44,6 +48,17 @@ def _add_ego_car(individual):
            "model": model}
     participants = [ego]
     individual["participants"] = participants
+
+
+def get_angle(a, b, c):
+    """Returns the angel between three points (two lines so to say).
+    :param a: First point.
+    :param b: Second point.
+    :param c: Third point.
+    :return: Angle in degrees.
+    """
+    ang = degrees(atan2(c[1] - b[1], c[0] - b[0]) - atan2(a[1] - b[1], a[0] - b[0]))
+    return ang + 360 if ang < 0 else ang
 
 
 class TestGenerator:
@@ -116,9 +131,10 @@ class TestGenerator:
         else:
             print(colored("Invalid difficulty level. Choosing default difficulty.", 'blue'))
 
-    def _generate_random_point(self, last_point):
+    def _generate_random_point(self, last_point, penultimate_point):
         """Generates a random point within a given range.
         :param last_point: Last point of the control point list as dict type.
+        :param penultimate_point: Point before the last point as dict type.
         :return: A new random point as dict type.
         """
         last_point_tmp = (last_point.get("x"), last_point.get("y"))
@@ -128,12 +144,15 @@ class TestGenerator:
         y_min = last_point.get("y") - self.MAX_SEGMENT_LENGTH
         y_max = last_point.get("y") + self.MAX_SEGMENT_LENGTH
         tries = 0
-        while tries < self.MAX_TRIES / 10:
+        while tries < self.MAX_TRIES / 5:
             x_pos = randint(x_min, x_max)
             y_pos = randint(y_min, y_max)
             point = (x_pos, y_pos)
+            deg = get_angle((penultimate_point.get("x"), penultimate_point.get("y")),
+                            (last_point.get("x"), last_point.get("y")),
+                            point)
             dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
-            if self.MAX_SEGMENT_LENGTH >= dist >= self.MIN_SEGMENT_LENGTH:
+            if (self.MAX_SEGMENT_LENGTH >= dist >= self.MIN_SEGMENT_LENGTH) and (MIN_DEGREES <= deg <= MAX_DEGREES):
                 return {"x": point[0], "y": point[1]}
             tries += 1
 
@@ -151,7 +170,7 @@ class TestGenerator:
         control_points = [p0, p1]
         tries = 0
         while len(control_points) != self.MAX_NODES and tries <= self.MAX_TRIES:
-            new_point = self._generate_random_point(control_points[-1])
+            new_point = self._generate_random_point(control_points[-1], control_points[-2])
             temp_list = deepcopy(control_points)
             temp_list.append(new_point)
             spline_list = self._bspline(temp_list, 100)
@@ -201,7 +220,8 @@ class TestGenerator:
                 valid = False
                 tries = 0
                 while not valid and tries < self.MAX_TRIES / 10:
-                    new_point = self._generate_random_point(individual.get("control_points")[iterator - 1])
+                    new_point = self._generate_random_point(individual.get("control_points")[iterator - 1],
+                                                            individual.get("control_points")[iterator - 2])
                     new_point = {"x": new_point.get("x"),
                                  "y": new_point.get("y")}
                     temp_list = deepcopy(individual.get("control_points"))
@@ -381,15 +401,16 @@ class TestGenerator:
         for point in individual.get("control_points"):
             point["width"] = self.WIDTH_OF_STREET
 
-    def _spline_population(self, population_list):
+    def _spline_population(self, population_list, samples=75):
         """Converts the control points list of every individual to a bspline
          list and adds the width parameter as well as the ego car.
         :param population_list: List of individuals.
+        :param samples: Number of samples for b-spline interpolation.
         :return: List of individuals with bsplined control points.
         """
         iterator = 0
         while iterator < len(population_list):
-            splined_list = self._bspline(population_list[iterator].get("control_points"))
+            splined_list = self._bspline(population_list[iterator].get("control_points"), samples)
             jterator = 0
             control_points = []
             while jterator < len(splined_list):
@@ -438,7 +459,7 @@ class TestGenerator:
 
         print(colored("Population finished.", "blue"))
         temp_list = deepcopy(self.population_list)
-        temp_list = self._spline_population(temp_list)
+        temp_list = self._spline_population(temp_list, 125)
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
@@ -468,11 +489,11 @@ class TestGenerator:
     def onTestFinished(self, sid, vid):
         """This method is called after a test was finished in DriveBuild.
         Also updates fitness value of an individual.
-        :param sid: Simulation ID
-        :param vid: Vehicle ID (only one participant)
+        :param sid: Simulation ID.
+        :param vid: Vehicle ID (only one participant).
         :return: Void.
         """
-        # TODO Change service if your configuration differs.
+        # Change service if your configuration differs.
         service = AIExchangeService("localhost", 8383)
         trace_data = service.get_trace(sid, vid)
         distances = []

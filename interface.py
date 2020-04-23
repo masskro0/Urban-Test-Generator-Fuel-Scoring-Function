@@ -1,4 +1,3 @@
-from pathlib import Path
 from shutil import move
 from safety_test_generator import TestGenerator
 import os
