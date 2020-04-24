@@ -51,7 +51,7 @@ def _add_ego_car(individual):
 
 
 def get_angle(a, b, c):
-    """Returns the angel between three points (two lines so to say).
+    """Returns the angle between three points (two lines so to say).
     :param a: First point.
     :param b: Second point.
     :param c: Third point.
