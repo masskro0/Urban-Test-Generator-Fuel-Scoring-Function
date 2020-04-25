@@ -5,7 +5,7 @@ from random import randint, random
 import numpy as np
 import scipy.interpolate as si
 from shapely import affinity
-from shapely.geometry import LineString
+from shapely.geometry import LineString, shape
 from termcolor import colored
 
 from utils.utility_functions import convert_points_to_lines
@@ -43,6 +43,8 @@ class FuelConsumptionTestGenerator:
         self.MAX_NODES = 12  # Maximum number of control points for each road
         self.population_list_urban = []
         self.population_list_highway = []
+        self.intersection_length = 100
+        self.intersecting_length = 75
 
     def _bspline(self, control_points, samples=75):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
@@ -66,29 +68,31 @@ class FuelConsumptionTestGenerator:
         # Calculate result.
         return np.array(si.splev(u, (kv, point_list.T, degree))).T
 
-    def _generate_random_point(self, last_point, penultimate_point):
+    def _add_segment(self, last_point, penultimate_point):
         """Generates a random point within a given range.
         :param last_point: Last point of the control point list as dict type.
         :param penultimate_point: Point before the last point as dict type.
         :return: A new random point as dict type.
         """
+        print("segment")
         last_point_tmp = (last_point.get("x"), last_point.get("y"))
         last_point_tmp = np.asarray(last_point_tmp)
-        x_min = last_point.get("x") - self.MAX_SEGMENT_LENGTH
-        x_max = last_point.get("x") + self.MAX_SEGMENT_LENGTH
-        y_min = last_point.get("y") - self.MAX_SEGMENT_LENGTH
-        y_max = last_point.get("y") + self.MAX_SEGMENT_LENGTH
+        x_min = int(round(last_point.get("x") - self.MAX_SEGMENT_LENGTH))
+        x_max = int(round(last_point.get("x") + self.MAX_SEGMENT_LENGTH))
+        y_min = int(round(last_point.get("y") - self.MAX_SEGMENT_LENGTH))
+        y_max = int(round(last_point.get("y") + self.MAX_SEGMENT_LENGTH))
         tries = 0
         while tries < self.MAX_TRIES / 5:
             x_pos = randint(x_min, x_max)
             y_pos = randint(y_min, y_max)
             point = (x_pos, y_pos)
+            # TODO Min und Max angle depenend on number of lanes
             deg = get_angle((penultimate_point.get("x"), penultimate_point.get("y")),
                             (last_point.get("x"), last_point.get("y")),
                             point)
             dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
             if (self.MAX_SEGMENT_LENGTH >= dist >= self.MIN_SEGMENT_LENGTH) and (MIN_DEGREES <= deg <= MAX_DEGREES):
-                return {"x": point[0], "y": point[1]}
+                return {"x": point[0], "y": point[1], "type": "segment"}
             tries += 1
 
     def _generate_random_points(self):
@@ -190,6 +194,11 @@ class FuelConsumptionTestGenerator:
             return 0
         return self.WIDTH_OF_STREET / length
 
+    def _get_resize_factor_intersection(self, linestring_length, intersection_length):
+        if linestring_length == 0:
+            return 0
+        return (linestring_length + intersection_length) / linestring_length
+
     def _create_urban_environment(self):
         p0 = {"x": 1,
               "y": 0,
@@ -206,23 +215,21 @@ class FuelConsumptionTestGenerator:
         intersection_probability = 0.3
         while len(control_points) <= self.MAX_NODES and tries <= self.MAX_TRIES:
             if len(control_points) == self.MAX_NODES - 1 and not one_intersection:
-                control_points.append(self._add_intersection())
+                control_points.append(self._add_intersection(control_points[-1], control_points[-2]))
             elif random() <= intersection_probability and control_points[-1].get("type") != "intersection":
-                control_points.append(self._add_intersection())
+                control_points.append(self._add_intersection(control_points[-1], control_points[-2]))
                 one_intersection = True
             else:
-                control_points.append(self._add_segment())
+                control_points.append(self._add_segment(control_points[-1], control_points[-2]))
         return control_points
 
-    def _add_segment(self):
-        print("segment")
-        return {"x": 65,
-              "y": 0,
-              "type": "segment"}
+    def _add_new_lane(self, first_point, second_point):
+        pass
 
-    def _add_intersection(self):
+    def _add_intersection(self, last_point, penultimate_point):
         print("intersection")
         # TODO Check for number of lanes. Stop signs only for single lane roads?
+        """
         if random() <= 0.33:
             self._go_straight()
         elif 0.33 < random() <= 0.66:
@@ -233,8 +240,28 @@ class FuelConsumptionTestGenerator:
             self._add_stop_sign()
         else:
             self._add_traffic_lights()
-        return {"x": 65,
-              "y": 0,
+        """
+        line = LineString([(penultimate_point.get("x"), penultimate_point.get("y")),
+                          (last_point.get("x"), last_point.get("y"))])
+        fac = self._get_resize_factor_intersection(line.length, self.intersection_length)
+        line_intersection = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+        new_point = list(shape(line_intersection).coords)[1]
+        fac = self._get_resize_factor_intersection(line.length, self.intersecting_length)
+        line_intersection = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+        intersection_point = list(shape(line_intersection).coords)[1]
+        line = LineString([(intersection_point[0], intersection_point[1]),
+                          (new_point[0], new_point[1])])
+        line_rot1 = affinity.rotate(line, -90, line.coords[0])
+        line_rot1 = affinity.scale(line_rot1, xfact=3, yfact=3,
+                                   origin=line_rot1.coords[0])
+        line_rot2 = affinity.rotate(line, 90, line.coords[0])
+        line_rot2 = affinity.scale(line_rot2, xfact=3, yfact=3,
+                                   origin=line_rot2.coords[0])
+        p1 = (list(shape(line_rot1).coords)[1][0], list(shape(line_rot1).coords)[1][1])
+        p2 = (list(shape(line_rot2).coords)[1][0], list(shape(line_rot2).coords)[1][1])
+        self._add_new_lane(p1, p2)
+        return {"x": new_point[0],
+              "y": new_point[1],
               "type": "intersection"}
 
     def _turn_right(self):
@@ -254,7 +281,6 @@ class FuelConsumptionTestGenerator:
 
     def _add_highway(self):
         pass
-
 
     def _create_start_population(self):
         """Creates and returns an initial population."""
