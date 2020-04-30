@@ -1,6 +1,7 @@
 from safety_test_generator import TestGenerator
 from utils.xml_to_bng_files import convert_test
 from fuel_consumption_test_generator import FuelConsumptionTestGenerator
+from utils.plotter import plotter
 
 if __name__ == '__main__':
     """
@@ -21,4 +22,6 @@ if __name__ == '__main__':
     """
 
     gen = FuelConsumptionTestGenerator()
-    gen._create_urban_environment()
+    while True:
+        list = gen._create_urban_environment()
+        plotter(list)

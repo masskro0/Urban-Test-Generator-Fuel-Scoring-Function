@@ -1,25 +1,21 @@
 """This file offers several plotting methods to visualize functions or roads."""
-
 import matplotlib.pyplot as plt
-import numpy as np
 
 
-def plotter(control_points):
-    """Plots every point and lines between them. Used to visualize a road.
-    :param control_points: List of points as dict type.
+def plotter(lanes):
+    """Plots every point and lines between them. Used to visualize a road network.
+    :param lanes: List of dicts containing multiple lanes.
     :return: Void.
     """
-    point_list = []
-    for point in control_points:
-        point_list.append((point.get("x"), point.get("y")))
-    point_list = np.asarray(point_list)
-    x = point_list[:, 0]
-    y = point_list[:, 1]
-
-    plt.plot(x, y, '-og', markersize=10, linewidth=control_points[0].get("width"))
-    plt.xlim([min(x) - 0.3, max(x) + 0.3])
-    plt.ylim([min(y) - 0.3, max(y) + 0.3])
-
+    for lane in lanes:
+        x = []
+        y = []
+        control_points = lane.get("control_points")
+        for point in control_points:
+            x.append(point.get("x"))
+            y.append(point.get("y"))
+        plt.plot(x, y, '-og', markersize=6, linewidth=control_points[0].get("width"))
+    plt.axis('scaled')
     plt.title('Road overview')
     plt.show()
 
@@ -31,7 +27,7 @@ def plot_all(population):
     """
     iterator = 0
     while iterator < len(population):
-        plotter(population[iterator].get("control_points"))
+        plotter(population[iterator].get("lanes"))
         iterator += 1
 
 

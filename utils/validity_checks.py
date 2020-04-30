@@ -1,27 +1,29 @@
 """This file offers various validity methods to check for intersections."""
 
-from shapely.geometry import LineString
+from shapely.geometry import LineString, shape
+from utils.utility_functions import convert_points_to_lines
 
 
-def intersection_check_last(control_points, point):
+def intersection_check_last(lanes, last_point, new_point, max_intersections = 0):
     """Checks for intersections between the line of the last two points and
      every other possible line.
     :param control_points: List of dicts containing points.
     :param point: Last inserted point, which should be checked for validity.
     :return: {@code True} if the last line intersects with another one, {@code False} if not.
     """
-    iterator = 0
-    while iterator <= (len(control_points) - 3):
-        p1 = (control_points[iterator].get("x"), control_points[iterator].get("y"))
-        p2 = (control_points[iterator + 1].get("x"), control_points[iterator + 1].get("y"))
-        line1 = LineString([p1, p2])
-        p3 = (control_points[-1].get("x"), control_points[-1].get("y"))
-        tmp_point = (point.get("x"), point.get("y"))
-        line2 = LineString([p3, tmp_point])
-        if line1.intersects(line2):
-            return True
-        iterator += 1
+    last = (last_point.get("x"), last_point.get("y"))
+    new_line = LineString([last, (new_point.get("x"), new_point.get("y"))])
+    lines_of_lanes = convert_points_to_lines(lanes)
+    intersections = 0
+    for lane in lines_of_lanes:
+        for line in lane:
+            if line.intersects(new_line) and not list(shape(line).coords)[1] == last:
+                intersections += 1
+                if intersections > max_intersections:
+                    return True
     return False
+
+
 
 
 def intersection_check_width(width_lines, control_points_lines):

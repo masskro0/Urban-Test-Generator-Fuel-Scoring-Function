@@ -74,7 +74,6 @@ class FuelConsumptionTestGenerator:
         :param penultimate_point: Point before the last point as dict type.
         :return: A new random point as dict type.
         """
-        print("segment")
         last_point_tmp = (last_point.get("x"), last_point.get("y"))
         last_point_tmp = np.asarray(last_point_tmp)
         x_min = int(round(last_point.get("x") - self.MAX_SEGMENT_LENGTH))
@@ -130,6 +129,58 @@ class FuelConsumptionTestGenerator:
         else:
             print(colored("Finished list!", "blue"))
             return control_points
+
+    def _create_urban_environment(self):
+        p0 = {"x": 1,
+              "y": 0,
+              "type": "segment"}
+        p1 = {"x": 50,
+              "y": 0,
+              "type": "segment"}
+        p2 = {"x": 65,
+              "y": 0,
+              "type": "segment"}
+        control_points = [p0, p1, p2]
+        lanes = []
+        tries = 0
+        one_intersection = False
+        intersection_possible = True
+        intersection_probability = 0.3
+        # TODO Control points immer auf leer setzen und appenden, sobald left oder right turns passieren
+        # TODO Lines vorher erstellen um Laufzeit zu verbessern
+        # TODO Kurze Lines prüfen ob sie intersecten nach dem Einfügen
+        while len(control_points) <= self.MAX_NODES and tries <= self.MAX_TRIES:
+            if intersection_possible and len(control_points) == self.MAX_NODES - 1 and not one_intersection:
+                intersection = self._add_intersection(control_points[-1], control_points[-2])
+                new_point = intersection[0]
+                if not intersection_check_last(lanes, control_points[-1], new_point, max_intersections=0):
+                    one_intersection = True
+                    control_points.append(new_point)
+                    lanes.append({"control_points": [intersection[1], intersection[2]]})
+            elif intersection_possible and random() <= intersection_probability \
+                    and control_points[-1].get("type") != "intersection":
+                intersection = self._add_intersection(control_points[-1], control_points[-2])
+                new_point = intersection[0]
+                if not intersection_check_last(lanes, control_points[-1], new_point, max_intersections=0):
+                    one_intersection = True
+                    control_points.append(new_point)
+                    lanes.append({"control_points": [intersection[1], intersection[2]]})
+                else:
+                    tries += 1
+                    intersection_possible = False
+            else:
+                while tries < self.MAX_TRIES:
+                    new_point = self._add_segment(control_points[-1], control_points[-2])
+                    if not intersection_check_last(lanes, control_points[-1], new_point, max_intersections=0):
+                        control_points.append(new_point)
+                        intersection_possible = True
+                        tries = 0
+                        break
+                    else:
+                        tries += 1
+        main_lane = {"control_points": control_points}
+        lanes.append(main_lane)
+        return lanes
 
     def _repair(self):
         pass
@@ -199,35 +250,10 @@ class FuelConsumptionTestGenerator:
             return 0
         return (linestring_length + intersection_length) / linestring_length
 
-    def _create_urban_environment(self):
-        p0 = {"x": 1,
-              "y": 0,
-              "type": "segment"}
-        p1 = {"x": 50,
-              "y": 0,
-              "type": "segment"}
-        p2 = {"x": 65,
-              "y": 0,
-              "type": "segment"}
-        control_points = [p0, p1, p2]
-        tries = 0
-        one_intersection = False
-        intersection_probability = 0.3
-        while len(control_points) <= self.MAX_NODES and tries <= self.MAX_TRIES:
-            if len(control_points) == self.MAX_NODES - 1 and not one_intersection:
-                control_points.append(self._add_intersection(control_points[-1], control_points[-2]))
-            elif random() <= intersection_probability and control_points[-1].get("type") != "intersection":
-                control_points.append(self._add_intersection(control_points[-1], control_points[-2]))
-                one_intersection = True
-            else:
-                control_points.append(self._add_segment(control_points[-1], control_points[-2]))
-        return control_points
-
     def _add_new_lane(self, first_point, second_point):
         pass
 
     def _add_intersection(self, last_point, penultimate_point):
-        print("intersection")
         # TODO Check for number of lanes. Stop signs only for single lane roads?
         """
         if random() <= 0.33:
@@ -259,10 +285,11 @@ class FuelConsumptionTestGenerator:
                                    origin=line_rot2.coords[0])
         p1 = (list(shape(line_rot1).coords)[1][0], list(shape(line_rot1).coords)[1][1])
         p2 = (list(shape(line_rot2).coords)[1][0], list(shape(line_rot2).coords)[1][1])
-        self._add_new_lane(p1, p2)
-        return {"x": new_point[0],
+        p1 = {"x": p1[0], "y": p1[1], "type": "intersection"}
+        p2 = {"x": p2[0], "y": p2[1], "type": "intersection"}
+        return [{"x": new_point[0],
               "y": new_point[1],
-              "type": "intersection"}
+              "type": "intersection"}, p1, p2]
 
     def _turn_right(self):
         print("left turn")

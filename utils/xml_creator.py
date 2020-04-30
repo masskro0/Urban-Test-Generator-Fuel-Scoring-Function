@@ -22,8 +22,9 @@ def build_environment_xml(control_points, file_name="exampleTest", left_lanes=0,
     dbe.save_xml(file_name)
 
 
-def build_criteria_xml(participants: list, ego_car: dict, success_points: list, vc_pos, sc_speed, file_name: str ="exampleTest",
-                       name: str ="Example Test", fps: str ="60", frequency: str ="6"):
+def build_criteria_xml(participants: list, ego_car: dict, success_points: list, vc_pos, sc_speed,
+                       file_name: str = "exampleTest", name: str = "Example Test", fps: str = "60",
+                       frequency: str = "6"):
     """Creates a dbc xml file. Failure, success and preconditions are controlled
       manually for this test generation since the road_generator creates simple
       lane following tests.
