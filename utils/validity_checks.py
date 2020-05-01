@@ -2,8 +2,9 @@
 
 from shapely.geometry import LineString, shape
 
-from utils.plotter import plotter
+from utils.plotter import plotter, plot_splines_and_width
 from utils.utility_functions import convert_points_to_lines
+import matplotlib.pyplot as plt
 
 
 def intersection_check_last(lines_of_roads, new_line, max_intersections = 0):
@@ -33,19 +34,18 @@ def intersection_check_width(width_lines, control_points_lines):
     :param control_points_lines: List of lines between two control points (e.g. LineStrings).
     :return: {@code True} if two lines intersect, {@code False} if no line intersect.
     """
-    iterator = 0
-    while iterator < len(width_lines):
-        intersections = 0
-        jterator = 0
-        while jterator < len(control_points_lines):
-            if width_lines[iterator].intersects(control_points_lines[jterator]):
-                intersections += 1
-            # One line intersects always with its origin, therefore we need to check for another
-            # intersection.
-            if intersections >= 3:
-                return True
-            jterator += 1
-        iterator += 1
+    for width_list in width_lines:
+        for width_line in width_list:
+            intersections = []
+            for control_list in control_points_lines:
+                for control_line in control_list:
+                    if width_line.intersects(control_line):
+                        intersec_point = width_line.intersection(control_line)
+                        if intersec_point not in intersections:
+                            intersections.append(intersec_point)
+                    # One line intersects always with its origin, therefore we need to check for another intersection.
+                    if len(intersections) >= 2:
+                        return True
     return False
 
 
@@ -89,6 +89,7 @@ def intersection_check_all(control_points):
             jterator += 1
         iterator += 1
     return False
+
 
 def intersection_check_all_np(control_points):
     """Checks for intersection between all lines of two connected control points.

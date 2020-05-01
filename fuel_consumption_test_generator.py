@@ -8,7 +8,8 @@ from shapely import affinity
 from shapely.geometry import LineString, shape
 from termcolor import colored
 
-from utils.utility_functions import convert_points_to_lines
+from utils.plotter import plot_splines_and_width, plotter
+from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines
 from utils.validity_checks import spline_intersection_check, intersection_check_all_np, intersection_check_width, \
     intersection_check_last
 
@@ -42,7 +43,7 @@ class FuelConsumptionTestGenerator:
         self.MAX_NODES = 20  # Maximum number of control points for each road
         self.population_list_urban = []
         self.population_list_highway = []
-        self.intersection_length = 140
+        self.intersection_length = 150
         self.opposite_lane = 100
         self.intersecting_length = 80
 
@@ -51,23 +52,6 @@ class FuelConsumptionTestGenerator:
         :param control_points: List of control points.
         :param samples: Number of samples to return.
         :return: Array with samples, representing a bspline of the given function as a numpy array.
-        """
-        """
-        point_list = []
-        for point in control_points:
-            point_list.append((point.get("x"), point.get("y")))
-        point_list = np.asarray(point_list)
-        count = len(point_list)
-        degree = np.clip(self.SPLINE_DEGREE, 1, count - 1)
-
-        # Calculate knot vector.
-        kv = np.concatenate(([0] * degree, np.arange(count - degree + 1), [count - degree] * degree))
-
-        # Calculate query range.
-        u = np.linspace(False, (count - degree), samples)
-
-        # Calculate result.
-        return np.array(si.splev(u, (kv, point_list.T, degree))).T
         """
         splined_list = []
         for lane in lanes:
@@ -85,7 +69,8 @@ class FuelConsumptionTestGenerator:
             u = np.linspace(False, (count - degree), samples)
 
             # Calculate result.
-            splined_list.append(np.array(si.splev(u, (kv, point_list.T, degree))).T)
+            splined_list.append({"control_points": np.array(si.splev(u, (kv, point_list.T, degree))).T,
+                                "width": lane.get("width")})
         return splined_list
 
     def _add_segment(self, last_point, penultimate_point):
@@ -114,41 +99,6 @@ class FuelConsumptionTestGenerator:
                 return {"x": point[0], "y": point[1], "type": "segment"}
             tries += 1
 
-    def _generate_random_points(self):
-        """Generates random valid points and returns when the list is full or
-        the number of invalid nodes equals the number of maximum tries.
-        :return: Array of valid control points.
-        """
-        # Generating the first two points by myself.
-        p0 = {"x": 1,
-              "y": 0}
-        p1 = {"x": 65,
-              "y": 0}
-        control_points = [p0, p1]
-        tries = 0
-        while len(control_points) != self.MAX_NODES and tries <= self.MAX_TRIES:
-            new_point = self._generate_random_point(control_points[-1], control_points[-2])
-            temp_list = deepcopy(control_points)
-            temp_list.append(new_point)
-            spline_list = self._bspline(temp_list, 100)
-            control_points_lines = convert_points_to_lines(spline_list)
-            width_list = self._get_width_lines(spline_list)
-            if not (intersection_check_last(control_points, new_point) or spline_intersection_check(spline_list)
-                    or intersection_check_width(width_list, control_points_lines)):
-                control_points.append(new_point)
-                tries = 0
-            else:
-                tries += 1
-
-        spline_list = self._bspline(control_points, 100)
-        if spline_intersection_check(spline_list):
-            control_points.pop()
-        if len(control_points) < self.MIN_NODES or intersection_check_all_np(spline_list):
-            print(colored("Couldn't create enough valid nodes. Restarting...", "blue"))
-        else:
-            print(colored("Finished list!", "blue"))
-            return control_points
-
     def _create_urban_environment(self):
         p0 = {"x": 1, "y": 0, "type": "segment"}
         p1 = {"x": 50, "y": 0, "type": "segment"}
@@ -173,8 +123,15 @@ class FuelConsumptionTestGenerator:
                                        (new_point.get("x"), new_point.get("y"))])
                 new_lane_line = LineString([(intersection[1].get("x"), intersection[1].get("y")),
                                             (intersection[2].get("x"), intersection[2].get("y"))])
+                temp_list = deepcopy(lanes)
+                temp_list.append({"control_points": [intersection[1], intersection[2]], "width": 8})
+                temp_list[lane_index].get("control_points").append(new_point)
+                temp_list = self._bspline(temp_list)
+                control_points_lines = convert_splines_to_lines(temp_list)
+                width_lines = self._get_width_lines(temp_list)
                 if not intersection_check_last(lines_of_roads, new_line, max_intersections=0) \
-                        and not intersection_check_last(lines_of_roads, new_lane_line, max_intersections=0):
+                        and not intersection_check_last(lines_of_roads, new_lane_line, max_intersections=0)\
+                        and not intersection_check_width(width_lines, control_points_lines):
                     one_intersection = True
                     lanes[lane_index].get("control_points").append(new_point)
                     lanes.append({"control_points": [intersection[1], intersection[2]], "width": 8})
@@ -184,20 +141,28 @@ class FuelConsumptionTestGenerator:
                     intersection_possible = False
             # Add segment, if possible.
             control_points = lanes[lane_index].get("control_points")
-            while tries < self.MAX_TRIES:
-                new_point = self._add_segment(control_points[-1], control_points[-2])
-                new_line = LineString([(control_points[-1].get("x"), control_points[-1].get("y")),
-                                       (new_point.get("x"), new_point.get("y"))])
-                if not intersection_check_last(lines_of_roads, new_line, max_intersections=0):
-                    lanes[lane_index].get("control_points").append(new_point)
-                    intersection_possible = True
-                    tries = 0
-                    number_of_pieces += 1
-                    lines_of_roads = convert_points_to_lines(lanes)
-                    break
-                else:
-                    tries += 1
-        return lanes
+            new_point = self._add_segment(control_points[-1], control_points[-2])
+            new_line = LineString([(control_points[-1].get("x"), control_points[-1].get("y")),
+                                   (new_point.get("x"), new_point.get("y"))])
+            temp_list = deepcopy(lanes)
+            temp_list[lane_index].get("control_points").append(new_point)
+            temp_list = self._bspline(temp_list)
+            control_points_lines = convert_splines_to_lines(temp_list)
+            width_lines = self._get_width_lines(temp_list)
+            if not intersection_check_last(lines_of_roads, new_line, max_intersections=0) \
+                    and not intersection_check_width(width_lines, control_points_lines):
+                lanes[lane_index].get("control_points").append(new_point)
+                intersection_possible = True
+                tries = 0
+                number_of_pieces += 1
+                lines_of_roads = convert_points_to_lines(lanes)
+            else:
+                tries += 1
+        if number_of_pieces >= self.MIN_NODES:
+            print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
+            return lanes
+        else:
+            print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
     def _repair(self):
         pass
@@ -205,54 +170,60 @@ class FuelConsumptionTestGenerator:
     def _add_traffic(self):
         pass
 
-    def _get_width_lines(self, control_points):
+    def _get_width_lines(self, splined_lanes):
         """Determines the width lines of the road by flipping the LineString
          between two points by 90 degrees in both directions.
         :param control_points: List of control points.
         :return: List of LineStrings which represent the width of the road.
         """
-        spline_list = deepcopy(control_points)
-        linestring_list = []
-        iterator = 0
-        while iterator < (len(spline_list) - 1):
-            p1 = (spline_list[iterator][0], spline_list[iterator][1])
-            p2 = (spline_list[iterator + 1][0], spline_list[iterator + 1][1])
-            line = LineString([p1, p2])
+        complete_width_list = []
+        for spline_list in splined_lanes:
+            linestring_list = []
+            iterator = 0
 
-            # Rotate counter-clockwise and resize to the half of the road length.
-            line_rot1 = affinity.rotate(line, 90, line.coords[0])
-            line_rot1 = affinity.scale(line_rot1, xfact=self._get_resize_factor(line_rot1.length),
-                                       yfact=self._get_resize_factor(line_rot1.length),
-                                       origin=line_rot1.coords[0])
-
-            # Rotate clockwise and resize to the half of the road length.
-            line_rot2 = affinity.rotate(line, -90, line.coords[0])
-            line_rot2 = affinity.scale(line_rot2, xfact=self._get_resize_factor(line_rot2.length),
-                                       yfact=self._get_resize_factor(line_rot2.length),
-                                       origin=line_rot2.coords[0])
-
-            line = LineString([line_rot1.coords[1], line_rot2.coords[1]])
-            linestring_list.append(line)
-
-            if iterator == len(spline_list) - 2:
+            # Duplicate width to have more space between road pieces.
+            width = spline_list.get("width") * 3.5
+            control_points = spline_list.get("control_points")
+            while iterator < (len(control_points) - 1):
+                p1 = (control_points[iterator][0], control_points[iterator][1])
+                p2 = (control_points[iterator + 1][0], control_points[iterator + 1][1])
                 line = LineString([p1, p2])
-                line_rot1 = affinity.rotate(line, -90, line.coords[1])
-                line_rot1 = affinity.scale(line_rot1, xfact=self._get_resize_factor(line_rot1.length),
-                                           yfact=self._get_resize_factor(line_rot1.length),
+
+                # Rotate counter-clockwise and resize to the half of the road length.
+                line_rot1 = affinity.rotate(line, 90, line.coords[0])
+                line_rot1 = affinity.scale(line_rot1, xfact=self._get_resize_factor(line_rot1.length, width),
+                                           yfact=self._get_resize_factor(line_rot1.length, width),
                                            origin=line_rot1.coords[0])
 
-                line_rot2 = affinity.rotate(line, 90, line.coords[1])
-                line_rot2 = affinity.scale(line_rot2, xfact=self._get_resize_factor(line_rot2.length),
-                                           yfact=self._get_resize_factor(line_rot2.length),
+                # Rotate clockwise and resize to the half of the road length.
+                line_rot2 = affinity.rotate(line, -90, line.coords[0])
+                line_rot2 = affinity.scale(line_rot2, xfact=self._get_resize_factor(line_rot2.length, width),
+                                           yfact=self._get_resize_factor(line_rot2.length, width),
                                            origin=line_rot2.coords[0])
-                line = LineString([line_rot1.coords[1], line_rot2.coords[1]])
-                line = affinity.scale(line, xfact=self._get_resize_factor(line.length)*2,
-                                      yfact=self._get_resize_factor(line.length)*2)
-                linestring_list.append(line)
-            iterator += 1
-        return linestring_list
 
-    def _get_resize_factor(self, length):
+                line = LineString([line_rot1.coords[1], line_rot2.coords[1]])
+                linestring_list.append(line)
+
+                if iterator == len(control_points) - 2:
+                    line = LineString([p1, p2])
+                    line_rot1 = affinity.rotate(line, -90, line.coords[1])
+                    line_rot1 = affinity.scale(line_rot1, xfact=self._get_resize_factor(line_rot1.length, width),
+                                               yfact=self._get_resize_factor(line_rot1.length, width),
+                                               origin=line_rot1.coords[0])
+
+                    line_rot2 = affinity.rotate(line, 90, line.coords[1])
+                    line_rot2 = affinity.scale(line_rot2, xfact=self._get_resize_factor(line_rot2.length, width),
+                                               yfact=self._get_resize_factor(line_rot2.length, width),
+                                               origin=line_rot2.coords[0])
+                    line = LineString([line_rot1.coords[1], line_rot2.coords[1]])
+                    line = affinity.scale(line, xfact=self._get_resize_factor(line.length, width)*2,
+                                          yfact=self._get_resize_factor(line.length, width)*2)
+                    linestring_list.append(line)
+                iterator += 1
+            complete_width_list.append(linestring_list)
+        return complete_width_list
+
+    def _get_resize_factor(self, length, width):
         """Returns the resize factor for the width lines so all lines have
         one specific length.
         :param length: Length of a LineString.
@@ -260,7 +231,7 @@ class FuelConsumptionTestGenerator:
         """
         if length == 0:
             return 0
-        return self.WIDTH_OF_STREET / length
+        return width / length
 
     def _get_resize_factor_intersection(self, linestring_length, intersection_length):
         if linestring_length == 0:
@@ -342,7 +313,6 @@ class FuelConsumptionTestGenerator:
         return startpop
 
 # TODO  Desired features:
-#       TODO Width checking
 #       TODO Variable width
 #       TODO Left and right turns
 #       TODO XML Converting
@@ -358,3 +328,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Mutation validity checks
 #       TODO Crossover
 #       TODO Repair function
+#       TODO Improve performance

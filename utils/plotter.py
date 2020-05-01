@@ -15,7 +15,7 @@ def plotter(lanes):
         for point in control_points:
             x.append(point.get("x"))
             y.append(point.get("y"))
-        plt.plot(x, y, '-og', markersize=6, linewidth=control_points[0].get("width"))
+        plt.plot(x, y, '-og', markersize=8, linewidth=control_points[0].get("width"))
     plt.axis('scaled')
     plt.title('Road overview')
     plt.show()
@@ -51,8 +51,12 @@ def plot_splines_and_width(width_lines, control_point_lines):
     :param control_point_lines: List of connected control points (e.g. LineStrings).
     :return: Void.
     """
-    plot_lines(width_lines)
-    plot_lines(control_point_lines)
+    for lane in width_lines:
+        plot_lines(lane)
+    for lane in control_point_lines:
+        plot_lines(lane)
+    plt.axis('scaled')
+    plt.title('Road overview with width lines')
     plt.show()
 
 
@@ -66,7 +70,7 @@ def plot_splined_list(splined_list):
         y = point_list[:, 1]
 
         # TODO Add width parameter
-        plt.plot(x, y, '-og', markersize=6, linewidth=8)
+        plt.plot(x, y, '-og', markersize=8, linewidth=6)
     plt.axis('scaled')
     plt.title('Road overview')
     plt.show()
