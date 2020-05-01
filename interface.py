@@ -1,7 +1,11 @@
+from shapely.geometry import LineString
+
 from safety_test_generator import TestGenerator
+from utils.validity_checks import intersection_check_last
 from utils.xml_to_bng_files import convert_test
 from fuel_consumption_test_generator import FuelConsumptionTestGenerator
 from utils.plotter import plotter
+from utils.utility_functions import convert_points_to_lines
 
 if __name__ == '__main__':
     """
@@ -22,6 +26,7 @@ if __name__ == '__main__':
     """
 
     gen = FuelConsumptionTestGenerator()
+
     while True:
         list = gen._create_urban_environment()
         plotter(list)

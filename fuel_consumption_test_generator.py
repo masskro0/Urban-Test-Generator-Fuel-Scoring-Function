@@ -131,55 +131,52 @@ class FuelConsumptionTestGenerator:
             return control_points
 
     def _create_urban_environment(self):
-        p0 = {"x": 1,
-              "y": 0,
-              "type": "segment"}
-        p1 = {"x": 50,
-              "y": 0,
-              "type": "segment"}
-        p2 = {"x": 65,
-              "y": 0,
-              "type": "segment"}
-        control_points = [p0, p1, p2]
-        lanes = []
+        p0 = {"x": 1, "y": 0, "type": "segment"}
+        p1 = {"x": 50, "y": 0, "type": "segment"}
+        p2 = {"x": 65, "y": 0, "type": "segment"}
+        lanes = [{"control_points": [p0, p1, p2]}]
         tries = 0
+        lane_index = 0
+        number_of_pieces = 3
         one_intersection = False
         intersection_possible = True
-        intersection_probability = 0.3
-        # TODO Control points immer auf leer setzen und appenden, sobald left oder right turns passieren
-        # TODO Lines vorher erstellen um Laufzeit zu verbessern
-        # TODO Kurze Lines prüfen ob sie intersecten nach dem Einfügen
-        while len(control_points) <= self.MAX_NODES and tries <= self.MAX_TRIES:
-            if intersection_possible and len(control_points) == self.MAX_NODES - 1 and not one_intersection:
+        intersection_probability = 0.25
+        lines_of_roads = convert_points_to_lines(lanes)
+        while number_of_pieces <= self.MAX_NODES and tries <= self.MAX_TRIES:
+            if intersection_possible and ((number_of_pieces == self.MAX_NODES - 1 and not one_intersection)
+                                          or random() <= intersection_probability):
+                control_points = lanes[lane_index].get("control_points")
                 intersection = self._add_intersection(control_points[-1], control_points[-2])
                 new_point = intersection[0]
-                if not intersection_check_last(lanes, control_points[-1], new_point, max_intersections=0):
+                new_line = LineString([(control_points[-1].get("x"), control_points[-1].get("y")),
+                                       (new_point.get("x"), new_point.get("y"))])
+                new_lane_line = LineString([(intersection[1].get("x"), intersection[1].get("y")),
+                                            (intersection[2].get("x"), intersection[2].get("y"))])
+                if not intersection_check_last(lines_of_roads, new_line, max_intersections=0) \
+                        and not intersection_check_last(lines_of_roads, new_lane_line, max_intersections=0):
                     one_intersection = True
-                    control_points.append(new_point)
+                    lanes[lane_index].get("control_points").append(new_point)
                     lanes.append({"control_points": [intersection[1], intersection[2]]})
-            elif intersection_possible and random() <= intersection_probability \
-                    and control_points[-1].get("type") != "intersection":
-                intersection = self._add_intersection(control_points[-1], control_points[-2])
-                new_point = intersection[0]
-                if not intersection_check_last(lanes, control_points[-1], new_point, max_intersections=0):
-                    one_intersection = True
-                    control_points.append(new_point)
-                    lanes.append({"control_points": [intersection[1], intersection[2]]})
+                    number_of_pieces += 1
+                    lines_of_roads = convert_points_to_lines(lanes)
                 else:
                     tries += 1
                     intersection_possible = False
-            else:
-                while tries < self.MAX_TRIES:
-                    new_point = self._add_segment(control_points[-1], control_points[-2])
-                    if not intersection_check_last(lanes, control_points[-1], new_point, max_intersections=0):
-                        control_points.append(new_point)
-                        intersection_possible = True
-                        tries = 0
-                        break
-                    else:
-                        tries += 1
-        main_lane = {"control_points": control_points}
-        lanes.append(main_lane)
+            # Add segment.
+            control_points = lanes[lane_index].get("control_points")
+            while tries < self.MAX_TRIES:
+                new_point = self._add_segment(control_points[-1], control_points[-2])
+                new_line = LineString([(control_points[-1].get("x"), control_points[-1].get("y")),
+                                       (new_point.get("x"), new_point.get("y"))])
+                if not intersection_check_last(lines_of_roads, new_line, max_intersections=0):
+                    lanes[lane_index].get("control_points").append(new_point)
+                    intersection_possible = True
+                    tries = 0
+                    number_of_pieces += 1
+                    lines_of_roads = convert_points_to_lines(lanes)
+                    break
+                else:
+                    tries += 1
         return lanes
 
     def _repair(self):
