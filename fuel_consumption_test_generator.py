@@ -11,7 +11,6 @@ from termcolor import colored
 from utils.utility_functions import convert_points_to_lines
 from utils.validity_checks import spline_intersection_check, intersection_check_all_np, intersection_check_width, \
     intersection_check_last
-from scenario_types import ScenarioType
 
 MIN_DEGREES = 70
 MAX_DEGREES = 290
@@ -32,25 +31,27 @@ class FuelConsumptionTestGenerator:
 
     def __init__(self):
         self.files_name = "exampleTest"
-        self.SPLINE_DEGREE = 5  # Sharpness of curves
+        self.SPLINE_DEGREE = 3  # Sharpness of curves
         self.MAX_TRIES = 500  # Maximum number of invalid generated points/segments
         self.POPULATION_SIZE = 1  # Minimum number of generated roads for each generation
         self.NUMBER_ELITES = 4  # Number of best kept roads
-        self.MIN_SEGMENT_LENGTH = 40  # Minimum length of a road segment
-        self.MAX_SEGMENT_LENGTH = 65  # Maximum length of a road segment
+        self.MIN_SEGMENT_LENGTH = 55  # Minimum length of a road segment
+        self.MAX_SEGMENT_LENGTH = 80  # Maximum length of a road segment
         self.WIDTH_OF_STREET = 4  # Width of all segments
         self.MIN_NODES = 8  # Minimum number of control points for each road
-        self.MAX_NODES = 12  # Maximum number of control points for each road
+        self.MAX_NODES = 20  # Maximum number of control points for each road
         self.population_list_urban = []
         self.population_list_highway = []
-        self.intersection_length = 100
-        self.intersecting_length = 75
+        self.intersection_length = 140
+        self.opposite_lane = 100
+        self.intersecting_length = 80
 
-    def _bspline(self, control_points, samples=75):
+    def _bspline(self, lanes, samples=75):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
         :param control_points: List of control points.
         :param samples: Number of samples to return.
         :return: Array with samples, representing a bspline of the given function as a numpy array.
+        """
         """
         point_list = []
         for point in control_points:
@@ -67,6 +68,25 @@ class FuelConsumptionTestGenerator:
 
         # Calculate result.
         return np.array(si.splev(u, (kv, point_list.T, degree))).T
+        """
+        splined_list = []
+        for lane in lanes:
+            point_list = []
+            for point in lane.get("control_points"):
+                point_list.append((point.get("x"), point.get("y")))
+            point_list = np.asarray(point_list)
+            count = len(point_list)
+            degree = np.clip(self.SPLINE_DEGREE, 1, count - 1)
+
+            # Calculate knot vector.
+            kv = np.concatenate(([0] * degree, np.arange(count - degree + 1), [count - degree] * degree))
+
+            # Calculate query range.
+            u = np.linspace(False, (count - degree), samples)
+
+            # Calculate result.
+            splined_list.append(np.array(si.splev(u, (kv, point_list.T, degree))).T)
+        return splined_list
 
     def _add_segment(self, last_point, penultimate_point):
         """Generates a random point within a given range.
@@ -99,7 +119,6 @@ class FuelConsumptionTestGenerator:
         the number of invalid nodes equals the number of maximum tries.
         :return: Array of valid control points.
         """
-
         # Generating the first two points by myself.
         p0 = {"x": 1,
               "y": 0}
@@ -134,7 +153,8 @@ class FuelConsumptionTestGenerator:
         p0 = {"x": 1, "y": 0, "type": "segment"}
         p1 = {"x": 50, "y": 0, "type": "segment"}
         p2 = {"x": 65, "y": 0, "type": "segment"}
-        lanes = [{"control_points": [p0, p1, p2]}]
+        # TODO number of lanes random.
+        lanes = [{"control_points": [p0, p1, p2], "width": 8}]
         tries = 0
         lane_index = 0
         number_of_pieces = 3
@@ -145,6 +165,7 @@ class FuelConsumptionTestGenerator:
         while number_of_pieces <= self.MAX_NODES and tries <= self.MAX_TRIES:
             if intersection_possible and ((number_of_pieces == self.MAX_NODES - 1 and not one_intersection)
                                           or random() <= intersection_probability):
+                # Add intersection, if possible.
                 control_points = lanes[lane_index].get("control_points")
                 intersection = self._add_intersection(control_points[-1], control_points[-2])
                 new_point = intersection[0]
@@ -156,13 +177,12 @@ class FuelConsumptionTestGenerator:
                         and not intersection_check_last(lines_of_roads, new_lane_line, max_intersections=0):
                     one_intersection = True
                     lanes[lane_index].get("control_points").append(new_point)
-                    lanes.append({"control_points": [intersection[1], intersection[2]]})
+                    lanes.append({"control_points": [intersection[1], intersection[2]], "width": 8})
                     number_of_pieces += 1
                     lines_of_roads = convert_points_to_lines(lanes)
                 else:
-                    tries += 1
                     intersection_possible = False
-            # Add segment.
+            # Add segment, if possible.
             control_points = lanes[lane_index].get("control_points")
             while tries < self.MAX_TRIES:
                 new_point = self._add_segment(control_points[-1], control_points[-2])
@@ -321,3 +341,20 @@ class FuelConsumptionTestGenerator:
                 iterator += 1
         return startpop
 
+# TODO  Desired features:
+#       TODO Width checking
+#       TODO Variable width
+#       TODO Left and right turns
+#       TODO XML Converting
+#       TODO Three-lane intersection
+#       TODO Angle dependency on num of lanes and width
+#       TODO Adding traffic signs and lights(depending on num lanes)
+#       TODO Highways
+#       TODO Fix lane markings
+#       TODO Control traffic lights
+#       TODO Representation checking
+#       TODO Create init population
+#       TODO Mutation
+#       TODO Mutation validity checks
+#       TODO Crossover
+#       TODO Repair function

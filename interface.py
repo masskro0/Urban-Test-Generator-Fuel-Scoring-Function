@@ -4,7 +4,7 @@ from safety_test_generator import TestGenerator
 from utils.validity_checks import intersection_check_last
 from utils.xml_to_bng_files import convert_test
 from fuel_consumption_test_generator import FuelConsumptionTestGenerator
-from utils.plotter import plotter
+from utils.plotter import plotter, plot_splined_list
 from utils.utility_functions import convert_points_to_lines
 
 if __name__ == '__main__':
@@ -29,4 +29,6 @@ if __name__ == '__main__':
 
     while True:
         list = gen._create_urban_environment()
+        splined = gen._bspline(list)
         plotter(list)
+        plot_splined_list(splined)

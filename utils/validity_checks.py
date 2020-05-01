@@ -25,8 +25,6 @@ def intersection_check_last(lines_of_roads, new_line, max_intersections = 0):
     return False
 
 
-
-
 def intersection_check_width(width_lines, control_points_lines):
     """Checks for intersections between the width lines of a control point and
      any other line between two control points.

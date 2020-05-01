@@ -1,5 +1,6 @@
 """This file offers several plotting methods to visualize functions or roads."""
 import matplotlib.pyplot as plt
+from numpy import asarray
 
 
 def plotter(lanes):
@@ -52,4 +53,20 @@ def plot_splines_and_width(width_lines, control_point_lines):
     """
     plot_lines(width_lines)
     plot_lines(control_point_lines)
+    plt.show()
+
+
+def plot_splined_list(splined_list):
+    for lane in splined_list:
+        point_list = []
+        for point in lane:
+            point_list.append((point[0], point[1]))
+        point_list = asarray(point_list)
+        x = point_list[:, 0]
+        y = point_list[:, 1]
+
+        # TODO Add width parameter
+        plt.plot(x, y, '-og', markersize=6, linewidth=8)
+    plt.axis('scaled')
+    plt.title('Road overview')
     plt.show()
