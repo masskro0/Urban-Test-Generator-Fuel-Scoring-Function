@@ -15,7 +15,7 @@ def plotter(lanes):
         for point in control_points:
             x.append(point.get("x"))
             y.append(point.get("y"))
-        plt.plot(x, y, '-og', markersize=8, linewidth=control_points[0].get("width"))
+        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width"))
     plt.axis('scaled')
     plt.title('Road overview')
     plt.show()
@@ -26,10 +26,8 @@ def plot_all(population):
     :param population: Population with individuals in dict form containing another dict type called control_points.
     :return: Void
     """
-    iterator = 0
-    while iterator < len(population):
-        plotter(population[iterator].get("lanes"))
-        iterator += 1
+    for individual in population:
+        plotter(individual.get("lanes"))
 
 
 def plot_lines(lines):

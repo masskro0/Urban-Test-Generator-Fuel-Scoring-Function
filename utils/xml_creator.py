@@ -62,15 +62,11 @@ def build_xml(individual, iterator: int = 0):
     :return: Void.
     """
     obstacles = individual.get("obstacles")
-    right_lanes = individual.get("right_lanes")
-    left_lanes = individual.get("left_lanes")
-    control_points = individual.get("control_points")
     file_name = individual.get("file_name")
+    lanes = individual.get("lanes")
     participants = individual.get("participants")
     file_name = file_name + str(iterator)
-    success_point = {"x": control_points[-1].get("x"),
-                     "y": control_points[-1].get("y"),
-                     "tolerance": control_points[-1].get("width") / 2}
+    success_point = individual.get("success_point")
     success_points = [success_point]
     ego = None
     for participant in participants:
@@ -79,8 +75,8 @@ def build_xml(individual, iterator: int = 0):
             break
     vc_pos = {"id": ego.get("id"),
               "tolerance": 3,
-              "x": control_points[1].get("x"),
-              "y": control_points[1].get("y")}
+              "x": lanes[0].get("control_points")[1].get("x"),
+              "y": lanes[0].get("control_points")[1].get("y")}
     sc_speed = 10
     build_environment_xml(control_points=control_points, file_name=file_name, left_lanes=left_lanes,
                           right_lanes=right_lanes, obstacles=obstacles)

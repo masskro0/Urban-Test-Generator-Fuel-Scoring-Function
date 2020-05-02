@@ -32,24 +32,6 @@ if __name__ == '__main__':
 
     while True:
         start = time.time()
-        list = gen._create_urban_environment()
+        gen.genetic_algorithm()
         end = time.time()
         print(end - start)
-        list = gen._bspline(list)
-        widths = gen._get_width_lines(list)
-        controls = convert_splines_to_lines(list)
-        plot_splines_and_width(widths, controls)
-
-    """
-    list = [{'control_points': array([
-       [ 3.74416974e+02,  7.72752571e+02],
-       [ 3.81000000e+02,  7.41000000e+02]]), 'width': 8}, {'control_points': array([
-       [380.85776278, 734.34636231],
-       [370.48141606, 737.22868084],
-       [360.10506934, 740.11099937],
-       [349.72872262, 742.9933179 ]]), 'width': 8}]
-    widths = gen._get_width_lines(list)
-    controls = convert_splines_to_lines(list)
-    print(intersection_check_width(widths, controls))
-    plot_splines_and_width(widths, controls)
-    """

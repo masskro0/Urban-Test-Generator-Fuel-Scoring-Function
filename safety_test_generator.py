@@ -418,9 +418,9 @@ class TestGenerator:
                          "y": splined_list[jterator][1]}
                 control_points.append(point)
                 jterator += 1
-                population_list[iterator]["control_points"] = control_points
-                _add_ego_car(population_list[iterator])
-                self._add_width(population_list[iterator])
+            population_list[iterator]["control_points"] = control_points
+            _add_ego_car(population_list[iterator])
+            self._add_width(population_list[iterator])
             iterator += 1
         return population_list
 
