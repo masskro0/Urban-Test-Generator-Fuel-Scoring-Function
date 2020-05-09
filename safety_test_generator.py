@@ -410,6 +410,7 @@ class TestGenerator:
         """
         iterator = 0
         while iterator < len(population_list):
+            print(population_list[iterator].get("control_points"))
             splined_list = self._bspline(population_list[iterator].get("control_points"), samples)
             jterator = 0
             control_points = []

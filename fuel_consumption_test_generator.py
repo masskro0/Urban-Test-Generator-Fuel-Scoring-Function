@@ -18,6 +18,36 @@ MIN_DEGREES = 70
 MAX_DEGREES = 290
 
 
+def _add_ego_car(individual):
+    """Adds the ego car to the criteria xml file. Movement mode can be assigned manually. Each control point is one
+    waypoint.
+    :param individual: Individual of the population.
+    :return: Void.
+    """
+    lanes = individual.get("lanes")
+    ego_lanes = individual.get("ego_lanes")
+    waypoints = []
+    for lane in ego_lanes:
+        for point in lanes[lane].get("control_points"):
+            waypoint = {"x": point.get("x"),
+                        "y": point.get("y"),
+                        "tolerance": 2,
+                        "movementMode": "_BEAMNG"}
+            waypoints.append(waypoint)
+    init_state = {"x": waypoints[0].get("x"),
+                  "y": waypoints[0].get("y"),
+                  "orientation": 0,
+                  "movementMode": "_BEAMNG",
+                  "speed": 50}
+    model = "ETK800"
+    ego = {"id": "ego",
+           "init_state": init_state,
+           "waypoints": waypoints,
+           "model": model}
+    participants = [ego]
+    individual["participants"] = participants
+
+
 def get_angle(a, b, c):
     """Returns the angle between three points (two lines so to say).
     :param a: First point.
@@ -34,13 +64,13 @@ class FuelConsumptionTestGenerator:
     def __init__(self):
         self.files_name = "urban"
         self.SPLINE_DEGREE = 3  # Sharpness of curves
-        self.MAX_TRIES = 500  # Maximum number of invalid generated points/segments
-        self.POPULATION_SIZE = 3  # Minimum number of generated roads for each generation
+        self.MAX_TRIES = 600  # Maximum number of invalid generated points/segments
+        self.POPULATION_SIZE = 1  # Minimum number of generated roads for each generation
         self.NUMBER_ELITES = 2  # Number of best kept roads
         self.MIN_SEGMENT_LENGTH = 55  # Minimum length of a road segment
         self.MAX_SEGMENT_LENGTH = 80  # Maximum length of a road segment
         self.WIDTH_OF_STREET = 4  # Width of all segments
-        self.MIN_NODES = 8  # Minimum number of control points for each road
+        self.MIN_NODES = 6  # Minimum number of control points for each road
         self.MAX_NODES = 20  # Maximum number of control points for each road
         self.population_list_urban = []
         self.population_list_highway = []
@@ -106,6 +136,7 @@ class FuelConsumptionTestGenerator:
         p2 = {"x": 65, "y": 0, "type": "segment"}
         # TODO number of lanes random and width too.
         lanes = [{"control_points": [p0, p1, p2], "width": 8, "left_lanes": 1, "right_lanes": 1}]
+        ego_lanes = [0]
         tries = 0
         lane_index = 0
         number_of_pieces = 3
@@ -120,13 +151,13 @@ class FuelConsumptionTestGenerator:
                 # Add intersection, if possible.
                 control_points = lanes[lane_index].get("control_points")
                 intersection = self._add_intersection(control_points[-1], control_points[-2])
-                new_point = intersection[0]
+                new_point = intersection[1]
                 new_line = LineString([(control_points[-1].get("x"), control_points[-1].get("y")),
                                        (new_point.get("x"), new_point.get("y"))])
-                new_lane_line = LineString([(intersection[1].get("x"), intersection[1].get("y")),
-                                            (intersection[2].get("x"), intersection[2].get("y"))])
+                new_lane_line = LineString([(intersection[2].get("x"), intersection[2].get("y")),
+                                            (intersection[3].get("x"), intersection[3].get("y"))])
                 temp_list = deepcopy(lanes)
-                temp_list.append({"control_points": [intersection[1], intersection[2]],
+                temp_list.append({"control_points": [intersection[2], intersection[3]],
                                   "width": 8, "left_lanes": 1, "right_lanes": 1})
                 temp_list[lane_index].get("control_points").append(new_point)
                 temp_list = self._bspline(temp_list)
@@ -135,13 +166,18 @@ class FuelConsumptionTestGenerator:
                 if not intersection_check_last(lines_of_roads, new_line, max_intersections=0) \
                         and not intersection_check_last(lines_of_roads, new_lane_line, max_intersections=0)\
                         and not intersection_check_width(width_lines, control_points_lines):
+                    if intersection[-1] == "straight":
+                        lanes.append({"control_points": [intersection[2], intersection[3]],
+                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                        lanes[lane_index].get("control_points").append(intersection[0])
+                        number_of_pieces += 1
+                        lane_index += 2
+                        lanes.append(({"control_points": [intersection[0], intersection[1]],
+                                       "width": 8, "left_lanes": 1, "right_lanes": 1}))
+                        lines_of_roads = convert_points_to_lines(lanes)
+                        last_point = new_point
+                        ego_lanes.append(lane_index)
                     one_intersection = True
-                    lanes[lane_index].get("control_points").append(new_point)
-                    lanes.append({"control_points": [intersection[1], intersection[2]],
-                                  "width": 8, "left_lanes": 1, "right_lanes": 1})
-                    number_of_pieces += 1
-                    lines_of_roads = convert_points_to_lines(lanes)
-                    last_point = new_point
                 else:
                     intersection_possible = False
             # Add segment, if possible.
@@ -166,7 +202,7 @@ class FuelConsumptionTestGenerator:
                 tries += 1
         if number_of_pieces >= self.MIN_NODES:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
-            return {"lanes": lanes, "success_point": last_point}
+            return {"lanes": lanes, "success_point": last_point, "ego_lanes": ego_lanes}
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
@@ -246,6 +282,8 @@ class FuelConsumptionTestGenerator:
 
     def _add_intersection(self, last_point, penultimate_point):
         # TODO Check for number of lanes. Stop signs only for single lane roads?
+        # TODO Return correct directions for turns.
+        # TODO Left/right turns have 90 deg lanes.
         """
         if random() <= 0.33:
             self._go_straight()
@@ -278,9 +316,9 @@ class FuelConsumptionTestGenerator:
         p2 = (list(shape(line_rot2).coords)[1][0], list(shape(line_rot2).coords)[1][1])
         p1 = {"x": p1[0], "y": p1[1], "type": "intersection"}
         p2 = {"x": p2[0], "y": p2[1], "type": "intersection"}
-        return [{"x": new_point[0],
-              "y": new_point[1],
-              "type": "intersection"}, p1, p2]
+        return [{"x": intersection_point[0], "y": intersection_point[1], "type": "intersection"},
+                {"x": new_point[0], "y": new_point[1], "type": "intersection"},
+                p1, p2, "straight"]
 
     def _turn_right(self):
         print("left turn")
@@ -309,13 +347,16 @@ class FuelConsumptionTestGenerator:
         """
         for individual in population_list:
             splined_list = self._bspline(individual.get("lanes"), samples=samples)
-            control_points = []
-            for lane in splined_list:
+            iterator = 0
+            while iterator < len(splined_list):
+                lane = splined_list[iterator]
+                control_points = []
                 for spline in lane.get("control_points"):
                     point = {"x": spline[0], "y": spline[1]}
                     control_points.append(point)
-            individual["control_points"] = control_points
-            # TODO _add_ego_car(individual)
+                individual.get("lanes")[iterator]["control_points"] = control_points
+                iterator += 1
+            _add_ego_car(individual)
         return population_list
 
     def _create_start_population(self):
@@ -331,7 +372,7 @@ class FuelConsumptionTestGenerator:
                               "score": 0,
                               "obstacles": urban.get("obstacles"),
                               "success_point": urban.get("success_point"),
-                              "participants": None}
+                              "ego_lanes": urban.get("ego_lanes")}
                 startpop.append(individual)
                 iterator += 1
         return startpop
@@ -343,6 +384,7 @@ class FuelConsumptionTestGenerator:
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list_urban)
         temp_list = self._spline_population(temp_list)
+        print(temp_list)
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
@@ -352,7 +394,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Variable width
 #       TODO Add obstacles
 #       TODO Add other participants
-#       TODO Add and keep type where ego car should drive (and others)
+#       TODO Calculate parallel coords for waypoints
 #       TODO Keep piece type after splining (Check for intersections and calculate distance)
 #       TODO Left and right turns
 #       TODO XML Converting

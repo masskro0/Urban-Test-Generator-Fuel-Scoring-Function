@@ -92,6 +92,10 @@ class DBEBuilder:
                 full_string += ' upperLength="' + str(upperLength) + '"'
             ElementTree.SubElement(obstacles, full_string)
 
+    def add_lanes(self, lanes):
+        #TODO
+        pass
+
     def add_lane(self, segments, markings: bool = True, left_lanes: int = 0, right_lanes: int = 0):
         """Adds a lane and road segments.
         :param segments: List of dicts containing x-coordinate, y-coordinate and width.

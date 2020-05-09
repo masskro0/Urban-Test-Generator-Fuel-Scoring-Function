@@ -7,7 +7,7 @@ from utils.dbe_xml_builder import DBEBuilder
 from utils.dbc_xml_builder import DBCBuilder
 
 
-def build_environment_xml(control_points, file_name="exampleTest", left_lanes=0, right_lanes=0, obstacles=[]):
+def build_environment_xml(lanes, file_name="exampleTest", obstacles=None):
     """Creates a dbe xml file.
     :param control_points: List of dicts containing control points.
     :param file_name: Name of this dbe file.
@@ -15,9 +15,12 @@ def build_environment_xml(control_points, file_name="exampleTest", left_lanes=0,
     :param right_lanes: Number of right lanes.
     :param obstacles: List of dicts containing obstacles.
     """
+    #TODO
+    if obstacles is None:
+        obstacles = []
     dbe = DBEBuilder()
-    dbe.add_lane(control_points, left_lanes=left_lanes, right_lanes=right_lanes)
-    if obstacles is not None and len(obstacles) > 0:
+    dbe.add_lanes(lanes)
+    if len(obstacles) > 0:
         dbe.add_obstacles(obstacles)
     dbe.save_xml(file_name)
 
@@ -25,6 +28,7 @@ def build_environment_xml(control_points, file_name="exampleTest", left_lanes=0,
 def build_criteria_xml(participants: list, ego_car: dict, success_points: list, vc_pos, sc_speed,
                        file_name: str = "exampleTest", name: str = "Example Test", fps: str = "60",
                        frequency: str = "6"):
+    #TODO
     """Creates a dbc xml file. Failure, success and preconditions are controlled
       manually for this test generation since the road_generator creates simple
       lane following tests.
@@ -78,8 +82,7 @@ def build_xml(individual, iterator: int = 0):
               "x": lanes[0].get("control_points")[1].get("x"),
               "y": lanes[0].get("control_points")[1].get("y")}
     sc_speed = 10
-    build_environment_xml(control_points=control_points, file_name=file_name, left_lanes=left_lanes,
-                          right_lanes=right_lanes, obstacles=obstacles)
+    build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,
                        file_name=file_name, vc_pos=vc_pos, sc_speed=sc_speed)
 
