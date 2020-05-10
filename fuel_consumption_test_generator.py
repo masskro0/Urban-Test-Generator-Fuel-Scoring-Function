@@ -397,7 +397,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Calculate parallel coords for waypoints
 #       TODO Keep piece type after splining (Check for intersections and calculate distance)
 #       TODO Left and right turns
-#       TODO XML Converting
 #       TODO Three-lane intersection
 #       TODO Angle dependency on num of lanes and width
 #       TODO Adding traffic signs and lights(depending on num lanes)

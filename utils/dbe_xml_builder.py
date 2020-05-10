@@ -93,10 +93,14 @@ class DBEBuilder:
             ElementTree.SubElement(obstacles, full_string)
 
     def add_lanes(self, lanes):
-        #TODO
-        pass
+        for lane in lanes:
+            self.add_lane(control_points=lane.get("control_points"),
+                          width=lane.get("width"),
+                          left_lanes=lane.get("left_lanes"),
+                          right_lanes=lane.get("right_lanes")
+                          )
 
-    def add_lane(self, segments, markings: bool = True, left_lanes: int = 0, right_lanes: int = 0):
+    def add_lane(self, control_points, width, markings: bool = True, left_lanes: int = 0, right_lanes: int = 0):
         """Adds a lane and road segments.
         :param segments: List of dicts containing x-coordinate, y-coordinate and width.
         :param markings: {@code True} Enables road markings, {@code False} makes them invisible.
@@ -111,9 +115,9 @@ class DBEBuilder:
             lane.set("leftLanes", str(left_lanes))
         if right_lanes != 0 and right_lanes is not None:
             lane.set("rightLanes", str(right_lanes))
-        for segment in segments:
+        for segment in control_points:
             ElementTree.SubElement(lane, 'laneSegment x="{}" y="{}" width="{}"'
-                                   .format(segment.get("x"), segment.get("y"), segment.get("width")))
+                                   .format(segment.get("x"), segment.get("y"), width))
 
     def save_xml(self, name):
         """Creates and saves the XML file, and moves it to the scenario folder.

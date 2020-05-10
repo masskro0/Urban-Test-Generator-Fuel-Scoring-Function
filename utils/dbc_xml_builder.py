@@ -98,8 +98,6 @@ class DBCBuilder:
 
         ai = ElementTree.SubElement(participant, "ai")
         ElementTree.SubElement(ai, 'roadCenterDistance id="{}"'.format("egoLaneDist"))
-        ElementTree.SubElement(ai, 'camera width="{}" height="{}" fov="{}" direction="{}" id="{}"'
-                              .format(str(600), str(400), str(120), "FRONT", "egoFrontCamera"))
 
         movement = ElementTree.SubElement(participant, "movement")
         for waypoint in waypoints:

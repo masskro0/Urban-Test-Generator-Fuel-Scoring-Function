@@ -15,7 +15,6 @@ def build_environment_xml(lanes, file_name="exampleTest", obstacles=None):
     :param right_lanes: Number of right lanes.
     :param obstacles: List of dicts containing obstacles.
     """
-    #TODO
     if obstacles is None:
         obstacles = []
     dbe = DBEBuilder()
@@ -28,7 +27,6 @@ def build_environment_xml(lanes, file_name="exampleTest", obstacles=None):
 def build_criteria_xml(participants: list, ego_car: dict, success_points: list, vc_pos, sc_speed,
                        file_name: str = "exampleTest", name: str = "Example Test", fps: str = "60",
                        frequency: str = "6"):
-    #TODO
     """Creates a dbc xml file. Failure, success and preconditions are controlled
       manually for this test generation since the road_generator creates simple
       lane following tests.
@@ -82,7 +80,7 @@ def build_xml(individual, iterator: int = 0):
               "x": lanes[0].get("control_points")[1].get("x"),
               "y": lanes[0].get("control_points")[1].get("y")}
     sc_speed = 10
-    build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
+    #build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,
                        file_name=file_name, vc_pos=vc_pos, sc_speed=sc_speed)
 
