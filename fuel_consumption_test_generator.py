@@ -166,17 +166,33 @@ class FuelConsumptionTestGenerator:
                 if not intersection_check_last(lines_of_roads, new_line, max_intersections=0) \
                         and not intersection_check_last(lines_of_roads, new_lane_line, max_intersections=0)\
                         and not intersection_check_width(width_lines, control_points_lines):
+                    lanes[lane_index].get("control_points").append(intersection[0])
                     if intersection[-1] == "straight":
                         lanes.append({"control_points": [intersection[2], intersection[3]],
                                       "width": 8, "left_lanes": 1, "right_lanes": 1})
-                        lanes[lane_index].get("control_points").append(intersection[0])
-                        number_of_pieces += 1
-                        lane_index += 2
                         lanes.append(({"control_points": [intersection[0], intersection[1]],
                                        "width": 8, "left_lanes": 1, "right_lanes": 1}))
-                        lines_of_roads = convert_points_to_lines(lanes)
+                        lane_index += 2
                         last_point = new_point
-                        ego_lanes.append(lane_index)
+                    elif intersection[-1] == "right":
+                        lanes.append({"control_points": [intersection[2], intersection[0]],
+                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                        lanes.append({"control_points": [intersection[0], intersection[1]],
+                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                        lane_index += 3
+                        lanes.append({"control_points": [intersection[0], intersection[3]],
+                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                    elif intersection[-1] == "left":
+                        lanes.append({"control_points": [intersection[0], intersection[3]],
+                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                        lanes.append({"control_points": [intersection[0], intersection[1]],
+                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                        lane_index += 3
+                        lanes.append({"control_points": [intersection[0], intersection[2]],
+                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                    ego_lanes.append(lane_index)
+                    lines_of_roads = convert_points_to_lines(lanes)
+                    number_of_pieces += 1
                     one_intersection = True
                 else:
                     intersection_possible = False
@@ -282,15 +298,15 @@ class FuelConsumptionTestGenerator:
 
     def _add_intersection(self, last_point, penultimate_point):
         # TODO Check for number of lanes. Stop signs only for single lane roads?
-        # TODO Return correct directions for turns.
-        # TODO Left/right turns have 90 deg lanes.
-        """
+        # TODO Add traffic lights/stop signs
+        # TODO Three-direction intersection.
         if random() <= 0.33:
-            self._go_straight()
+            direction = "straight"
         elif 0.33 < random() <= 0.66:
-            self._turn_left()
+            direction = "left"
         else:
-            self._turn_right()
+            direction = "right"
+        """
         if random() <= 0.5:
             self._add_stop_sign()
         else:
@@ -318,7 +334,7 @@ class FuelConsumptionTestGenerator:
         p2 = {"x": p2[0], "y": p2[1], "type": "intersection"}
         return [{"x": intersection_point[0], "y": intersection_point[1], "type": "intersection"},
                 {"x": new_point[0], "y": new_point[1], "type": "intersection"},
-                p1, p2, "straight"]
+                p1, p2, direction]
 
     def _turn_right(self):
         print("left turn")
@@ -384,19 +400,17 @@ class FuelConsumptionTestGenerator:
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list_urban)
         temp_list = self._spline_population(temp_list)
-        print(temp_list)
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
         plot_all(temp_list)
 
 # TODO  Desired features:
+#       TODO Refactoring
 #       TODO Variable width
 #       TODO Add obstacles
 #       TODO Add other participants
 #       TODO Calculate parallel coords for waypoints
-#       TODO Keep piece type after splining (Check for intersections and calculate distance)
-#       TODO Left and right turns
 #       TODO Three-lane intersection
 #       TODO Angle dependency on num of lanes and width
 #       TODO Adding traffic signs and lights(depending on num lanes)

@@ -31,7 +31,7 @@ if __name__ == '__main__':
     """
 
     gen = FuelConsumptionTestGenerator()
-    """
+
     while True:
         start = time.time()
         list = gen.genetic_algorithm()
@@ -511,3 +511,4 @@ if __name__ == '__main__':
 
     pop = list
     build_all_xml(pop)
+    """
