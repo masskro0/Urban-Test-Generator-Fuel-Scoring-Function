@@ -15,7 +15,7 @@ def plotter(lanes):
         for point in control_points:
             x.append(point.get("x"))
             y.append(point.get("y"))
-        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width"))
+        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width")/2)
     plt.axis('scaled')
     plt.title('Road overview')
     plt.show()

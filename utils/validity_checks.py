@@ -2,12 +2,12 @@
 
 from shapely.geometry import LineString, shape
 
-from utils.plotter import plotter, plot_splines_and_width
+from utils.plotter import plotter, plot_splines_and_width, plot_lines
 from utils.utility_functions import convert_points_to_lines
 import matplotlib.pyplot as plt
 
 
-def intersection_check_last(lines_of_roads, new_line, max_intersections = 0):
+def intersection_check_last(lines_of_roads, new_line, max_intersections=0):
     """Checks for intersections between the line of the last two points and
      every other possible line.
     :param control_points: List of dicts containing points.
@@ -41,10 +41,13 @@ def intersection_check_width(width_lines, control_points_lines):
                 for control_line in control_list:
                     if width_line.intersects(control_line):
                         intersec_point = width_line.intersection(control_line)
-                        if intersec_point not in intersections:
+                        if intersec_point not in intersections and (len(intersections) == 0
+                                            or intersec_point.distance(intersections[0]) > 0.01):
                             intersections.append(intersec_point)
                     # One line intersects always with its origin, therefore we need to check for another intersection.
                     if len(intersections) >= 2:
+                        for it in intersections:
+                            print(it)
                         return True
     return False
 

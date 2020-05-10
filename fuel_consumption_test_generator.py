@@ -7,6 +7,7 @@ import scipy.interpolate as si
 from shapely import affinity
 from shapely.geometry import LineString, shape
 from termcolor import colored
+from time import sleep
 
 from utils.plotter import plot_splines_and_width, plotter, plot_all
 from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines
@@ -64,7 +65,7 @@ class FuelConsumptionTestGenerator:
     def __init__(self):
         self.files_name = "urban"
         self.SPLINE_DEGREE = 3  # Sharpness of curves
-        self.MAX_TRIES = 600  # Maximum number of invalid generated points/segments
+        self.MAX_TRIES = 300  # Maximum number of invalid generated points/segments
         self.POPULATION_SIZE = 1  # Minimum number of generated roads for each generation
         self.NUMBER_ELITES = 2  # Number of best kept roads
         self.MIN_SEGMENT_LENGTH = 55  # Minimum length of a road segment
@@ -116,8 +117,7 @@ class FuelConsumptionTestGenerator:
         x_max = int(round(last_point.get("x") + self.MAX_SEGMENT_LENGTH))
         y_min = int(round(last_point.get("y") - self.MAX_SEGMENT_LENGTH))
         y_max = int(round(last_point.get("y") + self.MAX_SEGMENT_LENGTH))
-        tries = 0
-        while tries < self.MAX_TRIES / 5:
+        while True:
             x_pos = randint(x_min, x_max)
             y_pos = randint(y_min, y_max)
             point = (x_pos, y_pos)
@@ -128,7 +128,6 @@ class FuelConsumptionTestGenerator:
             dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
             if (self.MAX_SEGMENT_LENGTH >= dist >= self.MIN_SEGMENT_LENGTH) and (MIN_DEGREES <= deg <= MAX_DEGREES):
                 return {"x": point[0], "y": point[1], "type": "segment"}
-            tries += 1
 
     def _create_urban_environment(self):
         p0 = {"x": 1, "y": 0, "type": "segment"}
@@ -163,10 +162,12 @@ class FuelConsumptionTestGenerator:
                 temp_list = self._bspline(temp_list)
                 control_points_lines = convert_splines_to_lines(temp_list)
                 width_lines = self._get_width_lines(temp_list)
+
                 if not intersection_check_last(lines_of_roads, new_line, max_intersections=0) \
                         and not intersection_check_last(lines_of_roads, new_lane_line, max_intersections=0)\
                         and not intersection_check_width(width_lines, control_points_lines):
                     lanes[lane_index].get("control_points").append(intersection[0])
+                    print(intersection[-1])
                     if intersection[-1] == "straight":
                         lanes.append({"control_points": [intersection[2], intersection[3]],
                                       "width": 8, "left_lanes": 1, "right_lanes": 1})
@@ -174,7 +175,7 @@ class FuelConsumptionTestGenerator:
                                        "width": 8, "left_lanes": 1, "right_lanes": 1}))
                         lane_index += 2
                         last_point = new_point
-                    elif intersection[-1] == "right":
+                    elif intersection[-1] == "left":
                         lanes.append({"control_points": [intersection[2], intersection[0]],
                                       "width": 8, "left_lanes": 1, "right_lanes": 1})
                         lanes.append({"control_points": [intersection[0], intersection[1]],
@@ -182,7 +183,8 @@ class FuelConsumptionTestGenerator:
                         lane_index += 3
                         lanes.append({"control_points": [intersection[0], intersection[3]],
                                       "width": 8, "left_lanes": 1, "right_lanes": 1})
-                    elif intersection[-1] == "left":
+                        last_point = intersection[3]
+                    elif intersection[-1] == "right":
                         lanes.append({"control_points": [intersection[0], intersection[3]],
                                       "width": 8, "left_lanes": 1, "right_lanes": 1})
                         lanes.append({"control_points": [intersection[0], intersection[1]],
@@ -190,6 +192,7 @@ class FuelConsumptionTestGenerator:
                         lane_index += 3
                         lanes.append({"control_points": [intersection[0], intersection[2]],
                                       "width": 8, "left_lanes": 1, "right_lanes": 1})
+                        last_point = intersection[2]
                     ego_lanes.append(lane_index)
                     lines_of_roads = convert_points_to_lines(lanes)
                     number_of_pieces += 1
@@ -203,9 +206,13 @@ class FuelConsumptionTestGenerator:
                                    (new_point.get("x"), new_point.get("y"))])
             temp_list = deepcopy(lanes)
             temp_list[lane_index].get("control_points").append(new_point)
+            plotter(temp_list)
+            print(temp_list)
+            sleep(1)
             temp_list = self._bspline(temp_list)
             control_points_lines = convert_splines_to_lines(temp_list)
             width_lines = self._get_width_lines(temp_list)
+            print(intersection_check_width(width_lines, control_points_lines))
             if not intersection_check_last(lines_of_roads, new_line, max_intersections=0) \
                     and not intersection_check_width(width_lines, control_points_lines):
                 lanes[lane_index].get("control_points").append(new_point)
@@ -216,7 +223,7 @@ class FuelConsumptionTestGenerator:
                 last_point = new_point
             else:
                 tries += 1
-        if number_of_pieces >= self.MIN_NODES:
+        if number_of_pieces >= self.MIN_NODES and one_intersection:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
             return {"lanes": lanes, "success_point": last_point, "ego_lanes": ego_lanes}
         else:
@@ -300,12 +307,19 @@ class FuelConsumptionTestGenerator:
         # TODO Check for number of lanes. Stop signs only for single lane roads?
         # TODO Add traffic lights/stop signs
         # TODO Three-direction intersection.
-        if random() <= 0.33:
+        """
+        random_number = random()
+        if random_number <= 0.33:
             direction = "straight"
-        elif 0.33 < random() <= 0.66:
+        elif 0.33 < random_number <= 0.66:
             direction = "left"
         else:
             direction = "right"
+        """
+        if random() < 0.5:
+            direction = "right"
+        else:
+            direction = "left"
         """
         if random() <= 0.5:
             self._add_stop_sign()
@@ -400,13 +414,14 @@ class FuelConsumptionTestGenerator:
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list_urban)
         temp_list = self._spline_population(temp_list)
-        build_all_xml(temp_list)
+        #build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
         plot_all(temp_list)
+        self.population_list_urban = []
 
 # TODO  Desired features:
-#       TODO Refactoring
+#       TODO Keep type after splining and check in width validation
 #       TODO Variable width
 #       TODO Add obstacles
 #       TODO Add other participants
@@ -424,3 +439,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Crossover
 #       TODO Repair function
 #       TODO Improve performance
+#       TODO Refactoring

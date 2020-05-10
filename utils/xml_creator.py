@@ -72,7 +72,7 @@ def build_xml(individual, iterator: int = 0):
     success_points = [success_point]
     ego = None
     for participant in participants:
-        if participant.get("id") is "ego":
+        if participant.get("id") == "ego":
             ego = participant
             break
     vc_pos = {"id": ego.get("id"),
