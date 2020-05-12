@@ -26,7 +26,7 @@ def intersection_check_last(lines_of_roads, new_line, max_intersections=0):
     return False
 
 
-def intersection_check_width(width_lines, control_points_lines):
+def intersection_check_width(width_lines, control_points_lines, intersection_lanes):
     """Checks for intersections between the width lines of a control point and
      any other line between two control points.
     :param width_lines: Width lines of a control point (e.g. LineString). They should be flipped
@@ -34,22 +34,31 @@ def intersection_check_width(width_lines, control_points_lines):
     :param control_points_lines: List of lines between two control points (e.g. LineStrings).
     :return: {@code True} if two lines intersect, {@code False} if no line intersect.
     """
-    for width_list in width_lines:
-        for width_line in width_list:
+    i = 0
+    while i < len(width_lines):
+        intersection_list = []
+        for piece in intersection_lanes:
+            if i in piece:
+                intersection_list = piece
+                break
+        for width_line in width_lines[i]:
             intersections = []
-            for control_list in control_points_lines:
-                for control_line in control_list:
-                    if width_line.intersects(control_line):
-                        intersec_point = width_line.intersection(control_line)
+            j = 0
+            while j < len(control_points_lines):
+                for control_line in control_points_lines[j]:
+                    if j not in intersection_list and control_line.intersects(width_line):
+                        intersec_point = control_line.intersection(width_line)
                         if intersec_point not in intersections and (len(intersections) == 0
-                                            or intersec_point.distance(intersections[0]) > 0.01):
+                                                                    or intersec_point.distance(
+                                    intersections[0]) > 0.01):
                             intersections.append(intersec_point)
-                    # One line intersects always with its origin, therefore we need to check for another intersection.
-                    if len(intersections) >= 2:
-                        for it in intersections:
-                            print(it)
-                        return True
+                        # One line intersectrs always with its origin, therefore we need to check for another one.
+                        if len(intersections) >= 2:
+                            return True
+                j += 1
+        i += 1
     return False
+
 
 
 def spline_intersection_check(control_points):
