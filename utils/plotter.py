@@ -1,6 +1,6 @@
 """This file offers several plotting methods to visualize functions or roads."""
+
 import matplotlib.pyplot as plt
-from numpy import asarray
 
 
 def plotter(lanes):
@@ -24,16 +24,17 @@ def plotter(lanes):
 def plot_all(population):
     """Plots a whole population. Method starts a new figure for every individual.
     :param population: Population with individuals in dict form containing another dict type called control_points.
-    :return: Void
+    :return: Void.
     """
     for individual in population:
         plotter(individual.get("lanes"))
 
 
 def plot_lines(lines):
-    """Plots LineStrings of the package shapely. Can be also used to plot other geometries.
-    :param lines: List of lines, e.g. LineStrings
-    :return: Void
+    """Plots LineStrings of the package shapely. Can be also used to plot other geometries. Show function
+    must be called manually.
+    :param lines: List of lines, e.g. LineStrings.
+    :return: Void.
     """
     iterator = 0
     while iterator < len(lines):
@@ -59,16 +60,17 @@ def plot_splines_and_width(width_lines, control_point_lines):
 
 
 def plot_splined_list(splined_list):
+    """Plots a splined control point list of an individual.
+    :param splined_list: List containing tuples of points.
+    :return: Void.
+    """
     for lane in splined_list:
-        point_list = []
+        x = []
+        y = []
         for point in lane:
-            point_list.append((point[0], point[1]))
-        point_list = asarray(point_list)
-        x = point_list[:, 0]
-        y = point_list[:, 1]
-
-        # TODO Add width parameter
-        plt.plot(x, y, '-og', markersize=8, linewidth=6)
+            x.append(point[0])
+            y.append(point[1])
+        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width")/2)
     plt.axis('scaled')
     plt.title('Road overview')
     plt.show()

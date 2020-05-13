@@ -1,18 +1,15 @@
 from copy import deepcopy
-from math import degrees, atan2
 from random import randint, random
 
 import numpy as np
-import scipy.interpolate as si
+from scipy.interpolate import splev
 from shapely import affinity
 from shapely.geometry import LineString, shape
 from termcolor import colored
-from time import sleep
 
-from utils.plotter import plot_splines_and_width, plotter, plot_all, plot_splined_list
-from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines
-from utils.validity_checks import spline_intersection_check, intersection_check_all_np, intersection_check_width, \
-    intersection_check_last
+from utils.plotter import plotter, plot_all
+from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle
+from utils.validity_checks import intersection_check_width, intersection_check_last
 from utils.xml_creator import build_all_xml
 
 MIN_DEGREES = 70
@@ -47,17 +44,6 @@ def _add_ego_car(individual):
            "model": model}
     participants = [ego]
     individual["participants"] = participants
-
-
-def get_angle(a, b, c):
-    """Returns the angle between three points (two lines so to say).
-    :param a: First point.
-    :param b: Second point.
-    :param c: Third point.
-    :return: Angle in degrees.
-    """
-    ang = degrees(atan2(c[1] - b[1], c[0] - b[0]) - atan2(a[1] - b[1], a[0] - b[0]))
-    return ang + 360 if ang < 0 else ang
 
 
 class FuelConsumptionTestGenerator:
@@ -101,7 +87,7 @@ class FuelConsumptionTestGenerator:
             u = np.linspace(False, (count - degree), samples)
 
             # Calculate result.
-            splined_list.append({"control_points": np.array(si.splev(u, (kv, point_list.T, degree))).T,
+            splined_list.append({"control_points": np.array(splev(u, (kv, point_list.T, degree))).T,
                                 "width": lane.get("width")})
         return splined_list
 
@@ -111,6 +97,7 @@ class FuelConsumptionTestGenerator:
         :param penultimate_point: Point before the last point as dict type.
         :return: A new random point as dict type.
         """
+        global deg
         last_point_tmp = (last_point.get("x"), last_point.get("y"))
         last_point_tmp = np.asarray(last_point_tmp)
         x_min = int(round(last_point.get("x") - self.MAX_SEGMENT_LENGTH))
@@ -477,6 +464,7 @@ class FuelConsumptionTestGenerator:
 
 # TODO  Desired features:
 #       TODO Variable width
+#       TODO Find out why some individuals dont have a intersection
 #       TODO Add other participants
 #       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
 #       TODO Angle dependency on num of lanes and width
@@ -484,7 +472,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Highways
 #       TODO Fix lane markings
 #       TODO Control traffic lights
-#       TODO Representation checking
 #       TODO Create init population
 #       TODO Mutation
 #       TODO Mutation validity checks

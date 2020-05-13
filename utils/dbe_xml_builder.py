@@ -1,9 +1,7 @@
 """This class builds an environment XML file for DriveBuild in the required format."""
 
 import xml.etree.ElementTree as ElementTree
-from os import path
-import os
-from os import remove
+from os import path, remove, getcwd, mkdir
 from pathlib import Path
 from shutil import move
 
@@ -48,7 +46,7 @@ class DBEBuilder:
     def add_obstacles(self, obstacle_list):
         """Adds obstacles to the XML files.
         :param obstacle_list: List of obstacles. Each obstacle is a dict and must contain x and y position. Check
-                              generator.py in simnode in DriveBuild to see which object needs which properties.
+                generator.py in simnode in DriveBuild to see which object needs which properties.
         :return: Void.
         """
         obstacles = ElementTree.SubElement(self.root, "obstacles")
@@ -57,25 +55,25 @@ class DBEBuilder:
             x = obstacle.get("x")
             y = obstacle.get("y")
             z = obstacle.get("z")
-            xRot = obstacle.get("xRot")
-            yRot = obstacle.get("yRot")
-            zRot = obstacle.get("zRot")
+            x_rot = obstacle.get("xRot")
+            y_rot = obstacle.get("yRot")
+            z_rot = obstacle.get("zRot")
             width = obstacle.get("width")
             length = obstacle.get("length")
             height = obstacle.get("height")
             radius = obstacle.get("radius")
-            baseRadius = obstacle.get("baseRadius")
-            upperWidth = obstacle.get("upperWidth")
-            upperLength = obstacle.get("upperLength")
+            base_radius = obstacle.get("baseRadius")
+            upper_width = obstacle.get("upperWidth")
+            upper_length = obstacle.get("upperLength")
             full_string = '' + name + ' x="' + str(x) + '" y="' + str(y) + '"'
             if z:
                 full_string += ' z="' + str(z) + '"'
-            if xRot:
-                full_string += ' xRot="' + str(xRot) + '"'
-            if yRot:
-                full_string += ' yRot="' + str(yRot) + '"'
-            if zRot:
-                full_string += ' zRot="' + str(zRot) + '"'
+            if x_rot:
+                full_string += ' xRot="' + str(x_rot) + '"'
+            if y_rot:
+                full_string += ' yRot="' + str(y_rot) + '"'
+            if z_rot:
+                full_string += ' zRot="' + str(z_rot) + '"'
             if width:
                 full_string += ' width="' + str(width) + '"'
             if length:
@@ -84,15 +82,19 @@ class DBEBuilder:
                 full_string += ' height="' + str(height) + '"'
             if radius:
                 full_string += ' radius="' + str(radius) + '"'
-            if baseRadius:
-                full_string += ' baseRadius="' + str(baseRadius) + '"'
-            if upperWidth:
-                full_string += ' upperWidth="' + str(upperWidth) + '"'
-            if upperLength:
-                full_string += ' upperLength="' + str(upperLength) + '"'
+            if base_radius:
+                full_string += ' baseRadius="' + str(base_radius) + '"'
+            if upper_width:
+                full_string += ' upperWidth="' + str(upper_width) + '"'
+            if upper_length:
+                full_string += ' upperLength="' + str(upper_length) + '"'
             ElementTree.SubElement(obstacles, full_string)
 
     def add_lanes(self, lanes):
+        """Adds new lanes to the environment file.
+        :param lanes: List of lanes.
+        :return: Void
+        """
         for lane in lanes:
             self.add_lane(control_points=lane.get("control_points"),
                           width=lane.get("width"),
@@ -100,9 +102,10 @@ class DBEBuilder:
                           right_lanes=lane.get("right_lanes")
                           )
 
-    def add_lane(self, control_points, width, markings: bool = True, left_lanes: int = 0, right_lanes: int = 0):
+    def add_lane(self, control_points, width, markings=True, left_lanes=0, right_lanes=0):
         """Adds a lane and road segments.
-        :param segments: List of dicts containing x-coordinate, y-coordinate and width.
+        :param control_points: List of dicts containing x-coordinate and y-coordinate.
+        :param width: Width of the whole lane as a Integer.
         :param markings: {@code True} Enables road markings, {@code False} makes them invisible.
         :param left_lanes: number of left lanes
         :param right_lanes: number of right lanes
@@ -129,16 +132,16 @@ class DBEBuilder:
         self.indent(self.root)
         full_name = name + '.dbe.xml'
 
-        current_path_of_file = Path(os.getcwd())
-        current_path_of_file = os.path.realpath(current_path_of_file) + "\\" + full_name
+        current_path_of_file = Path(getcwd())
+        current_path_of_file = path.realpath(current_path_of_file) + "\\" + full_name
 
-        destination_path = Path(os.getcwd())
-        destination_path = os.path.realpath(destination_path) + "\\scenario"
+        destination_path = Path(getcwd())
+        destination_path = path.realpath(destination_path) + "\\scenario"
 
         tree.write(full_name, encoding="utf-8", xml_declaration=True)
 
         if not path.exists(destination_path):
-            os.mkdir(destination_path)
+            mkdir(destination_path)
 
         # Delete old files with the same name.
         if path.exists(destination_path + "\\" + full_name):

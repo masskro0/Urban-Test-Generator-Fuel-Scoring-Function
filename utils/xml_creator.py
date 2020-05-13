@@ -7,12 +7,10 @@ from utils.dbe_xml_builder import DBEBuilder
 from utils.dbc_xml_builder import DBCBuilder
 
 
-def build_environment_xml(lanes, file_name="exampleTest", obstacles=None):
+def build_environment_xml(lanes, file_name="fuelTesting", obstacles=None):
     """Creates a dbe xml file.
-    :param control_points: List of dicts containing control points.
+    :param lanes: List of lanes.
     :param file_name: Name of this dbe file.
-    :param left_lanes: Number of left lanes.
-    :param right_lanes: Number of right lanes.
     :param obstacles: List of dicts containing obstacles.
     """
     if obstacles is None:
@@ -24,18 +22,16 @@ def build_environment_xml(lanes, file_name="exampleTest", obstacles=None):
     dbe.save_xml(file_name)
 
 
-def build_criteria_xml(participants: list, ego_car: dict, success_points: list, vc_pos, sc_speed,
-                       file_name: str = "exampleTest", name: str = "Example Test", fps: str = "60",
-                       frequency: str = "6"):
+def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, file_name="fuelTesting",
+                       name="Fuel Efficiency Test", fps="60", frequency="6"):
     """Creates a dbc xml file. Failure, success and preconditions are controlled
-      manually for this test generation since the road_generator creates simple
-      lane following tests.
-    :param sc_speed: Speed condition that has to be met at vc_pos.
-    :param vc_pos: Position which must be entered at a specific speed by a specific participant.
+    manually for this test generation.
     :param participants: List of dicts of car states. See the add_car method in dbc_xml_builder.py for more
-                         information.
+        information.
     :param ego_car: The test subject as dict. Contains the same information as any other participant.
     :param success_points: List with points of success. Each one is a dict with x, y and tolerance.
+    :param vc_pos: Position which must be entered at a specific speed by a specific participant.
+    :param sc_speed: Speed condition that has to be met at vc_pos.
     :param file_name: Name of this dbc file. Should be the same as the environment file (laziness).
     :param name: Self defined description name of this file.
     :param fps: Frames per second.
@@ -58,8 +54,8 @@ def build_criteria_xml(participants: list, ego_car: dict, success_points: list, 
 
 def build_xml(individual, iterator: int = 0):
     """Builds an environment and criteria xml file out of a list of control points.
-    :param individual: obstacles (list), number of right lanes (int), number of left lanes (int),
-                        control points (list), file name (string), participants (list)
+    :param individual: Individual containing obstacles (list), file_name (str), lanes (list), participants (list),
+        success_point (dict)
     :param iterator: Unique index of a population.
     :return: Void.
     """
@@ -80,14 +76,14 @@ def build_xml(individual, iterator: int = 0):
               "x": lanes[0].get("control_points")[1].get("x"),
               "y": lanes[0].get("control_points")[1].get("y")}
     sc_speed = 10
-    #build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
+    build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,
                        file_name=file_name, vc_pos=vc_pos, sc_speed=sc_speed)
 
 
 def build_all_xml(population):
     """Calls the build_xml method for each individual.
-    :param population: List of individuals containing control points and a fitness value for each one.
+    :param population: List of individuals.
     :return: Void.
     """
     iterator = 0

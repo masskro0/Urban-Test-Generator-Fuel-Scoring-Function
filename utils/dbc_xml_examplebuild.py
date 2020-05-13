@@ -42,11 +42,11 @@ vc_pos = {"id": participant_id,
 sc_speed = 15
 dbc.add_precond_partic_sc_speed(vc_pos, sc_speed)
 
-success_point = {"id": participant_id,
+success_points = [{"id": participant_id,
                  "x": waypoint2.get("x"),
                  "y": waypoint2.get("y"),
-                 "tolerance": waypoint2.get("tolerance")}
-dbc.add_success_point(participant_id=participant_id, success_point=success_point)
+                 "tolerance": waypoint2.get("tolerance")}]
+dbc.add_success_point(participant_id=participant_id, success_points=success_points)
 
 dbc.add_failure_conditions(participant_id, "offroad")
 

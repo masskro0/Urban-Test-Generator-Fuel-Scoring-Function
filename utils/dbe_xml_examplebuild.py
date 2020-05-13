@@ -8,20 +8,17 @@ import os
 dbe = DBEBuilder()
 
 segment1 = {"x": 0,
-            "y": 0,
-            "width": 12}
+            "y": 0}
 segment2 = {"x": 50,
-            "y": 0,
-            "width": 12}
+            "y": 0}
 segment3 = {"x": 80,
-            "y": 20,
-            "width": 12}
+            "y": 20}
 segment4 = {"x": 100,
-            "y": 20,
-            "width": 12}
+            "y": 20}
+width = 12
 segments = [segment1, segment2, segment3, segment4]
 
-dbe.add_lane(segments, left_lanes=1, right_lanes=2)
+dbe.add_lane(segments, width=width, left_lanes=1, right_lanes=2)
 
 cone = {"name": "cone",
         "x": 5,

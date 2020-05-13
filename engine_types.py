@@ -8,9 +8,7 @@ class EngineType(Enum):
     ELECTRIC = auto()
     GAS = auto()
 
-    #TODO Werte ermitteln wissenschaftlich
-    #TODO Consider steepness of road, air resistance
-    #TODO Consider engine load (air + fuel combination)
+    # TODO Werte ermitteln wissenschaftlich
     def get_rpm_shifting_sweetspots(self):
         """Returns the upper and lower rpm limits where a gear should be shifted, depending on the engine/fuel type."""
         if self.name is "PETROL":

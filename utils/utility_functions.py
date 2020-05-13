@@ -1,9 +1,12 @@
+"""This file offers some utility functions that can be used universally."""
+
 from shapely.geometry import LineString
+from math import degrees, atan2
 
 
 def convert_points_to_lines(lanes):
     """Turns a list of points into a list of LineStrings.
-    :param control_points: List of dicts containing points.
+    :param lanes: Lanes of an individual.
     :return: List of LineStrings.
     """
     lanes_lines = []
@@ -23,7 +26,7 @@ def convert_points_to_lines(lanes):
 
 def convert_splines_to_lines(lanes):
     """Turns a list of points into a list of LineStrings.
-    :param control_points: List of dicts containing points.
+    :param lanes: Lanes of an individual.
     :return: List of LineStrings.
     """
     lanes_lines = []
@@ -39,3 +42,14 @@ def convert_splines_to_lines(lanes):
             iterator += 1
         lanes_lines.append(lines)
     return lanes_lines
+
+
+def get_angle(a, b, c):
+    """Returns the angle between three points (two lines so to say).
+    :param a: First point.
+    :param b: Second point.
+    :param c: Third point.
+    :return: Angle in degrees.
+    """
+    ang = degrees(atan2(c[1] - b[1], c[0] - b[0]) - atan2(a[1] - b[1], a[0] - b[0]))
+    return ang + 360 if ang < 0 else ang

@@ -30,19 +30,19 @@ class MisbehaviourObserver:
             "engine_idle_misbehavior": self.engine_idle_misbehavior
         }
 
-    def get_results(self) -> dict:
+    def get_results(self):
         """Returns the log file with all logged misbehavior actions.
         :return: log file as a dict.
         """
         return self.log
 
-    def calculate_fuel_consumption(self, fuel_state) -> None:
+    def calculate_fuel_consumption(self, fuel_state):
         pass
 
-    def _check_throttle_misbehavior(self) -> None:
+    def _check_throttle_misbehavior(self):
         pass
 
-    def _check_rpm_misbehavior(self, rpm: int, vehicle_pos: int) -> None:
+    def _check_rpm_misbehavior(self, rpm, vehicle_pos):
         """Checks whether the rpm is above the allowed limit and logs the global position of the car.
         :param rpm: Current rpm of the vehicle.
         :param vehicle_pos: Current position of the car in the simulation.
@@ -51,28 +51,28 @@ class MisbehaviourObserver:
         if rpm > self.engine_type.get_rpm_shifting_sweetspots()['upper_limit']:
             self.rpm_misbehavior.append(vehicle_pos)
 
-    def _check_accelerate_and_stop_misbehavior(self) -> None:
+    def _check_accelerate_and_stop_misbehavior(self):
         pass
 
-    def _check_left_turn_misbehavior(self) -> None:
+    def _check_left_turn_misbehavior(self):
         pass
 
-    def _check_right_turn_misbehavior(self) -> None:
+    def _check_right_turn_misbehavior(self):
         pass
 
-    def _check_brake_misbehavior(self) -> None:
+    def _check_brake_misbehavior(self):
         pass
 
-    def _check_safety_distance_misbehavior(self) -> None:
+    def _check_safety_distance_misbehavior(self):
         pass
 
-    def _check_varying_speed(self) -> None:
+    def _check_varying_speed(self):
         pass
 
-    def _check_engine_idle_misbehavior(self) -> None:
+    def _check_engine_idle_misbehavior(self):
         pass
 
-    def check_misbehavior(self, sensors, vehicle_state) -> None:
+    def check_misbehavior(self, sensors, vehicle_state):
         """Checks for faulty behaviors of a car at the current state and logs it.
         :param sensors: Sensors of a car. Only the electrics sensor is needed.
         :param vehicle_state: Vehicle state information in the simulation.

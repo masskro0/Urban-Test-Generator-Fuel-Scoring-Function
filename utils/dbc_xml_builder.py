@@ -3,11 +3,9 @@
 """
 
 import xml.etree.ElementTree as ElementTree
-from os import path
-from os import remove
+from os import path, remove, getcwd, mkdir
 from pathlib import Path
 from shutil import move
-import os
 
 
 class DBCBuilder:
@@ -45,7 +43,7 @@ class DBCBuilder:
 
     def environment_name(self, dbe_file_name):
         """Add the corresponding environment XML file to this criteria XML file. Required tag.
-        :param dbe_file_name: of the environment file as a String.
+        :param dbe_file_name: File name of the environment file as a String.
         :return: Void.
         """
         if not dbe_file_name.endswith(".dbe.xml"):
@@ -62,7 +60,7 @@ class DBCBuilder:
 
     def ai_freq(self, frequency="6"):
         """Sets the AI frequency. Required tag.
-        :param frequency: frequency as an integer.
+        :param frequency: Frequency as an integer.
         :return: Void
         """
         aifreq = ElementTree.SubElement(self.root, "aiFrequency")
@@ -72,7 +70,7 @@ class DBCBuilder:
         """Adds a car to this test case. At least one car (the ego car) should be added.
         :param participant: Dict which contains init_state, waypoints, participant_id and model. See the lines below
                             for more information:
-                init_state: Array with initial states. Contains: x-coordinate (int), y-coordinate (int),
+                init_state: Dict with initial states. Contains: x-coordinate (int), y-coordinate (int),
                      orientation (int), movementMode (MANUAL, _BEAMNG, AUTONOMOUS, TRAINING),
                      speed (int)
                 waypoints: Array with waypoints. One waypoint contains: x-coordinate (int),
@@ -127,16 +125,17 @@ class DBCBuilder:
         ElementTree.SubElement(not_tag, 'scSpeed participant="{}" limit="{}"'
                                .format(vc_pos.get("id"), str(sc_speed)))
 
-    def add_success_point(self, participant_id, success_point):
+    def add_success_point(self, participant_id, success_points):
         """Point when reached a test was successfully finished.
-        :param: participant_id: ID of the participant as a string.
-        :param success_point: Dict of success states. Contains: x (int), y (int), tolerance (int) which defines a
-               circle.
+        :param participant_id: ID of the participant as a string.
+        :param success_points: List of Dicts of success states. Contains: x (int), y (int),
+               tolerance (int) which defines a circle.
         :return: Void
         """
-        ElementTree.SubElement(self.success, 'scPosition participant="{}" x="{}" y="{}" tolerance="{}"'
-                               .format(participant_id, str(success_point.get("x")), str(success_point.get("y")),
-                                       str(success_point.get("tolerance"))))
+        for success_point in success_points:
+            ElementTree.SubElement(self.success, 'scPosition participant="{}" x="{}" y="{}" tolerance="{}"'
+                                   .format(participant_id, str(success_point.get("x")), str(success_point.get("y")),
+                                           str(success_point.get("tolerance"))))
 
     def add_failure_damage(self, participant_id):
         """Adds damage observation as a test failure condition.
@@ -165,7 +164,7 @@ class DBCBuilder:
         ElementTree.SubElement(or_tag, 'scLane participant="{}" onLane="{}"'.format(participant_id, lane))
 
     def indent(self, elem, level=0):
-        """ Pretty prints the xml file.
+        """Pretty prints the xml file.
         :param elem: XML tag.
         :param level: Number of empty spaces, initially zero (meaning it starts only a new line).
         :return: Void.
@@ -194,16 +193,16 @@ class DBCBuilder:
         self.indent(self.root)
         full_name = name + '.dbc.xml'
 
-        current_path_of_file = Path(os.getcwd())
-        current_path_of_file = os.path.realpath(current_path_of_file) + "\\" + full_name
+        current_path_of_file = Path(getcwd())
+        current_path_of_file = path.realpath(current_path_of_file) + "\\" + full_name
 
-        destination_path = Path(os.getcwd())
-        destination_path = os.path.realpath(destination_path) + "\\scenario"
+        destination_path = Path(getcwd())
+        destination_path = path.realpath(destination_path) + "\\scenario"
 
         tree.write(full_name, encoding="utf-8", xml_declaration=True)
 
         if not path.exists(destination_path):
-            os.mkdir(destination_path)
+            mkdir(destination_path)
 
         # Delete old files with the same name.
         if path.exists(destination_path + "\\" + full_name):
