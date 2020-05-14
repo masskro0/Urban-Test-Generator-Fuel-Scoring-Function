@@ -21,3 +21,6 @@ if __name__ == '__main__':
         liste = gen.genetic_algorithm()
         end = time()
         print(end - start)
+
+
+

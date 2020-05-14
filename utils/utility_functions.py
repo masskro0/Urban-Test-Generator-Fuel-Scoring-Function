@@ -53,3 +53,12 @@ def get_angle(a, b, c):
     """
     ang = degrees(atan2(c[1] - b[1], c[0] - b[0]) - atan2(a[1] - b[1], a[0] - b[0]))
     return ang + 360 if ang < 0 else ang
+
+
+def calc_width(left_lanes, right_lanes):
+    return (left_lanes + right_lanes) * 4
+
+
+def calc_min_max_angles(num_lanes):
+    from fuel_consumption_test_generator import MIN_DEGREES, MAX_DEGREES
+    return MIN_DEGREES + (num_lanes-1)*15, MAX_DEGREES - (num_lanes-1)*15

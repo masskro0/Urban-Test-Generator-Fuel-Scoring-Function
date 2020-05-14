@@ -8,7 +8,8 @@ from shapely.geometry import LineString, shape
 from termcolor import colored
 
 from utils.plotter import plotter, plot_all
-from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle
+from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle, calc_width,\
+    calc_min_max_angles
 from utils.validity_checks import intersection_check_width, intersection_check_last
 from utils.xml_creator import build_all_xml
 
@@ -22,6 +23,8 @@ def _add_ego_car(individual):
     :param individual: Individual of the population.
     :return: Void.
     """
+    # TODO Turning requires lane switch for multiple lanes.
+    # TODO Adopt to different number of lanes.
     lanes = individual.get("lanes")
     ego_lanes = individual.get("ego_lanes")
     waypoints = []
@@ -64,6 +67,8 @@ class FuelConsumptionTestGenerator:
         self.intersection_length = 150
         self.opposite_lane = 100
         self.intersecting_length = 80
+        self.MAX_LEFT_LANES = 2
+        self.MAX_RIGHT_LANES = 2
 
     def _bspline(self, lanes, samples=75):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
@@ -108,7 +113,6 @@ class FuelConsumptionTestGenerator:
             x_pos = randint(x_min, x_max)
             y_pos = randint(y_min, y_max)
             point = (x_pos, y_pos)
-            # TODO Min und Max angle depenend on number of lanes
             dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
             if penultimate_point is not None:
                 deg = get_angle((penultimate_point.get("x"), penultimate_point.get("y")),
@@ -122,11 +126,15 @@ class FuelConsumptionTestGenerator:
                     return {"x": point[0], "y": point[1], "type": "segment"}
 
     def _create_urban_environment(self):
+        global MIN_DEGREES, MAX_DEGREES
         p0 = {"x": 1, "y": 0, "type": "segment"}
         p1 = {"x": 50, "y": 0, "type": "segment"}
         p2 = {"x": 65, "y": 0, "type": "segment"}
-        # TODO number of lanes random and width too.
-        lanes = [{"control_points": [p0, p1, p2], "width": 8, "left_lanes": 1, "right_lanes": 1}]
+        left_lanes = randint(1, self.MAX_LEFT_LANES)
+        right_lanes = randint(1, self.MAX_RIGHT_LANES)
+        width = calc_width(left_lanes, right_lanes)
+        lanes = [{"control_points": [p0, p1, p2], "width": calc_width(left_lanes, right_lanes),
+                  "left_lanes": left_lanes, "right_lanes": right_lanes}]
         ego_lanes = [0]
         intersection_lanes = []
         tries = 0
@@ -143,6 +151,9 @@ class FuelConsumptionTestGenerator:
                                           or random() <= intersection_probability)\
                                      and len(control_points) > 1:
                 # Add intersection, if possible.
+                new_left_lanes = randint(1, self.MAX_LEFT_LANES)
+                new_right_lanes = randint(1, self.MAX_RIGHT_LANES)
+                new_width = calc_width(new_left_lanes, new_right_lanes)
                 intersection = self._add_intersection(control_points[-1], control_points[-2])
                 new_point = intersection[1]
                 new_line = LineString([(control_points[-1].get("x"), control_points[-1].get("y")),
@@ -150,10 +161,13 @@ class FuelConsumptionTestGenerator:
                 new_lane_line = LineString([(intersection[2].get("x"), intersection[2].get("y")),
                                             (intersection[3].get("x"), intersection[3].get("y"))])
                 temp_list = deepcopy(lanes)
+                # TODO Layout prüfen und nach dem prüfen, nicht neu erstellen!.
                 temp_list.append({"control_points": [intersection[2], intersection[3]],
-                                  "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                  "width": calc_width(new_left_lanes, new_right_lanes),
+                                  "left_lanes": new_left_lanes, "right_lanes": new_right_lanes})
                 temp_list.append({"control_points": [control_points[-1], intersection[1]],
-                                  "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                  "width": calc_width(left_lanes, right_lanes),
+                                  "left_lanes": left_lanes, "right_lanes": right_lanes})
                 temp_list = self._bspline(temp_list)
                 control_points_lines = convert_splines_to_lines(temp_list)
                 width_lines = self._get_width_lines(temp_list)
@@ -164,69 +178,91 @@ class FuelConsumptionTestGenerator:
                     if intersection[4] == "straight":
                         if intersection[5] == 4:
                             lanes.append({"control_points": [intersection[2], intersection[3]],
-                                        "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                          "width": calc_width(new_left_lanes, new_right_lanes),
+                                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes})
                         else:
                             if intersection[6] == "leftstraight":
                                 lanes.append({"control_points": [intersection[3], intersection[0]],
-                                              "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                              "width": calc_width(new_left_lanes, new_right_lanes),
+                                              "left_lanes": new_left_lanes, "right_lanes": new_right_lanes})
                             else:
                                 lanes.append({"control_points": [intersection[2], intersection[0]],
-                                              "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                              "width": calc_width(new_left_lanes, new_right_lanes),
+                                              "left_lanes": new_left_lanes, "right_lanes": new_right_lanes})
                         lanes.append(({"control_points": [control_points[-1], intersection[1]],
-                                       "width": 8, "left_lanes": 1, "right_lanes": 1}))
+                                       "width": calc_width(left_lanes, right_lanes),
+                                       "left_lanes": left_lanes, "right_lanes": right_lanes}))
                         lanes.append(({"control_points": [intersection[1]],
-                                       "width": 8, "left_lanes": 1, "right_lanes": 1}))
+                                       "width": calc_width(left_lanes, right_lanes),
+                                       "left_lanes": left_lanes, "right_lanes": right_lanes}))
                         intersection_lanes.append([lane_index + 1, lane_index + 2])
                         lane_index += 3
                         last_point = new_point
                     elif intersection[4] == "left":
                         lanes.append({"control_points": [control_points[-1], intersection[0]],
-                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                      "width": calc_width(left_lanes, right_lanes),
+                                      "left_lanes": left_lanes, "right_lanes": right_lanes})
                         if intersection[5] == 4:
                             lanes.append({"control_points": [intersection[0], intersection[2]],
-                                          "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                          "width": calc_width(new_left_lanes, new_right_lanes),
+                                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes})
                             lanes.append({"control_points": [intersection[0], intersection[1]],
-                                          "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                          "width": calc_width(left_lanes, right_lanes),
+                                          "left_lanes": left_lanes, "right_lanes": right_lanes})
                             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
                             lane_index += 5
                         else:
                             if intersection[6] == "leftstraight":
                                 lanes.append({"control_points": [intersection[0], intersection[1]],
-                                              "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                              "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes})
                             else:
                                 lanes.append({"control_points": [intersection[0], intersection[2]],
-                                              "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                              "width": new_width, "left_lanes": new_left_lanes,
+                                              "right_lanes": new_right_lanes})
                             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3])
                             lane_index += 4
                         lanes.append({"control_points": [intersection[0], intersection[3]],
-                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                      "width": new_width, "left_lanes": new_left_lanes,
+                                      "right_lanes": new_right_lanes})
                         lanes.append({"control_points": [intersection[3]],
-                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                      "width": new_width, "left_lanes": new_left_lanes,
+                                      "right_lanes": new_right_lanes})
                         last_point = intersection[3]
+                        left_lanes = new_left_lanes
+                        right_lanes = new_right_lanes
+                        MIN_DEGREES, MAX_DEGREES = calc_min_max_angles(left_lanes + right_lanes)
                     elif intersection[-1] == "right":
                         lanes.append({"control_points": [control_points[-1], intersection[0]],
-                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                      "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes})
                         if intersection[5] == 4:
                             lanes.append({"control_points": [intersection[0], intersection[3]],
-                                          "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                          "width": new_width, "left_lanes": new_left_lanes,
+                                          "right_lanes": new_right_lanes})
                             lanes.append({"control_points": [intersection[0], intersection[1]],
-                                          "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                          "width": width, "left_lanes": new_left_lanes,
+                                          "right_lanes": new_right_lanes})
                             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
                             lane_index += 5
                         else:
                             if intersection[6] == "rightstraight":
                                 lanes.append({"control_points": [intersection[0], intersection[1]],
-                                              "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                              "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes})
                             else:
                                 lanes.append({"control_points": [intersection[0], intersection[3]],
-                                              "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                              "width": new_width, "left_lanes": new_left_lanes,
+                                              "right_lanes": new_right_lanes})
                             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3])
                             lane_index += 4
                         lanes.append({"control_points": [intersection[0], intersection[2]],
-                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                      "width": new_width, "left_lanes": new_left_lanes,
+                                      "right_lanes": new_right_lanes})
                         lanes.append({"control_points": [intersection[2]],
-                                      "width": 8, "left_lanes": 1, "right_lanes": 1})
+                                      "width": new_width, "left_lanes": new_left_lanes,
+                                      "right_lanes": new_right_lanes})
                         last_point = intersection[2]
+                        left_lanes = new_left_lanes
+                        right_lanes = new_right_lanes
+                        MIN_DEGREES, MAX_DEGREES = calc_min_max_angles(left_lanes + right_lanes)
                     ego_lanes.append(lane_index)
                     lines_of_roads = convert_points_to_lines(lanes)
                     number_of_pieces += 1
@@ -280,8 +316,8 @@ class FuelConsumptionTestGenerator:
             linestring_list = []
             iterator = 0
 
-            # Duplicate width to have more space between road pieces.
-            width = spline_list.get("width") * 3.5
+            # Triple width to have more space between road pieces.
+            width = spline_list.get("width") * 3
             control_points = spline_list.get("control_points")
             while iterator < (len(control_points) - 1):
                 p1 = (control_points[iterator][0], control_points[iterator][1])
@@ -463,19 +499,19 @@ class FuelConsumptionTestGenerator:
         self.population_list_urban = []
 
 # TODO  Desired features:
-#       TODO Variable width
 #       TODO Find out why some individuals dont have a intersection
-#       TODO Add other participants
-#       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
-#       TODO Angle dependency on num of lanes and width
+#       TODO Validate depending on layout
 #       TODO Adding traffic signs and lights(depending on num lanes)
 #       TODO Highways
-#       TODO Fix lane markings
-#       TODO Control traffic lights
 #       TODO Create init population
 #       TODO Mutation
+#       TODO Repair function
 #       TODO Mutation validity checks
 #       TODO Crossover
-#       TODO Repair function
+#       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
+#       TODO Lane switch when turning for multiple lanes
+#       TODO Control traffic lights
+#       TODO Fix lane markings
+#       TODO Add other participants
 #       TODO Improve performance
 #       TODO Refactoring
