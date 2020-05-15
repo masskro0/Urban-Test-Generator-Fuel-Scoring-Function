@@ -6,6 +6,9 @@ from scipy.interpolate import splev
 from shapely import affinity
 from shapely.geometry import LineString, shape
 from termcolor import colored
+from os import path
+from glob import glob
+from pathlib import Path
 
 from utils.plotter import plotter, plot_all, plot_splines_and_width
 from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle, calc_width,\
@@ -145,6 +148,7 @@ class FuelConsumptionTestGenerator:
         lines_of_roads = convert_points_to_lines(lanes)
         last_point = p2
         while number_of_pieces <= self.MAX_NODES and tries <= self.MAX_TRIES:
+            print("gegnaz" + str(tries))
             control_points = lanes[lane_index].get("control_points")
             if intersection_possible and ((number_of_pieces == self.MAX_NODES - 1 and not one_intersection)
                                           or random() <= intersection_probability)\
@@ -410,20 +414,41 @@ class FuelConsumptionTestGenerator:
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list_urban)
         temp_list = self._spline_population(temp_list)
-        #build_all_xml(temp_list)
+        build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
         plot_all(temp_list)
         self.population_list_urban = []
 
+    def get_test(self):
+        """Returns the two first test files starting with "files_name".
+        :return: Tuple of the path to the dbe and dbc file.
+        """
+        destination_path = path.dirname(path.realpath(__file__)) + "\\scenario"
+        xml_names = destination_path + "\\" + self.files_name + "*"
+        matches = glob(xml_names)
+        iterator = 0
+        self.genetic_algorithm()
+        while iterator < self.POPULATION_SIZE * 2 - 1:
+            yield Path(matches[iterator + 1]), Path(matches[iterator])
+            iterator += 2
+
 # TODO  Desired features:
 #       TODO Find out why some individuals dont have a intersection
+#       TODO Reduce waypoints
+#       TODO Reduce opposite lanes
+#       TODO Reduce segment length
+#       TODO Reduce intersection length
+#       TODO New lanes are cut
 #       TODO Validate depending on layout
+#       TODO Add different angles of intersection
+#       TODO Add more types of intersections
 #       TODO Splining depending on Lane
 #       TODO Adding traffic signs and lights(depending on num lanes)
 #       TODO Highways
 #       TODO Create init population
 #       TODO Mutation
+#       TODO -> Init state, Lanes austauschen, Init state of cars and speed, final position
 #       TODO Repair function
 #       TODO Mutation validity checks
 #       TODO Crossover
@@ -434,3 +459,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Add other participants
 #       TODO Improve performance
 #       TODO Refactoring
+#       TODO Parked cars

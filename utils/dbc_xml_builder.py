@@ -125,17 +125,19 @@ class DBCBuilder:
         ElementTree.SubElement(not_tag, 'scSpeed participant="{}" limit="{}"'
                                .format(vc_pos.get("id"), str(sc_speed)))
 
-    def add_success_point(self, participant_id, success_points):
+    def add_success_point(self, participant_id, success_point):
         """Point when reached a test was successfully finished.
         :param participant_id: ID of the participant as a string.
-        :param success_points: List of Dicts of success states. Contains: x (int), y (int),
+        :param success_point: Dict of a success state. Contains: x (int), y (int),
                tolerance (int) which defines a circle.
-        :return: Void
+        :return: Void.
         """
-        for success_point in success_points:
-            ElementTree.SubElement(self.success, 'scPosition participant="{}" x="{}" y="{}" tolerance="{}"'
-                                   .format(participant_id, str(success_point.get("x")), str(success_point.get("y")),
-                                           str(success_point.get("tolerance"))))
+        tolerance = success_point.get("tolerance")
+        if tolerance is None:
+            tolerance = 2
+        ElementTree.SubElement(self.success, 'scPosition participant="{}" x="{}" y="{}" tolerance="{}"'
+                               .format(participant_id, str(success_point.get("x")), str(success_point.get("y")),
+                                       str(tolerance)))
 
     def add_failure_damage(self, participant_id):
         """Adds damage observation as a test failure condition.
