@@ -10,7 +10,7 @@ from os import path
 from glob import glob
 from pathlib import Path
 
-from utils.plotter import plotter
+from utils.plotter import plotter, plot_all
 from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle, calc_width, \
     calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines,\
     get_resize_factor_intersection
@@ -173,7 +173,7 @@ class FuelConsumptionTestGenerator:
                     lanes[lane_index].get("control_points")[-1]["type"] = "intersection"
                     lanes.extend(intersection_items.get("lanes"))
                     ego_lanes.extend(intersection_items.get("ego_lanes"))
-                    last_point = intersection_items.get("last_points")
+                    last_point = intersection_items.get("last_point")
                     left_lanes = intersection_items.get("left_lanes")
                     right_lanes = intersection_items.get("right_lanes")
                     intersection_lanes.extend(intersection_items.get("intersection_lanes"))
@@ -267,12 +267,14 @@ class FuelConsumptionTestGenerator:
                            (new_point[0], new_point[1])])
 
         # Right turn.
-        line_rot1 = affinity.rotate(line, -90, line.coords[0])
+        right_turn_angle = randint(-110, -70)
+        line_rot1 = affinity.rotate(line, right_turn_angle, line.coords[0])
         line_rot1 = affinity.scale(line_rot1, xfact=3, yfact=3,
                                    origin=line_rot1.coords[0])
 
         # Left turn.
-        line_rot2 = affinity.rotate(line, 90, line.coords[0])
+        left_turn_angle = randint(70, 110)
+        line_rot2 = affinity.rotate(line, left_turn_angle, line.coords[0])
         line_rot2 = affinity.scale(line_rot2, xfact=3, yfact=3,
                                    origin=line_rot2.coords[0])
         p1 = (list(shape(line_rot1).coords)[1][0], list(shape(line_rot1).coords)[1][1])  # Right side point.
@@ -344,7 +346,7 @@ class FuelConsumptionTestGenerator:
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
-        # plot_all(temp_list)
+        plot_all(temp_list)
         self.population_list = []
 
     def get_test(self):
@@ -361,9 +363,9 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO  Desired features:
+#       TODO Find out why some individiual dont have an intersection
 #       TODO Waypoints reagieren anfangs nicht
 #       TODO New lanes are cut
-#       TODO Add different angles of intersection
 #       TODO Add more types of intersections
 #       TODO Adding traffic signs and lights(depending on num lanes)
 #       TODO Create init population

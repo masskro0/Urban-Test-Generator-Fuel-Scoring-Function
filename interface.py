@@ -20,4 +20,4 @@ if __name__ == '__main__':
         for paths in gen.get_test():
             dbe = paths[0]
             dbc = paths[1]
-            convert_test(dbc, dbe)
+            #convert_test(dbc, dbe)
