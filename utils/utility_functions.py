@@ -56,10 +56,21 @@ def get_angle(a, b, c):
 
 
 def calc_width(left_lanes, right_lanes):
-    return (left_lanes + right_lanes) * 4
+    """Calculates the width depending on the number of lanes. Width per lane can be 4 or 5.
+    :param left_lanes: Number of left lanes.
+    :param right_lanes: Number of right lanes.
+    :return: Total width.
+    """
+    from random import randint
+    multiplier = randint(4,5)
+    return (left_lanes + right_lanes) * multiplier
 
 
 def calc_min_max_angles(num_lanes):
+    """Calculates the minimum and maximum angle depending on the number of lanes.
+    :param num_lanes: Number of lanes.
+    :return: Minimum and maximum angles.
+    """
     from fuel_consumption_test_generator import MIN_DEGREES, MAX_DEGREES
     return MIN_DEGREES + (num_lanes - 1) * 15, MAX_DEGREES - (num_lanes - 1) * 15
 
@@ -73,6 +84,8 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     :param left_lanes: Number of left lanes of the current lane.
     :param right_lanes: Number of right lanes of the current lane.
     :param lane_index: Current lane index.
+    :return: New lanes, lanes for the ego car, latest added point, number of left/right lanes of the lane which
+    should receive new points, lane indices for this intersection as list type, current lane index.
     """
     lanes = []
     ego_lanes = []
@@ -85,18 +98,19 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     straight_point = intersection.get("straight_point")
     intersec_point = intersection.get("intersection_point")
     number_of_ways = intersection.get("number_of_ways")
+    layout = intersection.get("layout")
 
     lanes.append({"control_points": [last_point, intersec_point],
                   "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes})
     ego_lanes.append(lane_index + 1)
 
-    if intersection.get("layout") == "straight":
+    if layout == "straight":
         lanes.append({"control_points": [intersec_point, straight_point],
                       "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes})
-    elif intersection.get("layout") == "left":
+    elif layout == "left":
         lanes.append({"control_points": [left_point, intersec_point],
                       "width": new_width, "left_lanes": new_left_lanes, "right_lanes": new_right_lanes})
-    else:
+    elif layout == "right":
         lanes.append({"control_points": [intersec_point, right_point],
                       "width": new_width, "left_lanes": new_left_lanes, "right_lanes": new_right_lanes})
 
@@ -144,7 +158,7 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
 
     ego_lanes.extend([lane_index - 1, lane_index])
     return {"lanes": lanes, "ego_lanes": ego_lanes, "last_point": last_point, "left_lanes": left_lanes,
-            "right_lanes": right_lanes, "intersection_lanes": intersection_lanes}
+            "right_lanes": right_lanes, "intersection_lanes": intersection_lanes, "lane_index": lane_index}
 
 
 def get_intersection_lines(last_point, intersection):

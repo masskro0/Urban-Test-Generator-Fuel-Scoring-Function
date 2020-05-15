@@ -7,7 +7,7 @@ from shapely import affinity
 from shapely.geometry import LineString, shape
 from termcolor import colored
 
-from utils.plotter import plotter, plot_all
+from utils.plotter import plotter, plot_all, plot_splines_and_width
 from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle, calc_width,\
     calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines
 from utils.validity_checks import intersection_check_width, intersection_check_last
@@ -161,9 +161,11 @@ class FuelConsumptionTestGenerator:
                 temp_list = self._bspline(temp_list)
                 control_points_lines = convert_splines_to_lines(temp_list)
                 width_lines = self._get_width_lines(temp_list)
+                intersection_lanes_temp = deepcopy(intersection_lanes)
+                intersection_lanes_temp.extend(intersection_items.get("intersection_lanes"))
                 if not intersection_check_last(lines_of_roads, new_line) \
                         and not intersection_check_last(lines_of_roads, new_lane_line)\
-                        and not intersection_check_width(width_lines, control_points_lines, intersection_lanes):
+                        and not intersection_check_width(width_lines, control_points_lines, intersection_lanes_temp):
                     lanes[lane_index].get("control_points")[-1]["type"] = "intersection"
                     lanes.extend(intersection_items.get("lanes"))
                     ego_lanes.extend(intersection_items.get("ego_lanes"))
@@ -171,6 +173,7 @@ class FuelConsumptionTestGenerator:
                     left_lanes = intersection_items.get("left_lanes")
                     right_lanes = intersection_items.get("right_lanes")
                     intersection_lanes.extend(intersection_items.get("intersection_lanes"))
+                    lane_index = intersection_items.get("lane_index")
                     MIN_DEGREES, MAX_DEGREES = calc_min_max_angles(left_lanes + right_lanes)
                     lines_of_roads = convert_points_to_lines(lanes)
                     number_of_pieces += 1
