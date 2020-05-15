@@ -73,8 +73,8 @@ def build_xml(individual, iterator: int = 0):
             break
     vc_pos = {"id": ego.get("id"),
               "tolerance": 3,
-              "x": lanes[0].get("control_points")[1].get("x"),
-              "y": lanes[0].get("control_points")[1].get("y")}
+              "x": '{0:.10f}'.format(round(lanes[0].get("control_points")[1].get("x"))),
+              "y": '{0:.10f}'.format(round(lanes[0].get("control_points")[1].get("y")))}
     sc_speed = 10
     build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,

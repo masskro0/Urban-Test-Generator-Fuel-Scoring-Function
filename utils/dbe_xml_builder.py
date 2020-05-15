@@ -120,7 +120,8 @@ class DBEBuilder:
             lane.set("rightLanes", str(right_lanes))
         for segment in control_points:
             ElementTree.SubElement(lane, 'laneSegment x="{}" y="{}" width="{}"'
-                                   .format(segment.get("x"), segment.get("y"), width))
+                                   .format('{0:.10f}'.format(round(segment.get("x"), 2)),
+                                           '{0:.10f}'.format(round(segment.get("y"), 2)), str(width)))
 
     def save_xml(self, name):
         """Creates and saves the XML file, and moves it to the scenario folder.

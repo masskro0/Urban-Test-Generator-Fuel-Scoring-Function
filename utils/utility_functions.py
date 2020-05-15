@@ -1,5 +1,5 @@
 """This file offers some utility functions that can be used universally."""
-
+from shapely import affinity
 from shapely.geometry import LineString
 from math import degrees, atan2
 
@@ -44,6 +44,78 @@ def convert_splines_to_lines(lanes):
     return lanes_lines
 
 
+def get_resize_factor(length, width):
+    """Returns the resize factor for the width lines so all lines have
+    one specific length.
+    :param length: Length of a LineString.
+    :param width: Width of the lane.
+    :return: Resize factor.
+    """
+    if length == 0:
+        return 0
+    return width / length
+
+
+def get_resize_factor_intersection(linestring_length, intersection_length):
+    if linestring_length == 0:
+        return 0
+    return (linestring_length + intersection_length) / linestring_length
+
+
+def get_width_lines(splined_lanes):
+    """Determines the width lines of the road by flipping the LineString
+     between two points by 90 degrees in both directions.
+    :param splined_lanes: List of splined lanes.
+    :return: List of LineStrings which represent the width of the road.
+    """
+    complete_width_list = []
+    for spline_list in splined_lanes:
+        linestring_list = []
+        iterator = 0
+
+        # Triple width to have more space between road pieces.
+        width = spline_list.get("width") * 3
+        control_points = spline_list.get("control_points")
+        while iterator < (len(control_points) - 1):
+            p1 = (control_points[iterator][0], control_points[iterator][1])
+            p2 = (control_points[iterator + 1][0], control_points[iterator + 1][1])
+            line = LineString([p1, p2])
+
+            # Rotate counter-clockwise and resize to the half of the road length.
+            line_rot1 = affinity.rotate(line, 90, line.coords[0])
+            line_rot1 = affinity.scale(line_rot1, xfact=get_resize_factor(line_rot1.length, width),
+                                       yfact=get_resize_factor(line_rot1.length, width),
+                                       origin=line_rot1.coords[0])
+
+            # Rotate clockwise and resize to the half of the road length.
+            line_rot2 = affinity.rotate(line, -90, line.coords[0])
+            line_rot2 = affinity.scale(line_rot2, xfact=get_resize_factor(line_rot2.length, width),
+                                       yfact=get_resize_factor(line_rot2.length, width),
+                                       origin=line_rot2.coords[0])
+
+            line = LineString([line_rot1.coords[1], line_rot2.coords[1]])
+            linestring_list.append(line)
+
+            if iterator == len(control_points) - 2:
+                line = LineString([p1, p2])
+                line_rot1 = affinity.rotate(line, -90, line.coords[1])
+                line_rot1 = affinity.scale(line_rot1, xfact=get_resize_factor(line_rot1.length, width),
+                                           yfact=get_resize_factor(line_rot1.length, width),
+                                           origin=line_rot1.coords[0])
+
+                line_rot2 = affinity.rotate(line, 90, line.coords[1])
+                line_rot2 = affinity.scale(line_rot2, xfact=get_resize_factor(line_rot2.length, width),
+                                           yfact=get_resize_factor(line_rot2.length, width),
+                                           origin=line_rot2.coords[0])
+                line = LineString([line_rot1.coords[1], line_rot2.coords[1]])
+                line = affinity.scale(line, xfact=get_resize_factor(line.length, width) * 2,
+                                      yfact=get_resize_factor(line.length, width) * 2)
+                linestring_list.append(line)
+            iterator += 1
+        complete_width_list.append(linestring_list)
+    return complete_width_list
+
+
 def get_angle(a, b, c):
     """Returns the angle between three points (two lines so to say).
     :param a: First point.
@@ -62,7 +134,7 @@ def calc_width(left_lanes, right_lanes):
     :return: Total width.
     """
     from random import randint
-    multiplier = randint(4,5)
+    multiplier = randint(4, 5)
     return (left_lanes + right_lanes) * multiplier
 
 
