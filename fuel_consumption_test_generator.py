@@ -363,10 +363,8 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO  Desired features:
-#       TODO Find out why some individiual dont have an intersection
-#       TODO Waypoints reagieren anfangs nicht
 #       TODO New lanes are cut
-#       TODO Add more types of intersections
+#       TODO Add Y Intersections
 #       TODO Adding traffic signs and lights(depending on num lanes)
 #       TODO Create init population
 #       TODO Mutation
@@ -377,6 +375,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
 #       TODO Lane switch when turning for multiple lanes
 #       TODO Control traffic lights
+#       TODO Waypoints reagieren anfangs nicht
 #       TODO Fix lane markings
 #       TODO Add other participants
 #       TODO Improve performance
