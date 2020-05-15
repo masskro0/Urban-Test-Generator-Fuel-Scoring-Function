@@ -9,6 +9,7 @@ from termcolor import colored
 from os import path
 from glob import glob
 from pathlib import Path
+from time import time
 
 from utils.plotter import plotter, plot_all, plot_splines_and_width
 from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle, calc_width,\
@@ -32,12 +33,15 @@ def _add_ego_car(individual):
     ego_lanes = individual.get("ego_lanes")
     waypoints = []
     for lane in ego_lanes:
-        for point in lanes[lane].get("control_points"):
-            waypoint = {"x": point.get("x"),
-                        "y": point.get("y"),
+        iterator = 0
+        control_points = lanes[lane].get("control_points")
+        while iterator < len(control_points):
+            waypoint = {"x": control_points[iterator].get("x"),
+                        "y": control_points[iterator].get("y"),
                         "tolerance": 2,
                         "movementMode": "_BEAMNG"}
             waypoints.append(waypoint)
+            iterator += 9
     init_state = {"x": waypoints[0].get("x"),
                   "y": waypoints[0].get("y"),
                   "orientation": 0,
@@ -57,23 +61,22 @@ class FuelConsumptionTestGenerator:
     def __init__(self):
         self.files_name = "urban"
         self.SPLINE_DEGREE = 3  # Sharpness of curves
-        self.MAX_TRIES = 300  # Maximum number of invalid generated points/segments
+        self.MAX_TRIES = 60  # Maximum number of invalid generated points/segments
         self.POPULATION_SIZE = 1  # Minimum number of generated roads for each generation
         self.NUMBER_ELITES = 2  # Number of best kept roads
-        self.MIN_SEGMENT_LENGTH = 55  # Minimum length of a road segment
-        self.MAX_SEGMENT_LENGTH = 80  # Maximum length of a road segment
-        self.WIDTH_OF_STREET = 4  # Width of all segments
+        self.MIN_SEGMENT_LENGTH = 15  # Minimum length of a road segment
+        self.MAX_SEGMENT_LENGTH = 30  # Maximum length of a road segment
         self.MIN_NODES = 6  # Minimum number of control points for each road
-        self.MAX_NODES = 20  # Maximum number of control points for each road
+        self.MAX_NODES = 12  # Maximum number of control points for each road
         self.population_list_urban = []
         self.population_list_highway = []
-        self.intersection_length = 150
-        self.opposite_lane = 100
-        self.intersecting_length = 80
+        self.intersection_length = 75
+        self.opposite_lane = 50
+        self.intersecting_length = 40
         self.MAX_LEFT_LANES = 2
         self.MAX_RIGHT_LANES = 2
 
-    def _bspline(self, lanes, samples=75):
+    def _bspline(self, lanes):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
         :param lanes: List of lanes.
         :param samples: Number of samples of each lane.
@@ -81,6 +84,7 @@ class FuelConsumptionTestGenerator:
         """
         splined_list = []
         for lane in lanes:
+            samples = lane.get("samples")
             # Calculate splines for each lane.
             point_list = []
             for point in lane.get("control_points"):
@@ -136,7 +140,7 @@ class FuelConsumptionTestGenerator:
         left_lanes = randint(1, self.MAX_LEFT_LANES)
         right_lanes = randint(1, self.MAX_RIGHT_LANES)
         lanes = [{"control_points": [p0, p1, p2], "width": calc_width(left_lanes, right_lanes),
-                  "left_lanes": left_lanes, "right_lanes": right_lanes}]
+                  "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 75}]
         ego_lanes = [0]
         intersection_lanes = []
         tries = 0
@@ -148,7 +152,6 @@ class FuelConsumptionTestGenerator:
         lines_of_roads = convert_points_to_lines(lanes)
         last_point = p2
         while number_of_pieces <= self.MAX_NODES and tries <= self.MAX_TRIES:
-            print("gegnaz" + str(tries))
             control_points = lanes[lane_index].get("control_points")
             if intersection_possible and ((number_of_pieces == self.MAX_NODES - 1 and not one_intersection)
                                           or random() <= intersection_probability)\
@@ -376,7 +379,7 @@ class FuelConsumptionTestGenerator:
         :return: List of individuals with bsplined control points.
         """
         for individual in population_list:
-            splined_list = self._bspline(individual.get("lanes"), samples=samples)
+            splined_list = self._bspline(individual.get("lanes"))
             iterator = 0
             while iterator < len(splined_list):
                 lane = splined_list[iterator]
@@ -417,7 +420,7 @@ class FuelConsumptionTestGenerator:
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
-        plot_all(temp_list)
+        #plot_all(temp_list)
         self.population_list_urban = []
 
     def get_test(self):
@@ -435,7 +438,6 @@ class FuelConsumptionTestGenerator:
 
 # TODO  Desired features:
 #       TODO Find out why some individuals dont have a intersection
-#       TODO Reduce waypoints
 #       TODO Reduce opposite lanes
 #       TODO Reduce segment length
 #       TODO Reduce intersection length
@@ -443,7 +445,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Validate depending on layout
 #       TODO Add different angles of intersection
 #       TODO Add more types of intersections
-#       TODO Splining depending on Lane
 #       TODO Adding traffic signs and lights(depending on num lanes)
 #       TODO Highways
 #       TODO Create init population
