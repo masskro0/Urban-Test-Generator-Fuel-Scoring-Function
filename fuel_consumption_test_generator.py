@@ -68,8 +68,7 @@ class FuelConsumptionTestGenerator:
         self.MAX_SEGMENT_LENGTH = 30  # Maximum length of a road segment
         self.MIN_NODES = 6  # Minimum number of control points for each road
         self.MAX_NODES = 12  # Maximum number of control points for each road
-        self.population_list_urban = []
-        self.population_list_highway = []
+        self.population_list = []
         self.intersection_length = 10
         self.opposite_lane = 40
         self.intersecting_length = 50
@@ -297,9 +296,6 @@ class FuelConsumptionTestGenerator:
     def _add_traffic_lights(self):
         print("added traffic lights")
 
-    def _add_highway(self):
-        pass
-
     def _spline_population(self, population_list):
         """Converts the control points list of every individual to a bspline
          list and adds the width parameter as well as the ego car.
@@ -339,17 +335,17 @@ class FuelConsumptionTestGenerator:
         return startpop
 
     def genetic_algorithm(self):
-        if len(self.population_list_urban) == 0:
-            self.population_list_urban = self._create_start_population()
+        if len(self.population_list) == 0:
+            self.population_list = self._create_start_population()
 
         print(colored("Population finished.", "grey", attrs=['bold']))
-        temp_list = deepcopy(self.population_list_urban)
+        temp_list = deepcopy(self.population_list)
         temp_list = self._spline_population(temp_list)
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
         # plot_all(temp_list)
-        self.population_list_urban = []
+        self.population_list = []
 
     def get_test(self):
         """Returns the two first test files starting with "files_name".
@@ -370,7 +366,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Add different angles of intersection
 #       TODO Add more types of intersections
 #       TODO Adding traffic signs and lights(depending on num lanes)
-#       TODO Highways
 #       TODO Create init population
 #       TODO Mutation
 #       TODO -> Init state, Lanes austauschen, Init state of cars and speed, final position
