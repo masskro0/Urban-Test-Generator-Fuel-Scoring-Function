@@ -185,17 +185,21 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     elif layout == "right":
         lanes.append({"control_points": [intersec_point, right_point],
                       "width": new_width, "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25})
-
     if intersection.get("direction") == "straight":
         if number_of_ways == 4:
-            lanes.append({"control_points": [left_point, right_point], "width": new_width,
-                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25})
+            lanes.extend([{"control_points": [left_point, intersec_point], "width": new_width,
+                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25},
+                         {"control_points": [intersec_point, right_point], "width": new_width,
+                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25}])
+            intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
+            lane_index += 5
+        else:
+            intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3])
+            lane_index += 4
         lanes.extend([{"control_points": [intersec_point, straight_point],
                        "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 25},
                       {"control_points": [straight_point],
                        "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 75}])
-        intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3])
-        lane_index += 4
         last_point = straight_point
     else:
         if number_of_ways == 4:

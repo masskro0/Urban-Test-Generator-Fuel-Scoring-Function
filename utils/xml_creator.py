@@ -46,7 +46,6 @@ def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, 
     for participant in participants:
         dbc.add_car(participant)
     for success_point in success_points:
-        print(success_point)
         dbc.add_success_point(ego_car.get("id"), success_point)
     dbc.add_failure_conditions(ego_car.get("id"), "offroad")
     dbc.add_precond_partic_sc_speed(vc_pos, sc_speed)

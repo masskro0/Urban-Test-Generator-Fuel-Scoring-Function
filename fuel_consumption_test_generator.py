@@ -69,9 +69,9 @@ class FuelConsumptionTestGenerator:
         self.MIN_NODES = 6  # Minimum number of control points for each road
         self.MAX_NODES = 12  # Maximum number of control points for each road
         self.population_list = []
-        self.intersection_length = 10
-        self.opposite_lane = 40
-        self.intersecting_length = 50
+        self.intersection_length = 50
+        self.opposite_lane = 15
+        self.intersecting_length = 20
         self.MAX_LEFT_LANES = 2
         self.MAX_RIGHT_LANES = 2
 
@@ -259,32 +259,34 @@ class FuelConsumptionTestGenerator:
                            (last_point.get("x"), last_point.get("y"))])
         fac = get_resize_factor_intersection(line.length, self.intersection_length)
         line_intersection = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
-        new_point = list(shape(line_intersection).coords)[1]
+        straight_point = list(shape(line_intersection).coords)[1]
         fac = get_resize_factor_intersection(line.length, self.intersecting_length)
         line_intersection = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
         intersection_point = list(shape(line_intersection).coords)[1]
         line = LineString([(intersection_point[0], intersection_point[1]),
-                           (new_point[0], new_point[1])])
+                           (line.coords[1][0], line.coords[1][1])])
+        fac = get_resize_factor_intersection(line.length, self.opposite_lane)
 
         # Right turn.
         right_turn_angle = randint(-110, -70)
+
         line_rot1 = affinity.rotate(line, right_turn_angle, line.coords[0])
-        line_rot1 = affinity.scale(line_rot1, xfact=3, yfact=3,
+        line_rot1 = affinity.scale(line_rot1, xfact=fac, yfact=fac,
                                    origin=line_rot1.coords[0])
 
         # Left turn.
         left_turn_angle = randint(70, 110)
         line_rot2 = affinity.rotate(line, left_turn_angle, line.coords[0])
-        line_rot2 = affinity.scale(line_rot2, xfact=3, yfact=3,
+        line_rot2 = affinity.scale(line_rot2, xfact=fac, yfact=fac,
                                    origin=line_rot2.coords[0])
-        p1 = (list(shape(line_rot1).coords)[1][0], list(shape(line_rot1).coords)[1][1])  # Right side point.
-        p2 = (list(shape(line_rot2).coords)[1][0], list(shape(line_rot2).coords)[1][1])  # Left side point.
+        p1 = (list(shape(line_rot1).coords)[1][0], list(shape(line_rot1).coords)[1][1])
+        p2 = (list(shape(line_rot2).coords)[1][0], list(shape(line_rot2).coords)[1][1])
         left_lanes = randint(1, self.MAX_LEFT_LANES)
         right_lanes = randint(1, self.MAX_RIGHT_LANES)
         return {"intersection_point": {"x": intersection_point[0], "y": intersection_point[1], "type": "intersection"},
-                "straight_point": {"x": new_point[0], "y": new_point[1], "type": "intersection"},
-                "left_point": {"x": p2[0], "y": p2[1], "type": "intersection"},
-                "right_point": {"x": p1[0], "y": p1[1], "type": "intersection"},
+                "straight_point": {"x": straight_point[0], "y": straight_point[1], "type": "intersection"},
+                "left_point": {"x": p1[0], "y": p1[1], "type": "intersection"},
+                "right_point": {"x": p2[0], "y": p2[1], "type": "intersection"},
                 "direction": direction,
                 "number_of_ways": number_of_ways,
                 "layout": layout,
@@ -342,11 +344,12 @@ class FuelConsumptionTestGenerator:
 
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
+        plot_all(temp_list)
         temp_list = self._spline_population(temp_list)
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
-        plot_all(temp_list)
+
         self.population_list = []
 
     def get_test(self):
