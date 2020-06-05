@@ -12,7 +12,7 @@ from pathlib import Path
 
 from utils.plotter import plot_all
 from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle, calc_width, \
-    calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines,\
+    calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines, \
     get_resize_factor_intersection
 from utils.validity_checks import intersection_check_width, intersection_check_last
 from utils.xml_creator import build_all_xml
@@ -56,6 +56,26 @@ def _add_ego_car(individual):
     individual["participants"] = participants
 
 
+def _merge_lanes(population):
+    """Merge lanes for each individual which will be driven by the ego car.
+    :param population: Population list.
+    :return: Population with merged lanes.
+    """
+    for individual in population:
+        iterator = 1
+        lanes = individual.get("lanes")
+        ego_lanes = individual.get("ego_lanes")
+        new_lane_list = [lanes[0]]
+        while iterator < len(lanes):
+            if iterator in ego_lanes:
+                new_lane_list[0].get("control_points").extend(lanes[iterator].get("control_points"))
+            else:
+                new_lane_list.append(lanes[iterator])
+            iterator += 1
+        individual["lanes"] = new_lane_list
+    return population
+
+
 class FuelConsumptionTestGenerator:
 
     def __init__(self):
@@ -74,6 +94,7 @@ class FuelConsumptionTestGenerator:
         self.intersecting_length = 20
         self.MAX_LEFT_LANES = 2
         self.MAX_RIGHT_LANES = 2
+        self.MAX_WIDTH = 5
 
     def _bspline(self, lanes):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
@@ -142,6 +163,7 @@ class FuelConsumptionTestGenerator:
                   "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 75}]
         ego_lanes = [0]
         intersection_lanes = []
+        obstacles = []
         tries = 0
         lane_index = 0
         number_of_pieces = 3
@@ -171,12 +193,16 @@ class FuelConsumptionTestGenerator:
                 if not intersection_check_last(lines_of_roads, new_line) \
                         and not intersection_check_last(lines_of_roads, new_lane_line) \
                         and not intersection_check_width(width_lines, control_points_lines, intersection_lanes_temp):
+                    left_lanes = intersection_items.get("left_lanes")
+                    right_lanes = intersection_items.get("right_lanes")
+                    obstacles.append(self._add_traffic_sign(control_points[-1], intersection.get("intersection_point"),
+                                                            lanes[lane_index].get("left_lanes"),
+                                                            lanes[lane_index].get("right_lanes"),
+                                                            left_lanes, right_lanes))
                     lanes[lane_index].get("control_points")[-1]["type"] = "intersection"
                     lanes.extend(intersection_items.get("lanes"))
                     ego_lanes.extend(intersection_items.get("ego_lanes"))
                     last_point = intersection_items.get("last_point")
-                    left_lanes = intersection_items.get("left_lanes")
-                    right_lanes = intersection_items.get("right_lanes")
                     intersection_lanes.extend(intersection_items.get("intersection_lanes"))
                     lane_index = intersection_items.get("lane_index")
                     MIN_DEGREES, MAX_DEGREES = calc_min_max_angles(left_lanes + right_lanes)
@@ -210,7 +236,7 @@ class FuelConsumptionTestGenerator:
                 tries += 1
         if number_of_pieces >= self.MIN_NODES and one_intersection:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
-            return {"lanes": lanes, "success_point": last_point, "ego_lanes": ego_lanes}
+            return {"lanes": lanes, "success_point": last_point, "ego_lanes": ego_lanes, "obstacles": obstacles}
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
@@ -221,8 +247,6 @@ class FuelConsumptionTestGenerator:
         pass
 
     def _create_intersection(self, last_point, penultimate_point):
-        # TODO Check for number of lanes. Stop signs only for single lane roads?
-        # TODO Add traffic lights/stop signs
         layout = None
         random_number = random()
         if random_number <= 0.33:
@@ -250,12 +274,6 @@ class FuelConsumptionTestGenerator:
                     layout = "straight"
                 else:
                     layout = "left"
-        """
-        if random() <= 0.5:
-            self._add_stop_sign()
-        else:
-            self._add_traffic_lights()
-        """
         line = LineString([(penultimate_point.get("x"), penultimate_point.get("y")),
                            (last_point.get("x"), last_point.get("y"))])
         fac = get_resize_factor_intersection(line.length, self.intersection_length)
@@ -295,11 +313,31 @@ class FuelConsumptionTestGenerator:
                 "new_right_lanes": right_lanes,
                 "new_width": calc_width(left_lanes, right_lanes)}
 
-    def _add_stop_sign(self):
-        print("added stop sign")
+    def _add_traffic_sign(self, last_point, intersection_point, current_left_lanes, current_right_lanes,
+                          new_left_lanes, new_right_lanes):
+        # Calculate traffic sign position.
+        line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
+                           (last_point.get("x"), last_point.get("y"))])
+        temp_line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
+                                (intersection_point.get("x") + 5, intersection_point.get("y"))])
+        angle = int(round(get_angle(temp_line.coords[1], line.coords[0], line.coords[1]))) + 180
+        fac = (self.MAX_WIDTH * (current_left_lanes + current_right_lanes) / 2 + 0.5) / line.length
+        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+        vector = affinity.rotate(vector, 90, line.coords[0])
+        fac = (self.MAX_WIDTH * (new_left_lanes + new_right_lanes) / 2 + 2) / vector.length
+        vector2 = LineString([(vector.coords[1][0], vector.coords[1][1]),
+                              (vector.coords[0][0], vector.coords[0][1])])
+        vector2 = affinity.scale(vector2, xfact=fac, yfact=fac, origin=vector2.coords[0])
+        vector2 = affinity.rotate(vector2, 90, vector2.coords[0])
+        position = vector2.coords[1]
 
-    def _add_traffic_lights(self):
-        print("added traffic lights")
+        if current_left_lanes + current_right_lanes == 2:
+            if random() <= 0.5:
+                return {"name": "stopsign", "x": position[0], "y": position[1], "zRot": angle}
+            else:
+                return {"name": "trafficlightsingle", "x": position[0], "y": position[1], "zRot": angle}
+        else:
+            return {"name": "trafficlightdouble", "x": position[0], "y": position[1], "zRot": angle}
 
     def _spline_population(self, population):
         """Converts the control points list of every individual to a bspline
@@ -320,23 +358,6 @@ class FuelConsumptionTestGenerator:
                 iterator += 1
             _add_ego_car(individual)
         return population
-
-    def _merge_lanes(self, population):
-        for individual in population:
-            iterator = 1
-            lanes = individual.get("lanes")
-            ego_lanes = individual.get("ego_lanes")
-            new_lane_list = [lanes[0]]
-            while iterator < len(lanes):
-                if iterator in ego_lanes:
-                    new_lane_list[0].get("control_points").extend(lanes[iterator].get("control_points"))
-                else:
-                    new_lane_list.append(lanes[iterator])
-                iterator += 1
-            individual["lanes"] = new_lane_list
-        return population
-
-
 
     def _create_start_population(self):
         """Creates and returns an initial population."""
@@ -361,9 +382,10 @@ class FuelConsumptionTestGenerator:
             self.population_list = self._create_start_population()
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
+        print(self.population_list[0].get("ego_lanes"))
         plot_all(temp_list)
         temp_list = self._spline_population(temp_list)
-        temp_list = self._merge_lanes(temp_list)
+        temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
@@ -384,20 +406,20 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO  Desired features:
-#       TODO Add Y Intersections
-#       TODO Adding traffic signs and lights(depending on num lanes)
+#       TODO Exclude intersection lanes (bug)
+#       TODO Waypoints reagieren anfangs nicht
+#       TODO Fix spawn point
+#       TODO Lane switch when turning for multiple lanes
+#       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
+#       TODO Add other participants
+#       TODO Control traffic lights
+#       TODO Parked cars
 #       TODO Create init population
 #       TODO Mutation
-#       TODO -> Init state, Lanes austauschen, Init state of cars and speed, final position
 #       TODO Repair function
 #       TODO Mutation validity checks
 #       TODO Crossover
-#       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
-#       TODO Lane switch when turning for multiple lanes
-#       TODO Control traffic lights
-#       TODO Waypoints reagieren anfangs nicht
 #       TODO Fix lane markings
-#       TODO Add other participants
 #       TODO Improve performance
-#       TODO Refactoring
-#       TODO Parked cars
+#       TODO Signs on opposite lanes
+#       TODO Improve traffic signs positioning

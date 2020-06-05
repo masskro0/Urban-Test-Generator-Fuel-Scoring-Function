@@ -40,7 +40,7 @@ def convert_test(dbc, dbe):
     """
     service = AIExchangeService("localhost", 8383)
     service.run_tests("test", "test", Path(dbe), Path(dbc))
-    print(colored("Converting XML files to BNG files. Moving to scenarios folder...", "blue"))
+    print(colored("Converting XML files to BNG files. Moving to scenarios folder...", "grey"))
 
     # Close BeamNG after converting. If you don't close it, BeamNG will load.
     call("C:\\Windows\\System32\\taskkill.exe /f /im BeamNG.research.x64.exe", shell=True)
