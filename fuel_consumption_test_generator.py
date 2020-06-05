@@ -10,7 +10,7 @@ from os import path
 from glob import glob
 from pathlib import Path
 
-from utils.plotter import plotter, plot_all
+from utils.plotter import plot_all
 from utils.utility_functions import convert_points_to_lines, convert_splines_to_lines, get_angle, calc_width, \
     calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines,\
     get_resize_factor_intersection
@@ -70,7 +70,7 @@ class FuelConsumptionTestGenerator:
         self.MAX_NODES = 12  # Maximum number of control points for each road
         self.population_list = []
         self.intersection_length = 50
-        self.opposite_lane = 15
+        self.opposite_lane = 30
         self.intersecting_length = 20
         self.MAX_LEFT_LANES = 2
         self.MAX_RIGHT_LANES = 2
@@ -132,6 +132,7 @@ class FuelConsumptionTestGenerator:
 
     def _create_urban_environment(self):
         global MIN_DEGREES, MAX_DEGREES
+        print(colored("Creating urban scenario...", "grey", attrs=['bold']))
         p0 = {"x": 1, "y": 0, "type": "segment"}
         p1 = {"x": 50, "y": 0, "type": "segment"}
         p2 = {"x": 65, "y": 0, "type": "segment"}
@@ -300,13 +301,13 @@ class FuelConsumptionTestGenerator:
     def _add_traffic_lights(self):
         print("added traffic lights")
 
-    def _spline_population(self, population_list):
+    def _spline_population(self, population):
         """Converts the control points list of every individual to a bspline
          list and adds the width parameter as well as the ego car.
-        :param population_list: List of individuals.
+        :param population: List of individuals.
         :return: List of individuals with bsplined control points.
         """
-        for individual in population_list:
+        for individual in population:
             splined_list = self._bspline(individual.get("lanes"))
             iterator = 0
             while iterator < len(splined_list):
@@ -318,7 +319,24 @@ class FuelConsumptionTestGenerator:
                 individual.get("lanes")[iterator]["control_points"] = control_points
                 iterator += 1
             _add_ego_car(individual)
-        return population_list
+        return population
+
+    def _merge_lanes(self, population):
+        for individual in population:
+            iterator = 1
+            lanes = individual.get("lanes")
+            ego_lanes = individual.get("ego_lanes")
+            new_lane_list = [lanes[0]]
+            while iterator < len(lanes):
+                if iterator in ego_lanes:
+                    new_lane_list[0].get("control_points").extend(lanes[iterator].get("control_points"))
+                else:
+                    new_lane_list.append(lanes[iterator])
+                iterator += 1
+            individual["lanes"] = new_lane_list
+        return population
+
+
 
     def _create_start_population(self):
         """Creates and returns an initial population."""
@@ -341,11 +359,11 @@ class FuelConsumptionTestGenerator:
     def genetic_algorithm(self):
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
-
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
         plot_all(temp_list)
         temp_list = self._spline_population(temp_list)
+        temp_list = self._merge_lanes(temp_list)
         build_all_xml(temp_list)
 
         # Comment out if you want to see the generated roads (blocks until you close all images).
@@ -366,7 +384,6 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO  Desired features:
-#       TODO New lanes are cut
 #       TODO Add Y Intersections
 #       TODO Adding traffic signs and lights(depending on num lanes)
 #       TODO Create init population
