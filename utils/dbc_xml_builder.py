@@ -101,7 +101,8 @@ class DBCBuilder:
         for waypoint in waypoints:
             waypoint_tag = ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}"'
                                                             ' movementMode="{}"'
-                                                  .format(str(waypoint.get("x")), str(waypoint.get("y")),
+                                                  .format('{0:.10f}'.format(round(waypoint.get("x"), 2)),
+                                                          '{0:.10f}'.format(round(waypoint.get("y"), 2)),
                                                           str(waypoint.get("tolerance")),
                                                           waypoint.get("movementMode")))
             if waypoint.get("speedLimit"):

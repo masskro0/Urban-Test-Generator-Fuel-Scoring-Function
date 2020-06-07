@@ -10,7 +10,7 @@ vehicle = Vehicle('ego', model='etk800', licence='PYTHON', colour='Green')
 electrics = Electrics()
 vehicle.attach_sensor('electrics', electrics)
 
-scenario = Scenario('drivebuild', 'drivebuild_1387')
+scenario = Scenario('drivebuild', 'drivebuild_1399')
 scenario.add_vehicle(vehicle, pos=(0,0,0), rot=(0, 0, 0))
 scenario.path = Path("D:\\Program Files (x86)\\BeamNG\\levels\\drivebuild\\scenarios")
 #scenario = Scenario('west_coast_usa', 'example')

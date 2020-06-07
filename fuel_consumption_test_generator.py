@@ -33,7 +33,7 @@ def _add_ego_car(individual):
     ego_lanes = individual.get("ego_lanes")
     waypoints = []
     for lane in ego_lanes:
-        iterator = 0
+        iterator = 2
         control_points = lanes[lane].get("control_points")
         while iterator < len(control_points):
             waypoint = {"x": control_points[iterator].get("x"),
@@ -41,9 +41,10 @@ def _add_ego_car(individual):
                         "tolerance": 2,
                         "movementMode": "_BEAMNG"}
             waypoints.append(waypoint)
-            iterator += 9
+            iterator += 4
+    y = (lanes[0].get("left_lanes") + lanes[0].get("right_lanes") - 1) * -2.5 + waypoints[0].get("y")
     init_state = {"x": waypoints[0].get("x"),
-                  "y": waypoints[0].get("y"),
+                  "y": str(y),
                   "orientation": 0,
                   "movementMode": "_BEAMNG",
                   "speed": 50}
@@ -406,8 +407,7 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO  Desired features:
-#       TODO Waypoints reagieren anfangs nicht
-#       TODO Fix spawn point
+#       TODO Fix waypoints
 #       TODO Lane switch when turning for multiple lanes
 #       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
 #       TODO Add other participants
