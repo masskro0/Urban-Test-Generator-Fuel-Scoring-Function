@@ -1,6 +1,6 @@
 """This file offers methods to create xml files of a list of control points.
-  Methods are preconfigured to meet the requirements of the road_generator.py
-  class.
+   Methods are preconfigured to meet the requirements of the road_generator.py
+   class.
 """
 
 from utils.dbe_xml_builder import DBEBuilder

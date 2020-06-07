@@ -67,8 +67,8 @@ def _merge_lanes(population):
         ego_lanes = individual.get("ego_lanes")
         new_lane_list = [lanes[0]]
         while iterator < len(lanes):
-            if iterator in ego_lanes:
-                new_lane_list[0].get("control_points").extend(lanes[iterator].get("control_points"))
+            if iterator in ego_lanes and (iterator - 1) in ego_lanes:
+                new_lane_list[-1].get("control_points").extend(lanes[iterator].get("control_points"))
             else:
                 new_lane_list.append(lanes[iterator])
             iterator += 1
@@ -406,7 +406,6 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO  Desired features:
-#       TODO Exclude intersection lanes (bug)
 #       TODO Waypoints reagieren anfangs nicht
 #       TODO Fix spawn point
 #       TODO Lane switch when turning for multiple lanes

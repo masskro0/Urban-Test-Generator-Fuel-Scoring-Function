@@ -190,7 +190,7 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
             lanes.extend([{"control_points": [left_point, intersec_point], "width": new_width,
                           "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25},
                          {"control_points": [intersec_point, right_point], "width": new_width,
-                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25}])
+                          "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25}])
             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
             lane_index += 5
         else:
@@ -214,7 +214,7 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
         if intersection.get("direction") == "left":
             if number_of_ways == 4:
                 lanes.append({"control_points": [intersec_point, right_point], "width": new_width,
-                              "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25})
+                              "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25})
             lanes.extend([{"control_points": [intersec_point, left_point], "width": new_width,
                            "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25},
                           {"control_points": [left_point], "width": new_width, "left_lanes": new_left_lanes,
@@ -223,7 +223,7 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
         else:
             if number_of_ways == 4:
                 lanes.append({"control_points": [intersec_point, left_point], "width": new_width,
-                              "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25})
+                              "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25})
             lanes.extend([{"control_points": [intersec_point, right_point], "width": new_width,
                            "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25},
                           {"control_points": [right_point], "width": new_width, "left_lanes": new_left_lanes,
