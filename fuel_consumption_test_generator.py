@@ -33,17 +33,17 @@ def _add_ego_car(individual):
     ego_lanes = individual.get("ego_lanes")
     waypoints = []
     for lane in ego_lanes:
-        iterator = 2
+        iterator = 4
         control_points = lanes[lane].get("control_points")
         while iterator < len(control_points):
             waypoint = {"x": control_points[iterator].get("x"),
                         "y": control_points[iterator].get("y"),
-                        "tolerance": 2,
+                        "tolerance": 3,
                         "movementMode": "_BEAMNG"}
             waypoints.append(waypoint)
             iterator += 4
     y = (lanes[0].get("left_lanes") + lanes[0].get("right_lanes") - 1) * -2.5 + waypoints[0].get("y")
-    init_state = {"x": waypoints[0].get("x"),
+    init_state = {"x": lanes[0].get("control_points")[0].get("x"),
                   "y": str(y),
                   "orientation": 0,
                   "movementMode": "_BEAMNG",
@@ -383,7 +383,6 @@ class FuelConsumptionTestGenerator:
             self.population_list = self._create_start_population()
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
-        print(self.population_list[0].get("ego_lanes"))
         plot_all(temp_list)
         temp_list = self._spline_population(temp_list)
         temp_list = _merge_lanes(temp_list)
@@ -407,7 +406,6 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO  Desired features:
-#       TODO Fix waypoints
 #       TODO Lane switch when turning for multiple lanes
 #       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
 #       TODO Add other participants
@@ -420,5 +418,11 @@ class FuelConsumptionTestGenerator:
 #       TODO Crossover
 #       TODO Fix lane markings
 #       TODO Improve performance
+#       TODO Double test cases by placing spawn point on the other side
+#       TODO Fix/Improve waypoints
 #       TODO Signs on opposite lanes
 #       TODO Improve traffic signs positioning
+#       TODO Add traffic signs for opposite lanes
+#       TODO Add yield sign
+#       TODO Implement own converter
+#       TODO Add weather presets
