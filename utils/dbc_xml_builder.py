@@ -13,9 +13,6 @@ class DBCBuilder:
     def __init__(self):
         # Build a tree structure.
         self.root = ElementTree.Element("criteria")
-        self.root.set("xmlns", "http://drivebuild.com")
-        self.root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-        self.root.set("xsi:schemaLocation", "http://drivebuild.com drivebuild.xsd")
 
         self.environment = ElementTree.SubElement(self.root, "environment")
 

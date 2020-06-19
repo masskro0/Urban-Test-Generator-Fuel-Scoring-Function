@@ -11,9 +11,7 @@ class DBEBuilder:
     def __init__(self):
         # Build a tree structure.
         self.root = ElementTree.Element("environment")
-        self.root.set("xmlns", "http://drivebuild.com")
-        self.root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-        self.root.set("xsi:schemaLocation", "http://drivebuild.com drivebuild.xsd")
+
         self.author = ElementTree.SubElement(self.root, "author")
         self.author.text = "Michael Heine"
 

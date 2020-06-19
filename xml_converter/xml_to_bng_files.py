@@ -7,7 +7,8 @@ from os import getcwd, path, mkdir, environ
 from os.path import exists
 from shutil import move
 from beamngpy.beamngcommon import ENV
-import json
+from json import dump
+import xml.etree.ElementTree as ET
 
 
 def get_next_test(files_name):
@@ -62,8 +63,16 @@ def update_index(index):
         print("{}".format(index), file=text_file)
 
 
-def create_json_file(index, participants, multiple_prefabs=False, start_index=None):
-    data = {'authors': "Michael Heine", "description": None, "difficulty": 0, "name": "urban_" + str(index)}
+def create_json_file(index, participants, author, multiple_prefabs=False, start_index=None):
+    """Creates a basic JSON file. If desired, it can add multiple prefab files so you don't have to load all by one.
+    :param index: Index of this execution/file.
+    :param participants: Array containing dict type information about each participant.
+    :param author: Author of the XML file.
+    :param multiple_prefabs: Option to add multiple prefab files. Needs starting index.
+    :param start_index: Index where prefab inclusion stops.
+    :return: Void.
+    """
+    data = {'authors': author, "description": "Urban scenario", "difficulty": 0, "name": "urban_" + str(index)}
     data["prefabs"] = ["levels/urban/scenarios/{}.prefab".format(data["name"])]
     if multiple_prefabs:
         assert start_index is not None
@@ -73,16 +82,19 @@ def create_json_file(index, participants, multiple_prefabs=False, start_index=No
             temp -= 1
     data["vehicles"] = {}
     for participant in participants:
+        assert participant.get("id") is not None, "Please include an id for each participant. Check the example" \
+                                                  " for reference."
         bool_value = True if participant.get("id") == "ego" else False
         data["vehicles"]["{}".format(participant.get("id"))] = {"playerUsable": bool_value, "startFocus": bool_value}
 
     data = [data]
     with open('{}.json'.format(data[0]["name"]), 'w') as outfile:
-        json.dump(data, outfile, indent=4)
+        dump(data, outfile, indent=4)
 
 
-def get_participants(dbc):
-    pass
+def create_lua_file():
+    # Cars can stop at red light, needs waypoint.
+    raise NotImplementedError()
 
 
 def convert_test(dbc, dbe):
@@ -91,31 +103,18 @@ def convert_test(dbc, dbe):
     :param dbe: Path to the environment XML file.
     :return: Void.
     """
-    print(colored("Converting XML files to BNG files. Moving to scenarios folder...", "grey"))
+    print(colored("Converting XML files to BNG files... Moving to scenarios folder...", "grey"))
     init_scenario_folder()
     index = get_index()
-    participants = [{"id": "ego"}, {"id": "other"}]
-    # participants = get_participants(dbc)
-    create_json_file(index, participants)
+    dbc_root = ET.parse(dbc).getroot()
+    dbe_root = ET.parse(dbe).getroot()
+    author = dbe_root.findtext("author")
+    participants = []
+    for participant in dbc_root.findall('participants/participant'):
+        participants.append(participant.attrib)
+    assert len(participants) > 0, "Please add participants to your test case. Check the example for reference."
+    create_json_file(index, participants, author)
     matches = glob("urban_*")
     for match in matches:
         move(match, ENV['BNG_HOME'] + "\\levels\\urban\\scenarios")
     update_index(index)
-    """
-    # Change it to YOUR DriveBuild user path.
-    destination_path = "C:\\BeamNG.research_userpath\\drivebuild_*"
-    matches = glob(destination_path)
-    if len(matches) > 0:
-        latest_folder = max(matches, key=path.getmtime)
-        latest_folder = latest_folder + "\\levels\\drivebuild\\scenarios\\*"
-        matches = glob(latest_folder)
-        if len(matches) != 0:
-            latest_file = max(matches, key=path.getmtime)
-            elements = latest_file.split("\\")
-            filename = elements[-1].split(".")[0]
-            destination_path = latest_folder[:-1] + filename + "*"
-            matches = glob(destination_path)
-            for match in matches:
-                # Change it to YOUR DriveBuild scenario folder in the BNG trunk folder.
-                move(match, "D:\\Program Files (x86)\\BeamNG\\levels\\drivebuild\\scenarios")
-    """

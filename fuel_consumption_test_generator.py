@@ -426,3 +426,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Add yield sign
 #       TODO Implement own converter
 #       TODO Add weather presets
+#       TODO Daytime
