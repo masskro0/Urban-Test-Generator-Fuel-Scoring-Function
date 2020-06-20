@@ -10,6 +10,9 @@ from beamngpy.beamngcommon import ENV
 from json import dump
 import xml.etree.ElementTree as ET
 
+from xml_converter.environment_converter import EnvironmentCreator
+from xml_converter.criteria_converter import CriteriaConverter
+
 
 def get_next_test(files_name):
     """Returns the next test files.
@@ -63,11 +66,12 @@ def update_index(index):
         print("{}".format(index), file=text_file)
 
 
-def create_json_file(index, participants, author, multiple_prefabs=False, start_index=None):
+def create_json_file(index, participants, author, tod, multiple_prefabs=False, start_index=None):
     """Creates a basic JSON file. If desired, it can add multiple prefab files so you don't have to load all by one.
     :param index: Index of this execution/file.
     :param participants: Array containing dict type information about each participant.
     :param author: Author of the XML file.
+    :param tod: Time of the day. Must be between 0 and 8.
     :param multiple_prefabs: Option to add multiple prefab files. Needs starting index.
     :param start_index: Index where prefab inclusion stops.
     :return: Void.
@@ -86,6 +90,7 @@ def create_json_file(index, participants, author, multiple_prefabs=False, start_
                                                   " for reference."
         bool_value = True if participant.get("id") == "ego" else False
         data["vehicles"]["{}".format(participant.get("id"))] = {"playerUsable": bool_value, "startFocus": bool_value}
+    data["levelObjects"] = {"tod": {"time": tod, "dayLength": 120, "play": False}}
 
     data = [data]
     with open('{}.json'.format(data[0]["name"]), 'w') as outfile:
@@ -109,11 +114,17 @@ def convert_test(dbc, dbe):
     dbc_root = ET.parse(dbc).getroot()
     dbe_root = ET.parse(dbe).getroot()
     author = dbe_root.findtext("author")
+    tod = dbe_root.findtext("timeOfDay")
+    assert 0 <= float(tod) <= 1, "Time of Day must be between 0 and 1."
     participants = []
     for participant in dbc_root.findall('participants/participant'):
         participants.append(participant.attrib)
     assert len(participants) > 0, "Please add participants to your test case. Check the example for reference."
-    create_json_file(index, participants, author)
+    create_json_file(index, participants, author, tod)
+    env_creator = EnvironmentCreator(dbe_root, index)
+    env_creator.add_to_prefab()
+    criteria_creator = CriteriaConverter(dbc_root, index)
+    # criteria_creator.add_to_prefab()
     matches = glob("urban_*")
     for match in matches:
         move(match, ENV['BNG_HOME'] + "\\levels\\urban\\scenarios")
