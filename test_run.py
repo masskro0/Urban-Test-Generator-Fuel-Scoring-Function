@@ -2,6 +2,8 @@ import time
 from pathlib import Path
 from beamngpy import BeamNGpy, Vehicle, Scenario
 from beamngpy.sensors import Electrics
+from beamngpy.beamngcommon import ENV
+from os.path import join
 
 from observer import MisbehaviourObserver
 
@@ -10,12 +12,8 @@ vehicle = Vehicle('ego', model='etk800', licence='PYTHON', colour='Green')
 electrics = Electrics()
 vehicle.attach_sensor('electrics', electrics)
 
-scenario = Scenario('urban', 'urban_99')
-scenario.add_vehicle(vehicle, pos=(0,0,0), rot=(0, 0, 0))
-scenario.path = Path("D:\\Program Files (x86)\\BeamNG\\levels\\urban\\scenarios")
-#scenario = Scenario('urban', 'example')
-#scenario.add_vehicle(vehicle, pos=(-0, 0, 0), rot=(0, 0, 0))
-#scenario.make(beamng)
+scenario = Scenario('urban', 'urban_26')
+scenario.path = Path(join(ENV["BNG_HOME"], "levels", "urban", "scenarios"))
 
 bng = beamng.open()
 bng.load_scenario(scenario)

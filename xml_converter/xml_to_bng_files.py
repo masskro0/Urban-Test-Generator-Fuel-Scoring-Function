@@ -4,7 +4,7 @@ from pathlib import Path
 from glob import glob
 from termcolor import colored
 from os import getcwd, path, mkdir, environ
-from os.path import exists
+from os.path import exists, join
 from shutil import move
 from beamngpy.beamngcommon import ENV
 from json import dump
@@ -127,5 +127,5 @@ def convert_test(dbc, dbe):
     # criteria_creator.add_to_prefab()
     matches = glob("urban_*")
     for match in matches:
-        move(match, ENV['BNG_HOME'] + "\\levels\\urban\\scenarios")
+        move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
     update_index(index)

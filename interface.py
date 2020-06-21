@@ -13,6 +13,6 @@ if __name__ == '__main__':
             dbc = paths[1]
             convert_test(dbc, dbe)
     """
-    dbc = "D:\\Bachelorarbeit\\code\\scenario\\urban0.dbc.xml"
-    dbe = "D:\\Bachelorarbeit\\code\\scenario\\urban0.dbe.xml"
+    dbc = "C:\\Users\\Michael\\Desktop\\Bachelorarbeit\\code\\scenario\\urban0.dbc.xml"
+    dbe = "C:\\Users\\Michael\\Desktop\\Bachelorarbeit\\code\\scenario\\urban0.dbe.xml"
     convert_test(dbc, dbe)
