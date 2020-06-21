@@ -1,0 +1,17 @@
+[
+    {
+        "authors": "Michael Heine",
+        "description": null,
+        "difficulty": 0,
+        "name": "drivebuild_51",
+        "prefabs": [
+            "levels/drivebuild/scenarios/drivebuild_51.prefab"
+        ],
+        "vehicles": {
+            "ego": {
+                "playerUsable": true,
+                "startFocus": true
+            }
+        }
+    }
+]
