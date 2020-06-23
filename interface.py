@@ -2,6 +2,8 @@
 
 from fuel_consumption_test_generator import FuelConsumptionTestGenerator
 from xml_converter.xml_to_bng_files import convert_test
+from os.path import join
+from os import getcwd
 
 if __name__ == '__main__':
     gen = FuelConsumptionTestGenerator()
@@ -13,6 +15,6 @@ if __name__ == '__main__':
             dbc = paths[1]
             convert_test(dbc, dbe)
     """
-    dbc = "C:\\Users\\Michael\\Desktop\\Bachelorarbeit\\code\\scenario\\urban0.dbc.xml"
-    dbe = "C:\\Users\\Michael\\Desktop\\Bachelorarbeit\\code\\scenario\\urban0.dbe.xml"
+    dbc = join(getcwd(), "scenario", "urban0.dbc.xml")
+    dbe = join(getcwd(), "scenario", "urban0.dbe.xml")
     convert_test(dbc, dbe)

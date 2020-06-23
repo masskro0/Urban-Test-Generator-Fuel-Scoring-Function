@@ -14,6 +14,7 @@ class EnvironmentCreator:
         self.scenario = Scenario('urban', 'urban_{}'.format(self.index))
 
     def _finalize_prefab(self):
+        self.bng.user = None
         self.scenario.make(self.bng)
         self._change_object_options()
 
