@@ -2,6 +2,8 @@ from beamngpy import BeamNGpy, Scenario, Road
 from beamngpy.beamngcommon import ENV
 from os.path import join
 
+from shapely.geometry import LineString
+
 
 class EnvironmentCreator:
 
@@ -29,12 +31,13 @@ class EnvironmentCreator:
         rid = 0
         for lane in lanes:
             self._add_road(lane, rid)
-            self._add_lane_markings(lane, rid)
+            if bool(lane.attrib.get("markings")):
+                self._add_lane_markings(lane, rid)
             rid += 1
 
     def _add_road(self, lane, rid):
-        road = Road(material='road_rubber_sticky', rid='road_{}'.format(rid), interpolate=True, render_priority=10,
-                    texture_length=2.5, drivability=1)
+        road = Road(material='road_rubber_sticky', rid='road_{}'.format(rid), interpolate=True, texture_length=2.5,
+                    drivability=1)
         nodes = []
         road_segments = lane.findall("laneSegment")
         for segment in road_segments:
@@ -45,8 +48,21 @@ class EnvironmentCreator:
         self.scenario.add_road(road)
 
     def _add_lane_markings(self, lane, rid):
-        # renderpriority = 9 , texture_length = 16, drivability = -1
-        pass
+        road = Road(material='line_white', rid='road_{}_left_line'.format(rid), interpolate=False, texture_length=16,
+                    drivability=-1, break_angle=3)
+        nodes = []
+        linestring_nodes = []
+        road_segments = lane.findall("laneSegment")
+        for segment in road_segments:
+            d = segment.attrib
+            linestring_nodes.append((float(d.get("x")), float(d.get("y"))))
+        line = LineString(linestring_nodes)
+        left_line = line.parallel_offset(4, "right")
+        for point in list(left_line.coords):
+            nodes.append((point[0], point[1], 0.01, 1))
+        nodes = nodes[::-1]
+        road.nodes.extend(nodes)
+        self.scenario.add_road(road)
 
     def _change_object_options(self):
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
@@ -58,13 +74,17 @@ class EnvironmentCreator:
             if "overObjects" in line:
                 line = line.replace("0", "1")
                 new_content.append("        annotation = \"STREET\";\n")
+            if "renderPriority" in line:
+                line = ""
             if "distanceFade" in line:
                 line = ""
             if "Material" in line:
                 if "road_rubber_sticky" in line:
                     new_content.append("        distanceFade = \"1000 1000\";\n")
+                    new_content.append("        renderPriority = \"10\";\n")
                 else:
                     new_content.append("        distanceFade = \"0 0\";\n")
+                    new_content.append("        renderPriority = \"9\";\n")
             new_content.append(line)
         prefab_file = open(prefab_path, "w")
         prefab_file.writelines(new_content)
@@ -72,3 +92,7 @@ class EnvironmentCreator:
 
     def _add_obstacles(self):
         raise NotImplementedError()
+
+
+    # TODO Add own interpolation
+    # TODO Add input checking

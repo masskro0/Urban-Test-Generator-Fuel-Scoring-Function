@@ -1,4 +1,6 @@
 """This file offers some utility functions that can be used universally."""
+
+
 from shapely import affinity
 from shapely.geometry import LineString
 from math import degrees, atan2
