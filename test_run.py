@@ -12,7 +12,7 @@ vehicle = Vehicle('ego', model='etk800', licence='PYTHON', colour='Green')
 electrics = Electrics()
 vehicle.attach_sensor('electrics', electrics)
 
-scenario = Scenario('urban', 'urban_59')
+scenario = Scenario('urban', 'urban_81')
 scenario.path = Path(join(ENV["BNG_HOME"], "levels", "urban", "scenarios"))
 
 bng = beamng.open()

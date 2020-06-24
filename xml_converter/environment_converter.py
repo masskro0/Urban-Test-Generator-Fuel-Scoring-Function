@@ -48,7 +48,6 @@ class EnvironmentCreator:
         self.scenario.add_road(road)
 
     def _add_lane_markings(self, lane, rid):
-        nodes = []
         linestring_nodes = []
         road_segments = lane.findall("laneSegment")
         for segment in road_segments:
@@ -58,6 +57,9 @@ class EnvironmentCreator:
         outer_offset = int(road_segments[0].attrib.get("width")) / 2 - 0.4
         self._add_outer_marking(road_segments, rid, line, outer_offset, "left")
         self._add_outer_marking(road_segments, rid, line, outer_offset, "right")
+        if lane.attrib.get("leftLanes") != 0 and lane.attrib.get("rightLanes") != 0:
+            self._add_yellow_divider_line(road_segments, rid, line, int(lane.attrib.get("leftLanes")),
+                                          int(lane.attrib.get("rightLanes")))
 
     def _add_outer_marking(self, road_segments, rid, line, offset, direction):
         nodes = []
@@ -70,10 +72,45 @@ class EnvironmentCreator:
                 z = 0.01
             else:
                 z = (int(z))
-            nodes.append((list(outer_line.coords)[iterator][0], list(outer_line.coords)[iterator][1], z, 0.25))
+            nodes.append((list(outer_line.coords)[iterator][0], list(outer_line.coords)[iterator][1], z, 0.2))
             iterator += 1
         nodes = nodes[::-1]
         road = Road(material='line_white', rid='road_{}_{}_line'.format(rid, direction), interpolate=False,
+                    texture_length=16, drivability=-1)
+        road.nodes.extend(nodes)
+        self.scenario.add_road(road)
+
+    def _add_yellow_divider_line(self, road_segments, rid, line, left_lanes, right_lanes):
+        mid = int(road_segments[0].attrib.get("width")) / 2
+        lane_width = int(road_segments[0].attrib.get("width")) / (left_lanes + right_lanes)
+        nodes = []
+        if left_lanes == right_lanes:
+            for node in road_segments:
+                d = node.attrib
+                z = 0.01 if d.get("z") is None else d.get("z")
+                nodes.append((d.get("x"), d.get("y"), z, 0.3))
+        else:
+            if left_lanes > right_lanes:
+                offset = left_lanes * lane_width - mid
+                direction = "right"
+            elif left_lanes < right_lanes:
+                offset = right_lanes * lane_width - mid
+                direction = "left"
+            else:
+                raise TypeError("leftLanes and rightLanes must be Integers.")
+            divider_line = line.parallel_offset(offset, direction)
+            fac = len(road_segments) / len(list(divider_line.coords))
+            iterator = 0
+            while iterator < len(list(divider_line.coords)):
+                z = road_segments[int(round(fac * iterator))].attrib.get("z")
+                if z is None:
+                    z = 0.01
+                else:
+                    z = (int(z))
+                nodes.append((list(divider_line.coords)[iterator][0], list(divider_line.coords)[iterator][1], z, 0.3))
+                iterator += 1
+            nodes = nodes[::-1]
+        road = Road(material='line_yellow_double', rid='road_{}_left_right_divider'.format(rid), interpolate=False,
                     texture_length=16, drivability=-1)
         road.nodes.extend(nodes)
         self.scenario.add_road(road)
