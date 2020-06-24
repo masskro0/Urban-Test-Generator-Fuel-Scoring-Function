@@ -48,8 +48,6 @@ class EnvironmentCreator:
         self.scenario.add_road(road)
 
     def _add_lane_markings(self, lane, rid):
-        road = Road(material='line_white', rid='road_{}_left_line'.format(rid), interpolate=False, texture_length=16,
-                    drivability=-1, break_angle=3)
         nodes = []
         linestring_nodes = []
         road_segments = lane.findall("laneSegment")
@@ -57,10 +55,26 @@ class EnvironmentCreator:
             d = segment.attrib
             linestring_nodes.append((float(d.get("x")), float(d.get("y"))))
         line = LineString(linestring_nodes)
-        left_line = line.parallel_offset(4, "right")
-        for point in list(left_line.coords):
-            nodes.append((point[0], point[1], 0.01, 1))
+        outer_offset = int(road_segments[0].attrib.get("width")) / 2 - 0.4
+        self._add_outer_marking(road_segments, rid, line, outer_offset, "left")
+        self._add_outer_marking(road_segments, rid, line, outer_offset, "right")
+
+    def _add_outer_marking(self, road_segments, rid, line, offset, direction):
+        nodes = []
+        outer_line = line.parallel_offset(offset, direction)
+        fac = len(road_segments) / len(list(outer_line.coords))
+        iterator = 0
+        while iterator < len(list(outer_line.coords)):
+            z = road_segments[int(round(fac * iterator))].attrib.get("z")
+            if z is None:
+                z = 0.01
+            else:
+                z = (int(z))
+            nodes.append((list(outer_line.coords)[iterator][0], list(outer_line.coords)[iterator][1], z, 0.25))
+            iterator += 1
         nodes = nodes[::-1]
+        road = Road(material='line_white', rid='road_{}_{}_line'.format(rid, direction), interpolate=False,
+                    texture_length=16, drivability=-1)
         road.nodes.extend(nodes)
         self.scenario.add_road(road)
 
@@ -74,6 +88,8 @@ class EnvironmentCreator:
             if "overObjects" in line:
                 line = line.replace("0", "1")
                 new_content.append("        annotation = \"STREET\";\n")
+            if "breakAngle" in line:
+                line = "        breakAngle = \"3\";\n"
             if "renderPriority" in line:
                 line = ""
             if "distanceFade" in line:
@@ -92,7 +108,6 @@ class EnvironmentCreator:
 
     def _add_obstacles(self):
         raise NotImplementedError()
-
 
     # TODO Add own interpolation
     # TODO Add input checking
