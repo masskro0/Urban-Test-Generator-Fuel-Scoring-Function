@@ -108,7 +108,8 @@ def convert_test(dbc, dbe):
     :param dbe: Path to the environment XML file.
     :return: Void.
     """
-    print(colored("Converting XML files to BNG files... Moving to scenarios folder...", "grey"))
+    print(colored("Converting XML files to BNG files... Moving to folder {}..."
+                  .format(join(ENV['BNG_HOME'], "levels", "urban", "scenarios")), "grey"))
     init_scenario_folder()
     index = get_index()
     dbc_root = ET.parse(dbc).getroot()
