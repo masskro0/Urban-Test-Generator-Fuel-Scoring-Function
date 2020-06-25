@@ -1,4 +1,4 @@
-from beamngpy import BeamNGpy, Scenario, Road, StaticObject
+from beamngpy import BeamNGpy, Scenario, Road, StaticObject, Vehicle
 from beamngpy.beamngcommon import ENV
 from os.path import join
 from math import radians, sin, cos
@@ -6,9 +6,10 @@ from numpy import dot
 from shapely.geometry import LineString, MultiLineString
 
 
-class EnvironmentCreator:
+class Converter:
 
-    def __init__(self, dbe_root, index):
+    def __init__(self, dbc_root, dbe_root, index):
+        self.dbc_root = dbc_root
         self.dbe_root = dbe_root
         self.index = index
 
@@ -25,6 +26,7 @@ class EnvironmentCreator:
         self._init_prefab()
         self._add_lanes()
         self._add_obstacles()
+        self._add_participants()
         self._finalize_prefab()
 
     def _add_lanes(self):
@@ -231,6 +233,30 @@ class EnvironmentCreator:
             else:
                 raise NotImplementedError("Error. Object type \"{}\" is not supported.".format(obstacle.tag))
             id_number += 1
+
+    def _add_participants(self):
+        participants = self.dbc_root.findall("participants/participant")
+        for participant in participants:
+            attr = participant.attrib
+            assert attr.get("id") is not None, "Vehicles needs a ID."
+            model = "ETK800" if attr.get("model") is None else attr.get("model")
+            color = "White" if attr.get("color") is None else attr.get("color")
+            vehicle = Vehicle(vid=attr.get("id"), color=color, model=model)
+            self._add_waypoints(vehicle)
+            init_state = participant.find("initialState")
+            x = init_state.get("x")
+            y = init_state.get("y")
+            assert x is not None and y is not None, "x and y coordinates must be set."
+            z = 0 if init_state.get("z") is None else init_state.get("z")
+            x_rot = 0 if init_state.get("x_rot") is None else init_state.get("x_rot")
+            y_rot = 0 if init_state.get("y_rot") is None else init_state.get("y_rot")
+            z_rot = -90 if init_state.get("orientation") is None else -float(init_state.get("orientation")) - 90
+            pos = (x, y, z)
+            rot = (x_rot, y_rot, z_rot)
+            self.scenario.add_vehicle(vehicle=vehicle, pos=pos, rot=rot)
+
+    def _add_waypoints(self, vehicle):
+        pass
 
     # TODO Add own interpolation
     # TODO Add input checking

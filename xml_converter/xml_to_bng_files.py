@@ -10,8 +10,7 @@ from beamngpy.beamngcommon import ENV
 from json import dump
 import xml.etree.ElementTree as ET
 
-from xml_converter.environment_converter import EnvironmentCreator
-from xml_converter.criteria_converter import CriteriaConverter
+from xml_converter.converter import Converter
 
 
 def get_next_test(files_name):
@@ -122,10 +121,8 @@ def convert_test(dbc, dbe):
         participants.append(participant.attrib)
     assert len(participants) > 0, "Please add participants to your test case. Check the example for reference."
     create_json_file(index, participants, author, tod)
-    env_creator = EnvironmentCreator(dbe_root, index)
-    env_creator.add_to_prefab()
-    criteria_creator = CriteriaConverter(dbc_root, index)
-    # criteria_creator.add_to_prefab()
+    converter = Converter(dbc_root, dbe_root, index)
+    converter.add_to_prefab()
     matches = glob("urban_*")
     for match in matches:
         move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
