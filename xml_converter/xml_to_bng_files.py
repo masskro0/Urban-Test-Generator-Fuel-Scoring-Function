@@ -8,7 +8,7 @@ from os.path import exists, join
 from shutil import move
 from beamngpy.beamngcommon import ENV
 from json import dump
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as Etree
 
 from test_run import run_test_case
 from xml_converter.converter import Converter
@@ -112,8 +112,8 @@ def convert_test(dbc, dbe):
                   .format(join(ENV['BNG_HOME'], "levels", "urban", "scenarios")), "grey"))
     init_scenario_folder()
     index = get_index()
-    dbc_root = ET.parse(dbc).getroot()
-    dbe_root = ET.parse(dbe).getroot()
+    dbc_root = Etree.parse(dbc).getroot()
+    dbe_root = Etree.parse(dbe).getroot()
     author = dbe_root.findtext("author")
     tod = dbe_root.findtext("timeOfDay")
     assert 0 <= float(tod) <= 1, "Time of Day must be between 0 and 1."

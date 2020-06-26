@@ -6,6 +6,30 @@ from numpy import dot
 from shapely.geometry import LineString, MultiLineString
 
 
+def _calc_rot_matrix(rad_x, rad_y, rad_z):
+    rot_matrix_x = [[1, 0, 0], [0, cos(rad_x), sin(rad_x)], [0, -sin(rad_x), cos(rad_x)]]
+    rot_matrix_y = [[cos(rad_y), 0, -sin(rad_y)], [0, 1, 0], [sin(rad_y), 0, cos(rad_y)]]
+    rot_matrix_z = [[cos(rad_z), sin(rad_z), 0], [-sin(rad_z), cos(rad_z), 0], [0, 0, 1]]
+    rot_matrix = dot(rot_matrix_z, rot_matrix_y)
+    rot_matrix = dot(rot_matrix, rot_matrix_x)
+    return rot_matrix
+
+
+def _get_nodes(divider_line, road_segments, fac):
+    nodes = list()
+    it = 0
+    while it < len(list(divider_line.coords)):
+        z = road_segments[int(round(fac * it))].attrib.get("z")
+        if z is None:
+            z = 0.01
+        else:
+            z = (int(z))
+        nodes.append((list(divider_line.coords)[it][0], list(divider_line.coords)[it][1], z, 0.2))
+        it += 1
+    nodes = nodes[::-1]
+    return nodes
+
+
 class Converter:
 
     def __init__(self, dbc_root, dbe_root, index):
@@ -62,12 +86,18 @@ class Converter:
         outer_offset = int(road_segments[0].attrib.get("width")) / 2 - 0.4
         self._add_outer_marking(road_segments, rid, line, outer_offset, "left")
         self._add_outer_marking(road_segments, rid, line, outer_offset, "right")
-        if lane.attrib.get("leftLanes") != 0 and lane.attrib.get("rightLanes") != 0:
-            self._add_yellow_divider_line(road_segments, rid, line, int(lane.attrib.get("leftLanes")),
-                                          int(lane.attrib.get("rightLanes")))
+        left_lanes = int(lane.attrib.get("leftLanes"))
+        right_lanes = int(lane.attrib.get("rightLanes"))
+        if left_lanes != 0 and right_lanes != 0:
+            self._add_yellow_divider_line(road_segments, rid, line, left_lanes, right_lanes)
+        if left_lanes > 1:
+            self._add_separator_lines(road_segments, rid, line, left_lanes, right_lanes,
+                                      int(road_segments[0].attrib.get("width")), "left")
+        if right_lanes > 1:
+            self._add_separator_lines(road_segments, rid, line, left_lanes, right_lanes,
+                                      int(road_segments[0].attrib.get("width")), "right")
 
     def _add_outer_marking(self, road_segments, rid, line, offset, direction):
-        nodes = []
         outer_line = line.parallel_offset(offset, direction)
         if isinstance(outer_line, MultiLineString):
             temp_list = list()
@@ -76,16 +106,7 @@ class Converter:
                     temp_list.append(coord)
             outer_line = LineString(temp_list)
         fac = len(road_segments) / len(list(outer_line.coords))
-        iterator = 0
-        while iterator < len(list(outer_line.coords)):
-            z = road_segments[int(round(fac * iterator))].attrib.get("z")
-            if z is None:
-                z = 0.01
-            else:
-                z = (int(z))
-            nodes.append((list(outer_line.coords)[iterator][0], list(outer_line.coords)[iterator][1], z, 0.2))
-            iterator += 1
-        nodes = nodes[::-1]
+        nodes = _get_nodes(outer_line, road_segments, fac)
         road = Road(material='line_white', rid='road_{}_{}_line'.format(rid, direction), interpolate=False,
                     texture_length=16, drivability=-1)
         road.nodes.extend(nodes)
@@ -125,6 +146,23 @@ class Converter:
                     texture_length=16, drivability=-1)
         road.nodes.extend(nodes)
         self.scenario.add_road(road)
+
+    def _add_separator_lines(self, road_segments, rid, line, left_lanes, right_lanes, width, direction):
+        separators = left_lanes - 1 if direction == "left" else right_lanes - 1
+        width_per_lane = width / (left_lanes + right_lanes)
+        iterator = 1
+        mid = width / 2
+        while iterator <= separators:
+            position = iterator * width_per_lane if direction == "left" else width - (iterator * width_per_lane)
+            offset = mid - position if direction == "left" else position - mid
+            divider_line = line.parallel_offset(offset, direction)
+            fac = len(road_segments) / len(list(divider_line.coords))
+            nodes = _get_nodes(divider_line, road_segments, fac)
+            road = Road(material='line_dashed_short', rid='road_{}_separator_{}'.format(rid, iterator - 1),
+                        interpolate=False, texture_length=16, drivability=-1)
+            road.nodes.extend(nodes)
+            self.scenario.add_road(road)
+            iterator += 1
 
     def _change_object_options(self):
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
@@ -181,12 +219,8 @@ class Converter:
                 rad_y = radians(rot[1])
                 rad_z = radians(rot[2])
                 pole_coords = (pos[0], pos[1], pos[2])
+                rot_matrix = _calc_rot_matrix(rad_x, rad_y, rad_z)
                 traffic_light_coords = (0, 0, 4.62)  # x y z coordinates when pole is placed at (0,0,0)
-                rot_matrix_x = [[1, 0, 0], [0, cos(rad_x), sin(rad_x)], [0, -sin(rad_x), cos(rad_x)]]
-                rot_matrix_y = [[cos(rad_y), 0, -sin(rad_y)], [0, 1, 0], [sin(rad_y), 0, cos(rad_y)]]
-                rot_matrix_z = [[cos(rad_z), sin(rad_z), 0], [-sin(rad_z), cos(rad_z), 0], [0, 0, 1]]
-                rot_matrix = dot(rot_matrix_z, rot_matrix_y)
-                rot_matrix = dot(rot_matrix, rot_matrix_x)
                 traffic_light_coords = dot(rot_matrix, traffic_light_coords)
                 traffic_light_coords = (
                     traffic_light_coords[0] + pole_coords[0], traffic_light_coords[1] + pole_coords[1],
@@ -209,11 +243,7 @@ class Converter:
                 pole_coords = (pos[0], pos[1], pos[2])
                 traffic_light1_coords = (5.7, 0.17, 5.9)  # x y z coordinates when pole is placed at (0,0,0)
                 traffic_light2_coords = (2.1, 0.17, 5.5)
-                rot_matrix_x = [[1, 0, 0], [0, cos(rad_x), sin(rad_x)], [0, -sin(rad_x), cos(rad_x)]]
-                rot_matrix_y = [[cos(rad_y), 0, -sin(rad_y)], [0, 1, 0], [sin(rad_y), 0, cos(rad_y)]]
-                rot_matrix_z = [[cos(rad_z), sin(rad_z), 0], [-sin(rad_z), cos(rad_z), 0], [0, 0, 1]]
-                rot_matrix = dot(rot_matrix_z, rot_matrix_y)
-                rot_matrix = dot(rot_matrix, rot_matrix_x)
+                rot_matrix = _calc_rot_matrix(rad_x, rad_y, rad_z)
                 traffic_light1_coords = dot(rot_matrix, traffic_light1_coords)
                 traffic_light1_coords = (
                     traffic_light1_coords[0] + pole_coords[0], traffic_light1_coords[1] + pole_coords[1],
@@ -276,7 +306,7 @@ class Converter:
                     "        directionalWaypoint = \"0\";\n",
                     "        position = \"" + attr.get("x") + " " + attr.get("y") + " " + str(z) + "\";\n",
                     "        scale = \"" + attr.get("tolerance") + " " + attr.get("tolerance") + " "
-                             + attr.get("tolerance") + "\";\n",
+                    + attr.get("tolerance") + "\";\n",
                     "        rotationMatrix = \"1 0 0 0 1 0 0 0 1\";\n",
                     "        mode = \"Ignore\";\n",
                     "        canSave = \"1\";\n",
@@ -285,7 +315,7 @@ class Converter:
                 ])
                 index += 1
             if vid == "ego":
-                self.success_point = "wp_{}_{}".format(vid, index-1)
+                self.success_point = "wp_{}_{}".format(vid, index - 1)
         original_content.append("};")
         prefab_file = open(prefab_path, "w")
         prefab_file.writelines(original_content)
