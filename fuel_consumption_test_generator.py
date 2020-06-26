@@ -405,28 +405,32 @@ class FuelConsumptionTestGenerator:
             yield Path(matches[iterator + 1]), Path(matches[iterator])
             iterator += 2
 
-# TODO  Desired features:
+# TODO Desired features:
 #       TODO Lane switch when turning for multiple lanes
 #       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
 #       TODO Add other participants
 #       TODO Control traffic lights
 #       TODO Parked cars
+#       TODO Add yield sign
+#       TODO Add traffic signs for opposite lanes
 #       TODO Create init population
 #       TODO Mutation
 #       TODO Repair function
 #       TODO Mutation validity checks
 #       TODO Crossover
 #       TODO Fix lane markings
-#       TODO Improve performance
-#       TODO Double test cases by placing spawn point on the other side
-#       TODO Fix/Improve waypoints
-#       TODO Signs on opposite lanes
-#       TODO Improve traffic signs positioning
-#       TODO Add traffic signs for opposite lanes
-#       TODO Add yield sign
-#       TODO Implement own converter
-#       TODO Add weather presets
-#       TODO Daytime
-#       TODO One width per lane
-#       TODO Add drivebuild level folder
+#       TODO Add drivebuild level folder + script or Readme
+
+# TODO Observer/Specifications:
+
+# TODO May-have:
 #       TODO Remove redundant XML information
+#       TODO Daytime
+#       TODO Add weather presets
+#       TODO Improve traffic signs positioning
+#       TODO Double test cases by placing spawn point on the other side
+#       TODO Improve performance
+#       TODO Converter:
+#           TODO Add own interpolation
+#           TODO Add input checking
+#           TODO Implement Sensor deployment

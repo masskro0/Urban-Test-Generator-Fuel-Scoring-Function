@@ -320,7 +320,3 @@ class Converter:
         prefab_file = open(prefab_path, "w")
         prefab_file.writelines(original_content)
         prefab_file.close()
-
-    # TODO Add own interpolation
-    # TODO Add input checking
-    # TODO Implement Sensor deployment
