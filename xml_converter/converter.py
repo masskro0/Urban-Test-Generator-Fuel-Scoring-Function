@@ -12,6 +12,7 @@ class Converter:
         self.dbc_root = dbc_root
         self.dbe_root = dbe_root
         self.index = index
+        self.success_point = None
 
     def _init_prefab(self):
         self.bng = BeamNGpy('localhost', 64255)
@@ -21,6 +22,7 @@ class Converter:
         self.bng.user = None
         self.scenario.make(self.bng)
         self._change_object_options()
+        self._add_waypoints()
 
     def add_to_prefab(self):
         self._init_prefab()
@@ -242,7 +244,6 @@ class Converter:
             model = "ETK800" if attr.get("model") is None else attr.get("model")
             color = "White" if attr.get("color") is None else attr.get("color")
             vehicle = Vehicle(vid=attr.get("id"), color=color, model=model)
-            self._add_waypoints(vehicle)
             init_state = participant.find("initialState")
             x = init_state.get("x")
             y = init_state.get("y")
@@ -255,8 +256,41 @@ class Converter:
             rot = (x_rot, y_rot, z_rot)
             self.scenario.add_vehicle(vehicle=vehicle, pos=pos, rot=rot)
 
-    def _add_waypoints(self, vehicle):
-        pass
+    def _add_waypoints(self):
+        prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
+        prefab_file = open(prefab_path, "r")
+        original_content = prefab_file.readlines()
+        prefab_file.close()
+        participants = self.dbc_root.findall("participants/participant")
+        for participant in participants:
+            waypoints = participant.findall("movement/waypoint")
+            vid = participant.get("id")
+            index = 0
+            original_content[-1] = ""
+            for waypoint in waypoints:
+                attr = waypoint.attrib
+                z = 0 if attr.get("z") is None else attr.get("z")
+                original_content.extend([
+                    "    new BeamNGWaypoint(wp_{}_{}){{\n".format(vid, index),
+                    "        drawDebug = \"0\";\n",
+                    "        directionalWaypoint = \"0\";\n",
+                    "        position = \"" + attr.get("x") + " " + attr.get("y") + " " + str(z) + "\";\n",
+                    "        scale = \"" + attr.get("tolerance") + " " + attr.get("tolerance") + " "
+                             + attr.get("tolerance") + "\";\n",
+                    "        rotationMatrix = \"1 0 0 0 1 0 0 0 1\";\n",
+                    "        mode = \"Ignore\";\n",
+                    "        canSave = \"1\";\n",
+                    "        canSaveDynamicFields = \"1\";\n",
+                    "    };\n"
+                ])
+                index += 1
+            if vid == "ego":
+                self.success_point = "wp_{}_{}".format(vid, index-1)
+        original_content.append("};")
+        prefab_file = open(prefab_path, "w")
+        prefab_file.writelines(original_content)
+        prefab_file.close()
 
     # TODO Add own interpolation
     # TODO Add input checking
+    # TODO Implement Sensor deployment

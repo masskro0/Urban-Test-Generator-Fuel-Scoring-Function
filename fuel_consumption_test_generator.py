@@ -429,3 +429,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Daytime
 #       TODO One width per lane
 #       TODO Add drivebuild level folder
+#       TODO Remove redundant XML information

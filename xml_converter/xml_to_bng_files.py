@@ -10,6 +10,7 @@ from beamngpy.beamngcommon import ENV
 from json import dump
 import xml.etree.ElementTree as ET
 
+from test_run import run_test_case
 from xml_converter.converter import Converter
 
 
@@ -127,3 +128,4 @@ def convert_test(dbc, dbe):
     for match in matches:
         move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
     update_index(index)
+    run_test_case(converter.scenario, converter.success_point)
