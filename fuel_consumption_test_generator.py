@@ -411,7 +411,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Add other participants
 #       TODO Control traffic lights
 #       TODO Parked cars
-#       TODO Add yield sign
 #       TODO Add traffic signs for opposite lanes
 #       TODO Create init population
 #       TODO Mutation

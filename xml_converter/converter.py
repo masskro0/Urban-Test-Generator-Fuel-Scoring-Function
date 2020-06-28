@@ -19,7 +19,10 @@ def _get_nodes(divider_line, road_segments, fac):
     nodes = list()
     it = 0
     while it < len(list(divider_line.coords)):
-        z = road_segments[int(round(fac * it))].attrib.get("z")
+        index = int(round(fac * it))
+        if index >= len(road_segments):
+            index = len(road_segments) - 1
+        z = road_segments[index].attrib.get("z")
         if z is None:
             z = 0.01
         else:
@@ -211,6 +214,12 @@ class Converter:
                 stopsign = StaticObject(pos=pos, rot=rot, name=name_sign,
                                         scale=(1.9, 1.9, 1.9), shape='/levels/urban/art/objects/stopsign.dae')
                 self.scenario.add_object(stopsign)
+            elif obstacle.tag == "prioritysign":
+                rot = (rot[0], rot[1], 90 - rot[2])
+                name_sign = "prioritysign_" + str(id_number)
+                prioritysign = StaticObject(pos=pos, rot=rot, name=name_sign,
+                                        scale=(1.2, 1.2, 1.2), shape='/levels/urban/art/objects/priority.dae')
+                self.scenario.add_object(prioritysign)
             elif obstacle.tag == "trafficlightsingle":
                 name_light = "trafficlightsingle_" + str(id_number)
                 name_pole = "polesingle_" + str(id_number)
