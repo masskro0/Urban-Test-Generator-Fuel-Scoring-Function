@@ -108,8 +108,7 @@ def convert_test(dbc, dbe):
     :param dbe: Path to the environment XML file.
     :return: Void.
     """
-    print(colored("Converting XML files to BNG files... Moving to folder {}..."
-                  .format(join(ENV['BNG_HOME'], "levels", "urban", "scenarios")), "grey"))
+    print(colored("Converting XML files to BNG files...", "grey", attrs=['bold']))
     init_scenario_folder()
     index = get_index()
     dbc_root = Etree.parse(dbc).getroot()
@@ -125,6 +124,8 @@ def convert_test(dbc, dbe):
     converter = Converter(dbc_root, dbe_root, index)
     converter.add_to_prefab()
     matches = glob("urban_*")
+    print(colored("Moving files to folder {}...".format(join(ENV['BNG_HOME'], "levels", "urban", "scenarios")),
+                  "grey", attrs=['bold']))
     for match in matches:
         move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
     update_index(index)

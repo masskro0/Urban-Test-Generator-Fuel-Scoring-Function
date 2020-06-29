@@ -77,6 +77,100 @@ def _merge_lanes(population):
     return population
 
 
+def _add_traffic_signs(last_point, intersection_point, current_left_lanes, current_right_lanes,
+                       new_left_lanes, new_right_lanes, layout, number_of_ways, direction, left_point,
+                       straight_point, right_point, width, width_opposite):
+    # Calculate traffic sign position.
+    old_width = width / (current_left_lanes + current_right_lanes)
+    new_width = width_opposite / (new_left_lanes + new_right_lanes)
+    obstacles = list()
+    temp_point = (intersection_point.get("x") + 5, intersection_point.get("y"))
+    line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
+                       (last_point.get("x"), last_point.get("y"))])
+    # Bottom direction.
+    z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
+    angle = int(round(get_angle((right_point.get("x"), right_point.get("y")), line.coords[0], line.coords[1])))
+    offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.2
+    fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + offset) / line.length
+    vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+    vector = affinity.rotate(vector, -90, vector.coords[1])
+    fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + 0.2) / vector.length
+    vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
+    position = vector.coords[0]
+    if current_left_lanes + current_right_lanes == 2:
+        if random() <= 0.5:
+            obstacles.append({"name": "stopsign", "x": position[0], "y": position[1], "zRot": z_rot})
+        else:
+            obstacles.append({"name": "trafficlightsingle", "x": position[0], "y": position[1],
+                              "zRot": z_rot})
+    else:
+        obstacles.append({"name": "trafficlightdouble", "x": position[0], "y": position[1],
+                          "zRot": z_rot})
+    sign_on_my_lane = obstacles[0].get("name")
+
+    # Left direction.
+    if number_of_ways == 4 or direction == "left" or layout == "left":
+        line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
+                           (left_point.get("x"), left_point.get("y"))])
+        z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
+        angle = int(round(get_angle((last_point.get("x"), last_point.get("y")),
+                                    line.coords[0], line.coords[1])))
+        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.2
+        fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + offset) / line.length
+        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+        vector = affinity.rotate(vector, -90, vector.coords[1])
+        fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + 0.2) / vector.length
+        vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
+        position = vector.coords[0]
+        if sign_on_my_lane == "stopsign":
+            obstacles.append({"name": "prioritysign", "x": position[0], "y": position[1], "zRot": z_rot})
+        else:
+            if new_left_lanes + new_right_lanes == 2:
+                obstacles.append({"name": "trafficlightsingle", "x": position[0], "y": position[1], "zRot": z_rot})
+            else:
+                obstacles.append({"name": "trafficlightdouble", "x": position[0], "y": position[1], "zRot": z_rot})
+
+    # Top direction.
+    if number_of_ways == 4 or direction == "straight" or layout == "straight":
+        line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
+                           (straight_point.get("x"), straight_point.get("y"))])
+        z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
+        angle = int(round(get_angle((left_point.get("x"), left_point.get("y")),
+                                    line.coords[0], line.coords[1])))
+        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.2
+        fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + offset) / line.length
+        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+        vector = affinity.rotate(vector, -90, vector.coords[1])
+        fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + 0.2) / vector.length
+        vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
+        position = vector.coords[0]
+        obstacles.append({"name": sign_on_my_lane, "x": position[0], "y": position[1], "zRot": z_rot})
+
+    # Right direction.
+    if number_of_ways == 4 or direction == "right" or layout == "right":
+        line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
+                           (right_point.get("x"), right_point.get("y"))])
+        z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
+        angle = int(round(get_angle((straight_point.get("x"), straight_point.get("y")),
+                                    line.coords[0], line.coords[1])))
+        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.2
+        fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + offset) / line.length
+        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+        vector = affinity.rotate(vector, -90, vector.coords[1])
+        fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + 0.2) / vector.length
+        vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
+        position = vector.coords[0]
+        if sign_on_my_lane == "stopsign":
+            obstacles.append({"name": "prioritysign", "x": position[0], "y": position[1], "zRot": z_rot})
+        else:
+            if new_left_lanes + new_right_lanes == 2:
+                obstacles.append({"name": "trafficlightsingle", "x": position[0], "y": position[1], "zRot": z_rot})
+            else:
+                obstacles.append({"name": "trafficlightdouble", "x": position[0], "y": position[1], "zRot": z_rot})
+
+    return obstacles
+
+
 class FuelConsumptionTestGenerator:
 
     def __init__(self):
@@ -141,6 +235,7 @@ class FuelConsumptionTestGenerator:
             y_pos = randint(y_min, y_max)
             point = (x_pos, y_pos)
             dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
+            deg = None
             if penultimate_point is not None:
                 deg = get_angle((penultimate_point.get("x"), penultimate_point.get("y")),
                                 (last_point.get("x"), last_point.get("y")),
@@ -196,10 +291,17 @@ class FuelConsumptionTestGenerator:
                         and not intersection_check_width(width_lines, control_points_lines, intersection_lanes_temp):
                     left_lanes = intersection_items.get("left_lanes")
                     right_lanes = intersection_items.get("right_lanes")
-                    obstacles.append(self._add_traffic_sign(control_points[-1], intersection.get("intersection_point"),
-                                                            lanes[lane_index].get("left_lanes"),
-                                                            lanes[lane_index].get("right_lanes"),
-                                                            left_lanes, right_lanes))
+                    obstacles.extend(_add_traffic_signs(control_points[-1], intersection.get("intersection_point"),
+                                                        lanes[lane_index].get("left_lanes"),
+                                                        lanes[lane_index].get("right_lanes"),
+                                                        left_lanes, right_lanes, intersection.get("layout"),
+                                                        intersection.get("number_of_ways"),
+                                                        intersection.get("direction"),
+                                                        intersection.get("left_point"),
+                                                        intersection.get("straight_point"),
+                                                        intersection.get("right_point"),
+                                                        lanes[lane_index].get("width"),
+                                                        intersection.get("new_width")))
                     lanes[lane_index].get("control_points")[-1]["type"] = "intersection"
                     lanes.extend(intersection_items.get("lanes"))
                     ego_lanes.extend(intersection_items.get("ego_lanes"))
@@ -314,32 +416,6 @@ class FuelConsumptionTestGenerator:
                 "new_right_lanes": right_lanes,
                 "new_width": calc_width(left_lanes, right_lanes)}
 
-    def _add_traffic_sign(self, last_point, intersection_point, current_left_lanes, current_right_lanes,
-                          new_left_lanes, new_right_lanes):
-        # Calculate traffic sign position.
-        line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
-                           (last_point.get("x"), last_point.get("y"))])
-        temp_line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
-                                (intersection_point.get("x") + 5, intersection_point.get("y"))])
-        angle = int(round(get_angle(temp_line.coords[1], line.coords[0], line.coords[1]))) + 180
-        fac = (self.MAX_WIDTH * (current_left_lanes + current_right_lanes) / 2 + 0.5) / line.length
-        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
-        vector = affinity.rotate(vector, 90, line.coords[0])
-        fac = (self.MAX_WIDTH * (new_left_lanes + new_right_lanes) / 2 + 2) / vector.length
-        vector2 = LineString([(vector.coords[1][0], vector.coords[1][1]),
-                              (vector.coords[0][0], vector.coords[0][1])])
-        vector2 = affinity.scale(vector2, xfact=fac, yfact=fac, origin=vector2.coords[0])
-        vector2 = affinity.rotate(vector2, 90, vector2.coords[0])
-        position = vector2.coords[1]
-
-        if current_left_lanes + current_right_lanes == 2:
-            if random() <= 0.5:
-                return {"name": "stopsign", "x": position[0], "y": position[1], "zRot": angle}
-            else:
-                return {"name": "trafficlightsingle", "x": position[0], "y": position[1], "zRot": angle}
-        else:
-            return {"name": "trafficlightdouble", "x": position[0], "y": position[1], "zRot": angle}
-
     def _spline_population(self, population):
         """Converts the control points list of every individual to a bspline
          list and adds the width parameter as well as the ego car.
@@ -387,9 +463,6 @@ class FuelConsumptionTestGenerator:
         temp_list = self._spline_population(temp_list)
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
-
-        # Comment out if you want to see the generated roads (blocks until you close all images).
-
         self.population_list = []
 
     def get_test(self):
@@ -407,18 +480,19 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Lane switch when turning for multiple lanes
-#       TODO Calculate parallel coords for waypoints (shapely's parallel offset)
 #       TODO Add other participants
 #       TODO Control traffic lights
 #       TODO Parked cars
-#       TODO Add traffic signs for opposite lanes
+#       TODO Waypoints are broken
 #       TODO Create init population
 #       TODO Mutation
 #       TODO Repair function
 #       TODO Mutation validity checks
 #       TODO Crossover
-#       TODO Fix lane markings
 #       TODO Add drivebuild level folder + script or Readme
+#       TODO Refactor
+#       TODO Comments
+#       TODO Fix lane markings
 
 # TODO Observer/Specifications:
 
@@ -426,7 +500,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Remove redundant XML information
 #       TODO Daytime
 #       TODO Add weather presets
-#       TODO Improve traffic signs positioning
 #       TODO Double test cases by placing spawn point on the other side
 #       TODO Improve performance
 #       TODO Converter:

@@ -1,11 +1,14 @@
 import time
 from beamngpy import BeamNGpy
 from beamngpy.sensors import Electrics
+from termcolor import colored
 
 from observer import MisbehaviourObserver
 
 
 def run_test_case(scenario, success_point):
+
+    print(colored("Starting test case {}.".format(scenario.name), "grey", attrs=['bold']))
     vehicles = scenario.vehicles
     ego = None
     for vehicle in vehicles.keys():

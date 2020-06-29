@@ -134,10 +134,19 @@ class Converter:
             else:
                 raise TypeError("leftLanes and rightLanes must be Integers.")
             divider_line = line.parallel_offset(offset, direction)
+            if isinstance(divider_line, MultiLineString):
+                temp_list = list()
+                for line in divider_line:
+                    for coord in list(line.coords):
+                        temp_list.append(coord)
+                divider_line = LineString(temp_list)
             fac = len(road_segments) / len(list(divider_line.coords))
             iterator = 0
             while iterator < len(list(divider_line.coords)):
-                z = road_segments[int(round(fac * iterator))].attrib.get("z")
+                index = int(round(fac * iterator))
+                if index >= len(road_segments):
+                    index = len(road_segments) - 1
+                z = road_segments[index].attrib.get("z")
                 if z is None:
                     z = 0.01
                 else:
@@ -159,9 +168,16 @@ class Converter:
             position = iterator * width_per_lane if direction == "left" else width - (iterator * width_per_lane)
             offset = mid - position if direction == "left" else position - mid
             divider_line = line.parallel_offset(offset, direction)
+            if isinstance(divider_line, MultiLineString):
+                temp_list = list()
+                for line in divider_line:
+                    for coord in list(line.coords):
+                        temp_list.append(coord)
+                divider_line = LineString(temp_list)
             fac = len(road_segments) / len(list(divider_line.coords))
             nodes = _get_nodes(divider_line, road_segments, fac)
-            road = Road(material='line_dashed_short', rid='road_{}_separator_{}'.format(rid, iterator - 1),
+            road = Road(material='line_dashed_short', rid='road_{}_{}_separator_{}'.format(rid, direction,
+                                                                                           iterator - 1),
                         interpolate=False, texture_length=16, drivability=-1)
             road.nodes.extend(nodes)
             self.scenario.add_road(road)
