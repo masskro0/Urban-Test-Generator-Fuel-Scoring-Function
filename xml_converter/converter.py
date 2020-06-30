@@ -4,6 +4,10 @@ from os.path import join
 from math import radians, sin, cos
 from numpy import dot
 from shapely.geometry import LineString, MultiLineString
+from numpy import asarray, clip, concatenate, arange, linspace, array
+from scipy.interpolate import splev
+
+NUM_NODES = 100
 
 
 def _calc_rot_matrix(rad_x, rad_y, rad_z):
@@ -15,7 +19,7 @@ def _calc_rot_matrix(rad_x, rad_y, rad_z):
     return rot_matrix
 
 
-def _get_nodes(divider_line, road_segments, fac):
+def _get_nodes(divider_line, road_segments, fac, width=0.2):
     nodes = list()
     it = 0
     while it < len(list(divider_line.coords)):
@@ -27,10 +31,37 @@ def _get_nodes(divider_line, road_segments, fac):
             z = 0.01
         else:
             z = (int(z))
-        nodes.append((list(divider_line.coords)[it][0], list(divider_line.coords)[it][1], z, 0.2))
+        nodes.append((list(divider_line.coords)[it][0], list(divider_line.coords)[it][1], z, width))
         it += 1
-    nodes = nodes[::-1]
     return nodes
+
+
+def _get_offset_nodes(road_segments, line, offset, direction):
+    outer_line = line.parallel_offset(offset, direction)
+    if isinstance(outer_line, MultiLineString):
+        temp_list = list()
+        for line in outer_line:
+            for coord in list(line.coords):
+                temp_list.append(coord)
+        outer_line = LineString(temp_list)
+    fac = len(road_segments) / len(list(outer_line.coords))
+    nodes = _get_nodes(outer_line, road_segments, fac)
+    if direction == "right":
+        nodes = nodes[::-1]
+    return nodes
+
+
+def _b_spline(old_coords):
+    """Calculate {@code samples} samples on a bspline. This is the road representation function.
+    :param old_coords: List of tuples.
+    :return: Array with samples, representing a bspline of the given control points of the lanes.
+    """
+    old_coords = asarray(old_coords)
+    count = len(old_coords)
+    degree = clip(2, 0, count - 1)
+    kv = concatenate(([0] * degree, arange(count - degree + 1), [count - degree] * degree))
+    u = linspace(False, (count - degree), NUM_NODES)
+    return array(splev(u, (kv, old_coords.T, degree))).T
 
 
 class Converter:
@@ -68,23 +99,31 @@ class Converter:
             rid += 1
 
     def _add_road(self, lane, rid):
-        road = Road(material='road_rubber_sticky', rid='road_{}'.format(rid), interpolate=True, texture_length=2.5,
+        road = Road(material='road_rubber_sticky', rid='road_{}'.format(rid), interpolate=False, texture_length=2.5,
                     drivability=1)
-        nodes = []
+        nodes = list()
+        tuples = list()
         road_segments = lane.findall("laneSegment")
+        width = None
         for segment in road_segments:
             d = segment.attrib
-            z = 0.01 if d.get("z") is None else d.get("z")
-            nodes.append((d.get("x"), d.get("y"), z, d.get("width")))
+            width = float(d.get("width"))
+            tuples.append((float(d.get("x")), float(d.get("y"))))
+        tuples = _b_spline(tuples)
+        for coords in tuples:
+            nodes.append((coords[0], coords[1], 0.01, width))
         road.nodes.extend(nodes)
         self.scenario.add_road(road)
 
     def _add_lane_markings(self, lane, rid):
-        linestring_nodes = []
+        linestring_nodes = list()
+        widths = list()
         road_segments = lane.findall("laneSegment")
         for segment in road_segments:
             d = segment.attrib
             linestring_nodes.append((float(d.get("x")), float(d.get("y"))))
+            widths.append(float(d.get("width")))
+        linestring_nodes = _b_spline(linestring_nodes)
         line = LineString(linestring_nodes)
         outer_offset = int(road_segments[0].attrib.get("width")) / 2 - 0.4
         self._add_outer_marking(road_segments, rid, line, outer_offset, "left")
@@ -101,15 +140,7 @@ class Converter:
                                       int(road_segments[0].attrib.get("width")), "right")
 
     def _add_outer_marking(self, road_segments, rid, line, offset, direction):
-        outer_line = line.parallel_offset(offset, direction)
-        if isinstance(outer_line, MultiLineString):
-            temp_list = list()
-            for line in outer_line:
-                for coord in list(line.coords):
-                    temp_list.append(coord)
-            outer_line = LineString(temp_list)
-        fac = len(road_segments) / len(list(outer_line.coords))
-        nodes = _get_nodes(outer_line, road_segments, fac)
+        nodes = _get_offset_nodes(road_segments, line, offset, direction)
         road = Road(material='line_white', rid='road_{}_{}_line'.format(rid, direction), interpolate=False,
                     texture_length=16, drivability=-1)
         road.nodes.extend(nodes)
@@ -133,27 +164,7 @@ class Converter:
                 direction = "left"
             else:
                 raise TypeError("leftLanes and rightLanes must be Integers.")
-            divider_line = line.parallel_offset(offset, direction)
-            if isinstance(divider_line, MultiLineString):
-                temp_list = list()
-                for line in divider_line:
-                    for coord in list(line.coords):
-                        temp_list.append(coord)
-                divider_line = LineString(temp_list)
-            fac = len(road_segments) / len(list(divider_line.coords))
-            iterator = 0
-            while iterator < len(list(divider_line.coords)):
-                index = int(round(fac * iterator))
-                if index >= len(road_segments):
-                    index = len(road_segments) - 1
-                z = road_segments[index].attrib.get("z")
-                if z is None:
-                    z = 0.01
-                else:
-                    z = (int(z))
-                nodes.append((list(divider_line.coords)[iterator][0], list(divider_line.coords)[iterator][1], z, 0.3))
-                iterator += 1
-            nodes = nodes[::-1]
+            nodes = _get_offset_nodes(road_segments, line, offset, direction)
         road = Road(material='line_yellow_double', rid='road_{}_left_right_divider'.format(rid), interpolate=False,
                     texture_length=16, drivability=-1)
         road.nodes.extend(nodes)
@@ -167,15 +178,7 @@ class Converter:
         while iterator <= separators:
             position = iterator * width_per_lane if direction == "left" else width - (iterator * width_per_lane)
             offset = mid - position if direction == "left" else position - mid
-            divider_line = line.parallel_offset(offset, direction)
-            if isinstance(divider_line, MultiLineString):
-                temp_list = list()
-                for line in divider_line:
-                    for coord in list(line.coords):
-                        temp_list.append(coord)
-                divider_line = LineString(temp_list)
-            fac = len(road_segments) / len(list(divider_line.coords))
-            nodes = _get_nodes(divider_line, road_segments, fac)
+            nodes = _get_offset_nodes(road_segments, line, offset, direction)
             road = Road(material='line_dashed_short', rid='road_{}_{}_separator_{}'.format(rid, direction,
                                                                                            iterator - 1),
                         interpolate=False, texture_length=16, drivability=-1)
@@ -213,6 +216,8 @@ class Converter:
 
     def _add_obstacles(self):
         obstacles = self.dbe_root.find("obstacles")
+        if obstacles is None:
+            obstacles = list()
         id_number = 0
         for obstacle in obstacles:
             obstacle_attr = obstacle.attrib
@@ -234,7 +239,7 @@ class Converter:
                 rot = (rot[0], rot[1], 90 - rot[2])
                 name_sign = "prioritysign_" + str(id_number)
                 prioritysign = StaticObject(pos=pos, rot=rot, name=name_sign,
-                                        scale=(1.2, 1.2, 1.2), shape='/levels/urban/art/objects/priority.dae')
+                                            scale=(1.2, 1.2, 1.2), shape='/levels/urban/art/objects/priority.dae')
                 self.scenario.add_object(prioritysign)
             elif obstacle.tag == "trafficlightsingle":
                 name_light = "trafficlightsingle_" + str(id_number)

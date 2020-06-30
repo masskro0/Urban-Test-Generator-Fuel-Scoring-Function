@@ -7,7 +7,6 @@ from observer import MisbehaviourObserver
 
 
 def run_test_case(scenario, success_point):
-
     print(colored("Starting test case {}.".format(scenario.name), "grey", attrs=['bold']))
     vehicles = scenario.vehicles
     ego = None

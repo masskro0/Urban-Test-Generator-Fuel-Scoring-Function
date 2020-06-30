@@ -503,6 +503,5 @@ class FuelConsumptionTestGenerator:
 #       TODO Double test cases by placing spawn point on the other side
 #       TODO Improve performance
 #       TODO Converter:
-#           TODO Add own interpolation
 #           TODO Add input checking
 #           TODO Implement Sensor deployment
