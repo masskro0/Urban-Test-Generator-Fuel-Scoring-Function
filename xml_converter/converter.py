@@ -303,7 +303,7 @@ class Converter:
             assert attr.get("id") is not None, "Vehicles needs a ID."
             model = "ETK800" if attr.get("model") is None else attr.get("model")
             color = "White" if attr.get("color") is None else attr.get("color")
-            vehicle = Vehicle(vid=attr.get("id"), color=color, model=model)
+            vehicle = Vehicle(attr.get("id"), color=color, model=model)
             init_state = participant.find("initialState")
             x = init_state.get("x")
             y = init_state.get("y")
@@ -315,18 +315,20 @@ class Converter:
             pos = (x, y, z)
             rot = (x_rot, y_rot, z_rot)
             self.scenario.add_vehicle(vehicle=vehicle, pos=pos, rot=rot)
+        #veh1 = Vehicle("test", model="ETK800", color="White")
+        #self.scenario.add_vehicle(veh1, pos=(0,10,0), rot=(0,0,0))
 
     def _add_waypoints(self):
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
         prefab_file = open(prefab_path, "r")
         original_content = prefab_file.readlines()
         prefab_file.close()
+        original_content[-1] = ""
         participants = self.dbc_root.findall("participants/participant")
         for participant in participants:
             waypoints = participant.findall("movement/waypoint")
             vid = participant.get("id")
             index = 0
-            original_content[-1] = ""
             for waypoint in waypoints:
                 attr = waypoint.attrib
                 z = 0 if attr.get("z") is None else attr.get("z")

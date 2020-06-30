@@ -89,7 +89,8 @@ def create_json_file(index, participants, author, tod, multiple_prefabs=False, s
         assert participant.get("id") is not None, "Please include an id for each participant. Check the example" \
                                                   " for reference."
         bool_value = True if participant.get("id") == "ego" else False
-        data["vehicles"]["{}".format(participant.get("id"))] = {"playerUsable": bool_value, "startFocus": bool_value}
+        data["vehicles"]["{}".format(participant.get("id"))] = {"playerUsable": bool_value, "startFocus": bool_value,
+                                                                "player": bool_value}
     data["levelObjects"] = {"tod": {"time": tod, "dayLength": 120, "play": False}}
 
     data = [data]
