@@ -315,8 +315,6 @@ class Converter:
             pos = (x, y, z)
             rot = (x_rot, y_rot, z_rot)
             self.scenario.add_vehicle(vehicle=vehicle, pos=pos, rot=rot)
-        #veh1 = Vehicle("test", model="ETK800", color="White")
-        #self.scenario.add_vehicle(veh1, pos=(0,10,0), rot=(0,0,0))
 
     def _add_waypoints(self):
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))

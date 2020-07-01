@@ -36,15 +36,15 @@ participant = {"init_state": init_state,
 dbc.add_car(participant=participant)
 
 vc_pos = {"id": participant_id,
-          "x": waypoint1.get("x"),
-          "y": waypoint1.get("y"),
+          "x": waypoint1[0],
+          "y": waypoint1[1],
           "tolerance": waypoint1.get("tolerance")}
 sc_speed = 15
 dbc.add_precond_partic_sc_speed(vc_pos, sc_speed)
 
 success_points = [{"id": participant_id,
-                 "x": waypoint2.get("x"),
-                 "y": waypoint2.get("y"),
+                 "x": waypoint2[0],
+                 "y": waypoint2[1],
                  "tolerance": waypoint2.get("tolerance")}]
 dbc.add_success_point(participant_id=participant_id, success_points=success_points)
 

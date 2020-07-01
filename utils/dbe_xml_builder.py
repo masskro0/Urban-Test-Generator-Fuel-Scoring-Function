@@ -50,9 +50,11 @@ class DBEBuilder:
         obstacles = ElementTree.SubElement(self.root, "obstacles")
         for obstacle in obstacle_list:
             name = obstacle.get("name")
-            x = obstacle.get("x")
-            y = obstacle.get("y")
-            z = obstacle.get("z")
+            pos = obstacle.get("position")
+            assert len(pos) >= 2, "Obstacles must contain a x and y coordinate."
+            x = pos[0]
+            y = pos[1]
+            z = 0 if len(pos) == 2 else pos[2]
             x_rot = obstacle.get("xRot")
             y_rot = obstacle.get("yRot")
             z_rot = obstacle.get("zRot")
@@ -118,8 +120,8 @@ class DBEBuilder:
             lane.set("rightLanes", str(right_lanes))
         for segment in control_points:
             ElementTree.SubElement(lane, 'laneSegment x="{}" y="{}" width="{}"'
-                                   .format('{0:.10f}'.format(round(segment.get("x"), 2)),
-                                           '{0:.10f}'.format(round(segment.get("y"), 2)), str(width)))
+                                   .format('{0:.10f}'.format(round(segment[0], 2)),
+                                           '{0:.10f}'.format(round(segment[1], 2)), str(width)))
 
     def save_xml(self, name):
         """Creates and saves the XML file, and moves it to the scenario folder.

@@ -17,8 +17,8 @@ def convert_points_to_lines(lanes):
         lines = []
         iterator = 0
         while iterator < (len(control_points) - 1):
-            p1 = (control_points[iterator].get("x"), control_points[iterator].get("y"))
-            p2 = (control_points[iterator + 1].get("x"), control_points[iterator + 1].get("y"))
+            p1 = (control_points[iterator][0], control_points[iterator][1])
+            p2 = (control_points[iterator + 1][0], control_points[iterator + 1][1])
             line = LineString([p1, p2])
             lines.append(line)
             iterator += 1
@@ -174,39 +174,42 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     number_of_ways = intersection.get("number_of_ways")
     layout = intersection.get("layout")
 
-    lanes.append({"control_points": [last_point, intersec_point],
-                  "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 25})
+    lanes.append({"control_points": [last_point, intersec_point], "width": width, "left_lanes": left_lanes,
+                  "right_lanes": right_lanes, "samples": 25, "type": "intersection"})
     ego_lanes.append(lane_index + 1)
 
     if layout == "straight":
-        lanes.append({"control_points": [intersec_point, straight_point],
-                      "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 25})
+        lanes.append({"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
+                      "right_lanes": right_lanes, "samples": 25, "type": "intersection"})
     elif layout == "left":
-        lanes.append({"control_points": [left_point, intersec_point],
-                      "width": new_width, "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25})
+        lanes.append({"control_points": [left_point, intersec_point], "width": new_width, "left_lanes": new_left_lanes,
+                      "right_lanes": new_right_lanes, "samples": 25, "type": "intersection"})
     elif layout == "right":
-        lanes.append({"control_points": [intersec_point, right_point],
-                      "width": new_width, "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25})
+        lanes.append({"control_points": [intersec_point, right_point], "width": new_width,
+                      "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
+                      "type": "intersection"})
     if intersection.get("direction") == "straight":
         if number_of_ways == 4:
             lanes.extend([{"control_points": [left_point, intersec_point], "width": new_width,
-                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25},
+                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
+                           "type": "intersection"},
                          {"control_points": [intersec_point, right_point], "width": new_width,
-                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25}])
+                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
+                          "type": "intersection"}])
             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
             lane_index += 5
         else:
             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3])
             lane_index += 4
-        lanes.extend([{"control_points": [intersec_point, straight_point],
-                       "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 25},
-                      {"control_points": [straight_point],
-                       "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 75}])
+        lanes.extend([{"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
+                       "right_lanes": right_lanes, "samples": 25, "type": "intersection"},
+                      {"control_points": [straight_point], "width": width, "left_lanes": left_lanes,
+                       "right_lanes": right_lanes, "samples": 75, "type": "normal"}])
         last_point = straight_point
     else:
         if number_of_ways == 4:
-            lanes.append({"control_points": [intersec_point, straight_point],
-                          "width": width, "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 25})
+            lanes.append({"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
+                          "right_lanes": right_lanes, "samples": 25, "type": "intersection"})
             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
             lane_index += 5
         else:
@@ -216,20 +219,24 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
         if intersection.get("direction") == "left":
             if number_of_ways == 4:
                 lanes.append({"control_points": [intersec_point, right_point], "width": new_width,
-                              "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25})
+                              "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
+                              "type": "intersection"})
             lanes.extend([{"control_points": [intersec_point, left_point], "width": new_width,
-                           "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25},
+                           "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
+                           "type": "intersection"},
                           {"control_points": [left_point], "width": new_width, "left_lanes": new_left_lanes,
-                           "right_lanes": new_right_lanes, "samples": 75}])
+                           "right_lanes": new_right_lanes, "samples": 75, "type": "normal"}])
             last_point = left_point
         else:
             if number_of_ways == 4:
                 lanes.append({"control_points": [intersec_point, left_point], "width": new_width,
-                              "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25})
+                              "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
+                              "type": "intersection"})
             lanes.extend([{"control_points": [intersec_point, right_point], "width": new_width,
-                           "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25},
+                           "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
+                           "type": "intersection"},
                           {"control_points": [right_point], "width": new_width, "left_lanes": new_left_lanes,
-                           "right_lanes": new_right_lanes, "samples": 75}])
+                           "right_lanes": new_right_lanes, "samples": 75, "type": "normal"}])
             last_point = right_point
         left_lanes = new_left_lanes
         right_lanes = new_right_lanes
@@ -244,26 +251,26 @@ def get_intersection_lines(last_point, intersection):
     number_of_ways = intersection.get("number_of_ways")
     layout = intersection.get("layout")
     if number_of_ways == 4 or layout == "straight":
-        new_line = LineString([(last_point.get("x"), last_point.get("y")),
-                               (intersection.get("straight_point").get("x"),
-                                intersection.get("straight_point").get("y"))])
+        new_line = LineString([(last_point[0], last_point[1]),
+                               (intersection.get("straight_point")[0],
+                                intersection.get("straight_point")[1])])
     else:
-        new_line = LineString([(last_point.get("x"), last_point.get("y")),
-                               (intersection.get("intersection_point").get("x"),
-                                intersection.get("intersection_point").get("y"))])
+        new_line = LineString([(last_point[0], last_point[1]),
+                               (intersection.get("intersection_point")[0],
+                                intersection.get("intersection_point")[1])])
     if number_of_ways == 4:
-        new_lane_line = LineString([(intersection.get("left_point").get("x"),
-                                     intersection.get("left_point").get("y")),
-                                    (intersection.get("right_point").get("x"),
-                                     intersection.get("right_point").get("y"))])
+        new_lane_line = LineString([(intersection.get("left_point")[0],
+                                     intersection.get("left_point")[1]),
+                                    (intersection.get("right_point")[0],
+                                     intersection.get("right_point")[1])])
     elif layout == "left":
-        new_lane_line = LineString([(intersection.get("left_point").get("x"),
-                                     intersection.get("left_point").get("y")),
-                                    (intersection.get("intersection_point").get("x"),
-                                     intersection.get("intersection_point").get("y"))])
+        new_lane_line = LineString([(intersection.get("left_point")[0],
+                                     intersection.get("left_point")[1]),
+                                    (intersection.get("intersection_point")[0],
+                                     intersection.get("intersection_point")[1])])
     else:
-        new_lane_line = LineString([(intersection.get("intersection_point").get("x"),
-                                     intersection.get("intersection_point").get("y")),
-                                    (intersection.get("right_point").get("x"),
-                                     intersection.get("right_point").get("y"))])
+        new_lane_line = LineString([(intersection.get("intersection_point")[0],
+                                     intersection.get("intersection_point")[1]),
+                                    (intersection.get("right_point")[0],
+                                     intersection.get("right_point")[1])])
     return new_line, new_lane_line

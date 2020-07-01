@@ -71,10 +71,11 @@ def build_xml(individual, iterator: int = 0):
         if participant.get("id") == "ego":
             ego = participant
             break
+    position = ('{0:.10f}'.format(round(lanes[0].get("control_points")[1][0])),
+                '{0:.10f}'.format(round(lanes[0].get("control_points")[1][1])))
     vc_pos = {"id": ego.get("id"),
               "tolerance": 3,
-              "x": '{0:.10f}'.format(round(lanes[0].get("control_points")[1].get("x"))),
-              "y": '{0:.10f}'.format(round(lanes[0].get("control_points")[1].get("y")))}
+              "position": position}
     sc_speed = 10
     build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,

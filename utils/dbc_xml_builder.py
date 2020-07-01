@@ -87,7 +87,7 @@ class DBCBuilder:
         ElementTree.SubElement(participant, 'initialState x="{}" y="{}"'
                                             ' orientation="{}" movementMode="{}"'
                                             ' speed="{}"'
-                               .format(str(init_state.get("x")), str(init_state.get("y")),
+                               .format(str(init_state.get("position")[0]), str(init_state.get("position")[1]),
                                        str(init_state.get("orientation")), init_state.get("movementMode"),
                                        str(init_state.get("speed"))))
 
@@ -96,10 +96,11 @@ class DBCBuilder:
 
         movement = ElementTree.SubElement(participant, "movement")
         for waypoint in waypoints:
+            position = waypoint.get("position")
             waypoint_tag = ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}"'
                                                             ' movementMode="{}"'
-                                                  .format('{0:.10f}'.format(round(waypoint.get("x"), 2)),
-                                                          '{0:.10f}'.format(round(waypoint.get("y"), 2)),
+                                                  .format('{0:.10f}'.format(round(position[0], 2)),
+                                                          '{0:.10f}'.format(round(position[1], 2)),
                                                           str(waypoint.get("tolerance")),
                                                           waypoint.get("movementMode")))
             if waypoint.get("speedLimit"):
@@ -115,8 +116,8 @@ class DBCBuilder:
         """
         vc_position = ElementTree.SubElement(self.preconditions, 'vcPosition')
         vc_position.set("participant", vc_pos.get("id"))
-        vc_position.set("x", str(vc_pos.get("x")))
-        vc_position.set("y", str(vc_pos.get("y")))
+        vc_position.set("x", str(vc_pos.get("position")[0]))
+        vc_position.set("y", str(vc_pos.get("position")[1]))
         vc_position.set("tolerance", str(vc_pos.get("tolerance")))
 
         not_tag = ElementTree.SubElement(vc_position, "not")
@@ -130,11 +131,9 @@ class DBCBuilder:
                tolerance (int) which defines a circle.
         :return: Void.
         """
-        tolerance = success_point.get("tolerance")
-        if tolerance is None:
-            tolerance = 2
+        tolerance = 3
         ElementTree.SubElement(self.success, 'scPosition participant="{}" x="{}" y="{}" tolerance="{}"'
-                               .format(participant_id, str(success_point.get("x")), str(success_point.get("y")),
+                               .format(participant_id, str(success_point[0]), str(success_point[1]),
                                        str(tolerance)))
 
     def add_failure_damage(self, participant_id):

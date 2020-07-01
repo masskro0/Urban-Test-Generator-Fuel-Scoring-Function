@@ -1,5 +1,5 @@
 from copy import deepcopy
-from random import randint, random
+from random import randint, random, getrandbits
 
 import numpy as np
 from scipy.interpolate import splev
@@ -36,15 +36,13 @@ def _add_ego_car(individual):
         iterator = 4
         control_points = lanes[lane].get("control_points")
         while iterator < len(control_points):
-            waypoint = {"x": control_points[iterator].get("x"),
-                        "y": control_points[iterator].get("y"),
+            waypoint = {"position": control_points[iterator],
                         "tolerance": 3,
                         "movementMode": "_BEAMNG"}
             waypoints.append(waypoint)
             iterator += 4
-    y = (lanes[0].get("left_lanes") + lanes[0].get("right_lanes") - 1) * -2.5 + waypoints[0].get("y")
-    init_state = {"x": lanes[0].get("control_points")[0].get("x"),
-                  "y": str(y),
+    y = (lanes[0].get("left_lanes") + lanes[0].get("right_lanes") - 1) * -2.5 + waypoints[0].get("position")[1]
+    init_state = {"position": (lanes[0].get("control_points")[0][0], y),
                   "orientation": 0,
                   "movementMode": "_BEAMNG",
                   "speed": 50}
@@ -55,6 +53,28 @@ def _add_ego_car(individual):
            "model": model}
     participants = [ego]
     individual["participants"] = participants
+
+
+def _add_parked_cars(individual):
+    for lane in individual.get("lanes"):
+        if lane.get("type") == "intersection":
+            continue
+        method = randint(0, 3)
+        left = bool(getrandbits(1))
+        right = bool(getrandbits(1))
+        control_points = lane.get("control_points")
+        if method == 0:
+            # Cars are parallel to the street and on the road.
+            pass
+        elif method == 1:
+            # Cars are parallel to the street, but outside the road.
+            pass
+        elif method == 2:
+            # Cars are on a parking lot orthogonal to the street.
+            pass
+        elif method == 3:
+            # Cars are on a parking lot 45 degrees to the street.
+            pass
 
 
 def _merge_lanes(population):
@@ -84,13 +104,13 @@ def _add_traffic_signs(last_point, intersection_point, current_left_lanes, curre
     old_width = width / (current_left_lanes + current_right_lanes)
     new_width = width_opposite / (new_left_lanes + new_right_lanes)
     obstacles = list()
-    temp_point = (intersection_point.get("x") + 5, intersection_point.get("y"))
-    line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
-                       (last_point.get("x"), last_point.get("y"))])
+    temp_point = (intersection_point[0] + 5, intersection_point[1])
+    line = LineString([(intersection_point[0], intersection_point[1]),
+                       (last_point[0], last_point[1])])
     # Bottom direction.
     z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
-    angle = int(round(get_angle((right_point.get("x"), right_point.get("y")), line.coords[0], line.coords[1])))
-    offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.2
+    angle = int(round(get_angle((right_point[0], right_point[1]), line.coords[0], line.coords[1])))
+    offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
     fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + offset) / line.length
     vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
     vector = affinity.rotate(vector, -90, vector.coords[1])
@@ -99,23 +119,21 @@ def _add_traffic_signs(last_point, intersection_point, current_left_lanes, curre
     position = vector.coords[0]
     if current_left_lanes + current_right_lanes == 2:
         if random() <= 0.5:
-            obstacles.append({"name": "stopsign", "x": position[0], "y": position[1], "zRot": z_rot})
+            obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot})
         else:
-            obstacles.append({"name": "trafficlightsingle", "x": position[0], "y": position[1],
-                              "zRot": z_rot})
+            obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot})
     else:
-        obstacles.append({"name": "trafficlightdouble", "x": position[0], "y": position[1],
-                          "zRot": z_rot})
+        obstacles.append({"name": "trafficlightdouble", "position": position, "zRot": z_rot})
     sign_on_my_lane = obstacles[0].get("name")
 
     # Left direction.
     if number_of_ways == 4 or direction == "left" or layout == "left":
-        line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
-                           (left_point.get("x"), left_point.get("y"))])
+        line = LineString([(intersection_point[0], intersection_point[1]),
+                           (left_point[0], left_point[1])])
         z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
-        angle = int(round(get_angle((last_point.get("x"), last_point.get("y")),
+        angle = int(round(get_angle((last_point[0], last_point[1]),
                                     line.coords[0], line.coords[1])))
-        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.2
+        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
         fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + offset) / line.length
         vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
         vector = affinity.rotate(vector, -90, vector.coords[1])
@@ -123,37 +141,37 @@ def _add_traffic_signs(last_point, intersection_point, current_left_lanes, curre
         vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
         position = vector.coords[0]
         if sign_on_my_lane == "stopsign":
-            obstacles.append({"name": "prioritysign", "x": position[0], "y": position[1], "zRot": z_rot})
+            obstacles.append({"name": "prioritysign", "position": position, "zRot": z_rot})
         else:
             if new_left_lanes + new_right_lanes == 2:
-                obstacles.append({"name": "trafficlightsingle", "x": position[0], "y": position[1], "zRot": z_rot})
+                obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot})
             else:
-                obstacles.append({"name": "trafficlightdouble", "x": position[0], "y": position[1], "zRot": z_rot})
+                obstacles.append({"name": "trafficlightdouble", "position": position, "zRot": z_rot})
 
     # Top direction.
     if number_of_ways == 4 or direction == "straight" or layout == "straight":
-        line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
-                           (straight_point.get("x"), straight_point.get("y"))])
+        line = LineString([(intersection_point[0], intersection_point[1]),
+                           (straight_point[0], straight_point[1])])
         z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
-        angle = int(round(get_angle((left_point.get("x"), left_point.get("y")),
+        angle = int(round(get_angle((left_point[0], left_point[1]),
                                     line.coords[0], line.coords[1])))
-        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.2
+        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
         fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + offset) / line.length
         vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
         vector = affinity.rotate(vector, -90, vector.coords[1])
         fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + 0.2) / vector.length
         vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
         position = vector.coords[0]
-        obstacles.append({"name": sign_on_my_lane, "x": position[0], "y": position[1], "zRot": z_rot})
+        obstacles.append({"name": sign_on_my_lane, "position": position, "zRot": z_rot})
 
     # Right direction.
     if number_of_ways == 4 or direction == "right" or layout == "right":
-        line = LineString([(intersection_point.get("x"), intersection_point.get("y")),
-                           (right_point.get("x"), right_point.get("y"))])
+        line = LineString([(intersection_point[0], intersection_point[1]),
+                           (right_point[0], right_point[1])])
         z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
-        angle = int(round(get_angle((straight_point.get("x"), straight_point.get("y")),
+        angle = int(round(get_angle((straight_point[0], straight_point[1]),
                                     line.coords[0], line.coords[1])))
-        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.2
+        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
         fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + offset) / line.length
         vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
         vector = affinity.rotate(vector, -90, vector.coords[1])
@@ -161,12 +179,12 @@ def _add_traffic_signs(last_point, intersection_point, current_left_lanes, curre
         vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
         position = vector.coords[0]
         if sign_on_my_lane == "stopsign":
-            obstacles.append({"name": "prioritysign", "x": position[0], "y": position[1], "zRot": z_rot})
+            obstacles.append({"name": "prioritysign", "position": position, "zRot": z_rot})
         else:
             if new_left_lanes + new_right_lanes == 2:
-                obstacles.append({"name": "trafficlightsingle", "x": position[0], "y": position[1], "zRot": z_rot})
+                obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot})
             else:
-                obstacles.append({"name": "trafficlightdouble", "x": position[0], "y": position[1], "zRot": z_rot})
+                obstacles.append({"name": "trafficlightdouble", "position": position, "zRot": z_rot})
 
     return obstacles
 
@@ -190,6 +208,9 @@ class FuelConsumptionTestGenerator:
         self.MAX_LEFT_LANES = 2
         self.MAX_RIGHT_LANES = 2
         self.MAX_WIDTH = 5
+        print(colored("##################", attrs=["bold"]))
+        print(colored("##################", "red", attrs=["bold"]))
+        print(colored("##################", "yellow", attrs=["bold"]))
 
     def _bspline(self, lanes):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
@@ -200,10 +221,7 @@ class FuelConsumptionTestGenerator:
         for lane in lanes:
             samples = lane.get("samples")
             # Calculate splines for each lane.
-            point_list = []
-            for point in lane.get("control_points"):
-                point_list.append((point.get("x"), point.get("y")))
-            point_list = np.asarray(point_list)
+            point_list = np.asarray(lane.get("control_points"))
             count = len(point_list)
             degree = np.clip(self.SPLINE_DEGREE, 1, count - 1)
 
@@ -224,12 +242,12 @@ class FuelConsumptionTestGenerator:
         :param penultimate_point: Point before the last point as dict type.
         :return: A new random point as dict type.
         """
-        last_point_tmp = (last_point.get("x"), last_point.get("y"))
+        last_point_tmp = (last_point[0], last_point[1])
         last_point_tmp = np.asarray(last_point_tmp)
-        x_min = int(round(last_point.get("x") - self.MAX_SEGMENT_LENGTH))
-        x_max = int(round(last_point.get("x") + self.MAX_SEGMENT_LENGTH))
-        y_min = int(round(last_point.get("y") - self.MAX_SEGMENT_LENGTH))
-        y_max = int(round(last_point.get("y") + self.MAX_SEGMENT_LENGTH))
+        x_min = int(round(last_point[0] - self.MAX_SEGMENT_LENGTH))
+        x_max = int(round(last_point[0] + self.MAX_SEGMENT_LENGTH))
+        y_min = int(round(last_point[1] - self.MAX_SEGMENT_LENGTH))
+        y_max = int(round(last_point[1] + self.MAX_SEGMENT_LENGTH))
         while True:
             x_pos = randint(x_min, x_max)
             y_pos = randint(y_min, y_max)
@@ -237,26 +255,26 @@ class FuelConsumptionTestGenerator:
             dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
             deg = None
             if penultimate_point is not None:
-                deg = get_angle((penultimate_point.get("x"), penultimate_point.get("y")),
-                                (last_point.get("x"), last_point.get("y")),
+                deg = get_angle((penultimate_point[0], penultimate_point[0]),
+                                (last_point[0], last_point[1]),
                                 point)
             if self.MAX_SEGMENT_LENGTH >= dist >= self.MIN_SEGMENT_LENGTH:
                 if penultimate_point is not None:
                     if MIN_DEGREES <= deg <= MAX_DEGREES:
-                        return {"x": point[0], "y": point[1], "type": "segment"}
+                        return point
                 else:
-                    return {"x": point[0], "y": point[1], "type": "segment"}
+                    return point
 
     def _create_urban_environment(self):
         global MIN_DEGREES, MAX_DEGREES
         print(colored("Creating urban scenario...", "grey", attrs=['bold']))
-        p0 = {"x": 1, "y": 0, "type": "segment"}
-        p1 = {"x": 50, "y": 0, "type": "segment"}
-        p2 = {"x": 65, "y": 0, "type": "segment"}
+        p0 = (1, 0)
+        p1 = (50, 0)
+        p2 = (65, 0)
         left_lanes = randint(1, self.MAX_LEFT_LANES)
         right_lanes = randint(1, self.MAX_RIGHT_LANES)
         lanes = [{"control_points": [p0, p1, p2], "width": calc_width(left_lanes, right_lanes),
-                  "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 75}]
+                  "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 75, "type": "normal"}]
         ego_lanes = [0]
         intersection_lanes = []
         obstacles = []
@@ -302,7 +320,6 @@ class FuelConsumptionTestGenerator:
                                                         intersection.get("right_point"),
                                                         lanes[lane_index].get("width"),
                                                         intersection.get("new_width")))
-                    lanes[lane_index].get("control_points")[-1]["type"] = "intersection"
                     lanes.extend(intersection_items.get("lanes"))
                     ego_lanes.extend(intersection_items.get("ego_lanes"))
                     last_point = intersection_items.get("last_point")
@@ -320,8 +337,8 @@ class FuelConsumptionTestGenerator:
                 new_point = self._add_segment(control_points[0])
             else:
                 new_point = self._add_segment(control_points[-1], control_points[-2])
-            new_line = LineString([(control_points[-1].get("x"), control_points[-1].get("y")),
-                                   (new_point.get("x"), new_point.get("y"))])
+            new_line = LineString([(control_points[-1][0], control_points[-1][1]),
+                                   (new_point[0], new_point[1])])
             temp_list = deepcopy(lanes)
             temp_list[lane_index].get("control_points").append(new_point)
             temp_list = self._bspline(temp_list)
@@ -377,8 +394,8 @@ class FuelConsumptionTestGenerator:
                     layout = "straight"
                 else:
                     layout = "left"
-        line = LineString([(penultimate_point.get("x"), penultimate_point.get("y")),
-                           (last_point.get("x"), last_point.get("y"))])
+        line = LineString([(penultimate_point[0], penultimate_point[1]),
+                           (last_point[0], last_point[1])])
         fac = get_resize_factor_intersection(line.length, self.intersection_length)
         line_intersection = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
         straight_point = list(shape(line_intersection).coords)[1]
@@ -405,10 +422,10 @@ class FuelConsumptionTestGenerator:
         p2 = (list(shape(line_rot2).coords)[1][0], list(shape(line_rot2).coords)[1][1])
         left_lanes = randint(1, self.MAX_LEFT_LANES)
         right_lanes = randint(1, self.MAX_RIGHT_LANES)
-        return {"intersection_point": {"x": intersection_point[0], "y": intersection_point[1], "type": "intersection"},
-                "straight_point": {"x": straight_point[0], "y": straight_point[1], "type": "intersection"},
-                "left_point": {"x": p1[0], "y": p1[1], "type": "intersection"},
-                "right_point": {"x": p2[0], "y": p2[1], "type": "intersection"},
+        return {"intersection_point": intersection_point,
+                "straight_point": straight_point,
+                "left_point": p1,
+                "right_point": p2,
                 "direction": direction,
                 "number_of_ways": number_of_ways,
                 "layout": layout,
@@ -427,13 +444,10 @@ class FuelConsumptionTestGenerator:
             iterator = 0
             while iterator < len(splined_list):
                 lane = splined_list[iterator]
-                control_points = []
-                for spline in lane.get("control_points"):
-                    point = {"x": spline[0], "y": spline[1]}
-                    control_points.append(point)
-                individual.get("lanes")[iterator]["control_points"] = control_points
+                individual.get("lanes")[iterator]["control_points"] = lane.get("control_points").tolist()
                 iterator += 1
             _add_ego_car(individual)
+            _add_parked_cars(individual)
         return population
 
     def _create_start_population(self):
@@ -459,7 +473,7 @@ class FuelConsumptionTestGenerator:
             self.population_list = self._create_start_population()
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
-        plot_all(temp_list)
+        # plot_all(temp_list)
         temp_list = self._spline_population(temp_list)
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)

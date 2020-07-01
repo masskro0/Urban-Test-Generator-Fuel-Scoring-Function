@@ -83,7 +83,7 @@ class MisbehaviourObserver:
         self._check_engine_idle_misbehavior()
         self._check_left_turn_misbehavior()
         self._check_right_turn_misbehavior()
-        #self._check_rpm_misbehavior(sensors['electrics']['rpm_tacho'], vehicle_state['pos'])
+        self._check_rpm_misbehavior(sensors['electrics']['rpm_tacho'], vehicle_state['pos'])
         self._check_safety_distance_misbehavior()
         self._check_throttle_misbehavior()
         self._check_varying_speed()
