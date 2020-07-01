@@ -1,0 +1,378 @@
+{
+	"Golf87_engine":{
+		"information":{
+			"name":"VW Golf 1.8L 8V Engine",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_engine",
+		"slots":[
+			["type", "default", "description"],
+			["Golf87_exhaust", "Golf87_exhaust", "VW Golf Exhaust"],
+			["Golf87_transmission", "Golf87_transmission_M", "VW Golf Transmission"],
+			["Golf87_turbo", ",           ", "VW Golf Turbocharger"]],
+
+		"scalenodeWeight":0.62,
+		"scalebeamSpring":0.46,
+		"scalebeamDamp":0.58,
+		"scalebeamDeform":0.39,
+		"scalebeamStrength":0.51,
+		"refNodes":[
+			["ref:", "back:", "left:", "up:"],
+			["e1r", "e1r", "e1r", "e1r"]],
+
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_engine", ["Golf87_engine"]]],
+
+		"enginetorque":[
+			["rpm", "torque"],
+			[0, 0],
+			[500, 65],
+			[1000, 93],
+			[2000, 132],
+			[3000, 143],
+			[4000, 148],
+			[5000, 153],
+			[6000, 144],
+			[7000, 122],
+			[7500, 91]],
+
+		"engine":{
+			"idleRPM":1000.0,
+			"shiftDownRPM":3400.0,
+			"shiftUpRPM":6400.0,
+			"maxRPM":7500.0,
+			"inertia":0.08,
+			"friction":16.0,
+			"brakingCoefRPS":0.15,
+			"burnEfficiency":0.5,
+			"throttleSensitivity":1.2},
+
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"selfCollision":false, "collision":true, "nodeMaterial":"|NM_METAL", "frictionCoef":0.7, "group":"Golf87_engine", "nodeWeight":22.0},
+			["e1r", -0.3, -1.59, 0.3],
+			["e1l", -0.3, -1.275, 0.3],
+			{"nodeWeight":18.0},
+			["e2r", 0.092, -1.59, 0.3],
+			["e2l", 0.092, -1.275, 0.3],
+			{"engineGroup":"Golf87_engine_intake", "nodeWeight":22.0},
+			["e3r", -0.3, -1.59, 0.746],
+			["e3l", -0.3, -1.275, 0.746],
+			{"nodeWeight":18.0},
+			["e4r", 0.092, -1.59, 0.746],
+			["e4l", 0.092, -1.275, 0.746],
+			{"engineGroup":"", "group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamSpring":14001000, "beamDamp":250, "beamDeform":2000000, "beamStrength":"FLT_MAX"},
+			["e1r", "e1l"],
+			["e2r", "e2l"],
+			["e3r", "e3l"],
+			["e4r", "e4l"],
+			["e1r", "e2r"],
+			["e1l", "e2l"],
+			["e3r", "e4r"],
+			["e3l", "e4l"],
+			["e1r", "e3r"],
+			["e1l", "e3l"],
+			["e2r", "e4r"],
+			["e2l", "e4l"],
+			["e2r", "e3r"],
+			["e2l", "e3l"],
+			["e2r", "e3l"],
+			["e2l", "e3r"],
+			["e1r", "e4r"],
+			["e1l", "e4l"],
+			["e1r", "e4l"],
+			["e1l", "e4r"],
+			["e1r", "e2l"],
+			["e1l", "e2r"],
+			["e3r", "e4l"],
+			["e3l", "e4r"],
+			["e1r", "e3l"],
+			["e1l", "e3r"],
+			["e2r", "e4l"],
+			["e2l", "e4r"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}]},
+
+	"Golf87_exhaust":{
+		"information":{
+			"name":"VW Golf Exhaust",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_exhaust",
+		"scalenodeWeight":0.62,
+		"scalebeamSpring":0.46,
+		"scalebeamDamp":0.58,
+		"scalebeamDeform":0.39,
+		"scalebeamStrength":0.51,
+		"refNodes":[
+			["ref:", "back:", "left:", "up:"],
+			["ex1", "ex1", "ex1", "ex1"]],
+
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_exhaust", ["Golf87_exhaust"]]],
+
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"selfCollision":false, "collision":true, "frictionCoef":0.7, "nodeMaterial":"|NM_METAL", "nodeWeight":3.0, "group":"Golf87_exhaust"},
+			["ex1", 0.02, -1.53, 0.25],
+			{"selfCollision":false},
+			["ex2r", -0.11, -0.63, 0.52],
+			{"selfCollision":true},
+			["ex2", 0.0, -0.63, 0.13],
+			{"selfCollision":false},
+			["ex2l", 0.11, -0.63, 0.52],
+			{"selfCollision":true},
+			["ex3", 0.03, 0.65, 0.18],
+			["ex4", -0.39, 0.68, 0.17],
+			["ex5", -0.39, 1.38, 0.28],
+			["ex6", 0.48, 1.43, 0.25],
+			["ex7", 0.48, 1.86, 0.2],
+			{"selfCollision":false, "collision":false},
+			["ex8", -0.15, 0.78, 0.52],
+			["ex9", 0.27, 1.38, 0.55],
+			{"group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamSpring":1401000, "beamDamp":50, "beamDeform":96000, "beamStrength":"FLT_MAX"},
+			["ex1", "ex2r"],
+			["ex1", "ex2"],
+			["ex1", "ex2l"],
+			["ex3", "ex2r"],
+			["ex3", "ex2"],
+			["ex3", "ex2l"],
+			["ex3", "ex4"],
+			["ex4", "ex5"],
+			["ex5", "ex6"],
+			["ex6", "ex7"],
+			["ex2r", "ex2"],
+			["ex2l", "ex2"],
+			["ex2r", "ex2l"],
+			{"beamDeform":28000, "beamStrength":"FLT_MAX"},
+			["ex1", "ex3"],
+			["ex2r", "ex4"],
+			["ex2", "ex4"],
+			["ex2l", "ex4"],
+			["ex3", "ex5"],
+			["ex4", "ex6"],
+			["ex5", "ex7"],
+			["ex3", "ex6"],
+			["ex4", "ex7"],
+			["ex2r", "ex8"],
+			["ex2", "ex8"],
+			["ex2l", "ex8"],
+			["ex3", "ex8"],
+			["ex4", "ex8"],
+			["ex5", "ex8"],
+			["ex6", "ex8"],
+			["ex7", "ex8"],
+			["ex8", "ex9"],
+			["ex3", "ex9"],
+			["ex4", "ex9"],
+			["ex5", "ex9"],
+			["ex6", "ex9"],
+			["ex7", "ex9"],
+			{"beamSpring":601000, "beamDamp":50, "beamDeform":56000, "beamStrength":110000, "breakGroup":"Golf87_exhaust_d"},
+			["ex1", "e1r"],
+			["ex1", "e2r"],
+			["ex1", "e3r"],
+			["ex1", "e4r"],
+			["ex1", "e1l"],
+			["ex1", "e2l"],
+			["ex1", "e3l"],
+			["ex1", "e4l"],
+			["ex2r", "f1r"],
+			["ex2", "f1r"],
+			["ex2", "f1l"],
+			["ex2l", "f1l"],
+			{"breakGroup":"Golf87_exhaust_b", "beamDeform":16000, "beamStrength":32000},
+			["ex5", "rx1r"],
+			["ex5", "r1r"],
+			["ex6", "rx1l"],
+			["ex9", "rx1l"],
+			["ex9", "r1l"],
+			["ex7", "rx1l", {"beamSpring":201000, "beamDamp":150}],
+			{"beamDeform":28000, "beamStrength":64000, "breakGroup":"Golf87_exhaust_c"},
+			["ex3", "f3r"],
+			["ex4", "f3r"],
+			["ex8", "f4r"],
+			{"breakGroup":"", "beamPrecompression":1.0, "beamType":"|SUPPORT", "beamLongBound":4.0, "beamShortBound":0.0, "beamDeform":40000, "beamStrength":120000, "beamSpring":601000, "beamDamp":50, "beamLimitSpring":601000, "beamLimitDamp":50},
+			["ex4", "f4l"],
+			["ex4", "f3l"],
+			["ex3", "f4r"],
+			["ex5", "r1l"],
+			["ex6", "r1r"],
+			["ex5", "rx1l"],
+			["ex6", "rx1r"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "breakGroup":""}]},
+
+	"Golf87_transmission_A":{
+		"information":{
+			"name":"VW Golf 4-Speed Automatic Transmission",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_transmission",
+		"slots":[
+			["type", "default", "description"],
+			["Golf87_differential_F", "Golf87_differential_F", "VW Golf Front Differential"]],
+
+		"scalenodeWeight":0.62,
+		"scalebeamSpring":0.46,
+		"scalebeamDamp":0.58,
+		"scalebeamDeform":0.39,
+		"scalebeamStrength":0.51,
+		"props":[
+			["func", "mesh", "idRef:", "idX:", "idY:", "baseRotation", "rotation", "translation", "min", "max", "offset", "multiplier"],
+			["gear_A", "Golf87_shifter_A", "f7r", "f7l", "f8r", {"x":85.0, "y":0.0, "z":0.0}, {"x":0.0, "y":0.0, "z":0.0}, {"x":0.0, "y":0.2, "z":0.01}, 0.0, 1.0, 0.0, 1.0],
+			["parkingbrake", "Golf87_parkingbrake", "f7r", "f7l", "f8r", {"x":90.0, "y":0.0, "z":0.0}, {"x":-35.0, "y":0.0, "z":0.0}, {"x":0.0, "y":0.0, "z":0.0}, 0.0, 1.0, 0.0, 1.0]],
+
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_transmission", ["Golf87_engine", "Golf87_transmission"]],
+			["Golf87_shifterbase_A", ["Golf87_body"]]],
+
+		"engine":{
+			"transmissionType":"automatic",
+			"lowShiftDownRPM":1400.0,
+			"lowShiftUpRPM":3600.0,
+			"highShiftDownRPM":3300.0,
+			"highShiftUpRPM":6000.0,
+			"clutchDuration":0.25,
+			"viscousCoupling":4,
+			"lockingTorqueLimit":150,
+			"enableLocking":true,
+			"gears":[-2.9, 0.0, 2.72, 1.55, 1.05, 0.72]},
+
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"selfCollision":false, "collision":true, "nodeMaterial":"|NM_METAL", "frictionCoef":0.7, "group":"Golf87_transmission", "nodeWeight":31.0},
+			["tra1", 0.37, -1.43, 0.39],
+			{"group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamSpring":14001000, "beamDamp":250, "beamDeform":2000000, "beamStrength":"FLT_MAX"},
+			["tra1", "e2r"],
+			["tra1", "e4r"],
+			["tra1", "e2l"],
+			["tra1", "e4l"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}],
+
+		"hubWheels":[
+			["name", "group", "node1:", "node2:", "nodeS", "nodeArm:", "wheelDir"],
+			{"propulsed":1.0}]},
+
+	"Golf87_differential_F":{
+		"information":{
+			"name":"VW Golf Front Differential",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_differential_F",
+		"engine":{
+			"differential":4.37,
+			"axleFriction":10.0},
+
+		"differentials":[
+			["wheelName1", "wheelName2", "type", "state", "closedTorque", "engineTorqueCoef"],
+			["FL", "FR", "open", "open", 0, 1.0]]},
+
+	"Golf87_differential_F_LSD":{
+		"information":{
+			"name":"VW Golf Limited Slip Front Differential",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_differential_F",
+		"engine":{
+			"differential":4.37,
+			"axleFriction":10.0},
+
+		"differentials":[
+			["wheelName1", "wheelName2", "type", "state", "closedTorque", "engineTorqueCoef"],
+			["FL", "FR", "lsd", "closed", 120, 1.0]]},
+
+	"Golf87_transmission_M":{
+		"information":{
+			"name":"VW Golf 5-Speed Manual Transmission",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_transmission",
+		"slots":[
+			["type", "default", "description"],
+			["Golf87_differential_F", "Golf87_differential_F", "VW Golf Front Differential"]],
+
+		"scalenodeWeight":0.62,
+		"scalebeamSpring":0.46,
+		"scalebeamDamp":0.58,
+		"scalebeamDeform":0.39,
+		"scalebeamStrength":0.51,
+		"props":[
+			["func", "mesh", "idRef:", "idX:", "idY:", "baseRotation", "rotation", "translation", "min", "max", "offset", "multiplier"],
+			["gear_M", "Golf87_shifter_M", "f7r", "f7l", "f8r", {"x":85.0, "y":0.0, "z":0.0}, {"x":0.0, "y":0.0, "z":0.0}, {"x":0.0, "y":0.0, "z":0.0}, 0.0, 1.0, 0.0, 1.0],
+			["parkingbrake", "Golf87_parkingbrake", "f7r", "f7l", "f8r", {"x":90.0, "y":0.0, "z":0.0}, {"x":-35.0, "y":0.0, "z":0.0}, {"x":0.0, "y":0.0, "z":0.0}, 0.0, 1.0, 0.0, 1.0],
+			["clutch", "Golf87_clutchpedal", "f7r", "f7l", "f8r", {"x":90.0, "y":0.0, "z":0.0}, {"x":-25.0, "y":0.0, "z":0.0}, {"x":0.0, "y":0.0, "z":0.0}, 0.0, 1.0, 0.0, 1.0]],
+
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_transmission", ["Golf87_engine", "Golf87_transmission"]],
+			["Golf87_shifterbase_M", ["Golf87_body"]]],
+
+		"engine":{
+			"transmissionType":"manual",
+			"clutchDuration":0.12,
+			"viscousCoupling":4,
+			"lockingTorqueLimit":115,
+			"gears":[-3.1, 0.0, 3.15, 2.12, 1.43, 1.04, 0.81]},
+
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"selfCollision":false, "collision":true, "nodeMaterial":"|NM_METAL", "frictionCoef":0.7, "group":"Golf87_transmission", "nodeWeight":31.0},
+			["tra1", -0.37, -1.43, 0.39],
+			{"group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamSpring":14001000, "beamDamp":250, "beamDeform":2000000, "beamStrength":"FLT_MAX"},
+			["tra1", "e1r"],
+			["tra1", "e3r"],
+			["tra1", "e1l"],
+			["tra1", "e3l"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}],
+
+		"hubWheels":[
+			["name", "group", "node1:", "node2:", "nodeS", "nodeArm:", "wheelDir"],
+			{"propulsed":1.0}]},
+
+	"Golf87_turbo_stage1":{
+		"information":{
+			"name":"VW Golf Stage 1 Turbocharger",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_turbo",
+		"enginetorque":[
+			["rpm", "torque"],
+			[0, 0],
+			[500, 60],
+			[1000, 80],
+			[2000, 115],
+			[3000, 135],
+			[4000, 182],
+			[5000, 197],
+			[6000, 199],
+			[7000, 189],
+			[7500, 178]],
+
+		"engine":{
+			"idleRPM":1000.0,
+			"shiftDownRPM":4000.0,
+			"shiftUpRPM":7000.0,
+			"maxRPM":7500.0},
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}]}
+}

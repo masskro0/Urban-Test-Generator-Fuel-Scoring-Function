@@ -1,0 +1,263 @@
+{
+	"Golf87_suspension_F":{
+		"information":{
+			"name":"VW Golf Independent Front Suspension",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_suspension_F",
+		"slots":[
+			["type", "default", "description"],
+			["Golf87_hubcap_F", ",   ", "VW Golf Front Hubcaps"],
+			["Golf87_brake_F", "Golf87_brake_F", "VW Golf Front Brakes"],
+			["Golf87_wheel_F", "Golf87_wheel_F_steel", "VW Golf Front Wheels"],
+			["Golf87_coilover_F", "Golf87_coilover_F", "VW Golf Front Coilovers"],
+			["Golf87_swaybar_F", "Golf87_swaybar_F", "VW Golf Front Sway Bar"],
+			["Golf87_steering", "Golf87_steering", "VW Golf Steering"]],
+
+		"scalenodeWeight":0.62,
+		"scalebeamSpring":0.46,
+		"scalebeamDamp":0.58,
+		"scalebeamDeform":0.39,
+		"scalebeamStrength":0.51,
+		"selfCollisionThickness":0.02,
+		"remoteCollisionThickness":0.06,
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_upperarm_F", ["Golf87_uppermounts_a_F", "Golf87_uppermounts_b_F", "Golf87_upperarm_F"]],
+			["Golf87_lowerarm_F", ["Golf87_lowermounts_F", "Golf87_lowerarm_FR", "Golf87_lowerarm_FL"]],
+			["Golf87_hub_FR", ["Golf87_lowerarm_FR", "Golf87_upperarm_F", "Golf87_tierod_F"]],
+			["Golf87_hub_FL", ["Golf87_lowerarm_FL", "Golf87_upperarm_F", "Golf87_tierod_F"]],
+			["Golf87_halfshaft", ["Golf87_lowerarm_F", "Golf87_upperarm_F", "Golf87_engine", "Golf87_wheelhub_a_FR", "Golf87_wheelhub_a_FL"]]],
+
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"collision":true, "selfCollision":false, "nodeMaterial":"|NM_METAL", "frictionCoef":0.7, "nodeWeight":4.4, "group":"Golf87_lowerarm_FR"},
+			["fh1r", -0.704, -1.258, 0.186],
+			{"group":"Golf87_lowerarm_FL"},
+			["fh1l", 0.704, -1.258, 0.186],
+			{"group":"Golf87_upperarm_F"},
+			["fh2r", -0.606, -1.242, 0.607],
+			["fh2l", 0.606, -1.242, 0.607],
+			{"group":"Golf87_tierod_F", "nodeWeight":5.0, "selfCollision":false},
+			["fh3r", -0.677, -1.12, 0.31],
+			["fh3l", 0.677, -1.12, 0.31],
+			{"nodeWeight":3.1, "selfCollision":false, "group":"Golf87_shockbottom_F"},
+			["fh4r", -0.631, -1.249, 0.358],
+			["fh4l", 0.631, -1.249, 0.358],
+			{"group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamDeform":180000, "beamStrength":500000, "beamSpring":7501000, "beamDamp":300},
+			["fh1r", "fh2r"],
+			["fh1l", "fh2l"],
+			["fh1r", "fh3r"],
+			["fh1l", "fh3l"],
+			["fh1r", "fh4r"],
+			["fh1l", "fh4l"],
+			["fh2r", "fh3r"],
+			["fh2l", "fh3l"],
+			["fh2r", "fh4r"],
+			["fh2l", "fh4l"],
+			["fh3r", "fh4r"],
+			["fh3l", "fh4l"],
+			{"optional":true, "beamDeform":150000, "beamStrength":300000, "breakGroup":"wheel_FR"},
+			["fh1r", "fw1r"],
+			["fh2r", "fw1r"],
+			["fh3r", "fw1r"],
+			["fh1r", "fw1rr"],
+			["fh2r", "fw1rr"],
+			["fh3r", "fw1rr"],
+			{"breakGroup":"wheel_FL"},
+			["fh1l", "fw1l"],
+			["fh2l", "fw1l"],
+			["fh3l", "fw1l"],
+			["fh1l", "fw1ll"],
+			["fh2l", "fw1ll"],
+			["fh3l", "fw1ll"],
+			{"breakGroup":"", "optional":false, "beamSpring":9501000, "beamDamp":300, "beamDeform":55000, "beamStrength":240000},
+			["fx2r", "fh1r"],
+			["fx2l", "fh1l"],
+			{"beamDeform":120000, "beamStrength":240000},
+			["fx1r", "fh1r"],
+			["fx1l", "fh1l"],
+			["fx1r", "fh4r"],
+			["fx1l", "fh4l"],
+			{"beamDeform":65000, "beamStrength":170000, "beamSpring":6501000, "beamDamp":250},
+			["fh2r", "fx3r"],
+			["fh2l", "fx3l"],
+			["fh2r", "fx4r"],
+			["fh2l", "fx4l"],
+			{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.05, "beamShortBound":0.05, "beamSpring":0, "beamDamp":0, "beamDeform":12000, "beamStrength":19000, "beamLimitSpring":7501000, "beamLimitDamp":300, "breakGroupType":1, "breakGroup":"wheel_FR"},
+			["fw1r", "e1l", {"name":"axle_FR"}],
+			{"breakGroup":"wheel_FL"},
+			["fw1l", "e2l", {"name":"axle_FL"}],
+			{"breakGroup":"wheel_FR", "breakGroupType":0, "beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.3, "beamShortBound":0.49, "beamSpring":0, "beamDamp":0, "beamDeform":100000, "beamStrength":800000, "beamLimitSpring":6001000, "beamLimitDamp":1200, "optional":true},
+			["fw1rr", "f1rr"],
+			["fw1r", "f1rr"],
+			["fw1r", "f5r"],
+			{"breakGroup":"wheel_FL"},
+			["fw1ll", "f1ll"],
+			["fw1l", "f1ll"],
+			["fw1l", "f5l"],
+			{"breakGroup":"", "optional":false},
+			["fh1r", "f5r"],
+			["fh1l", "f5l"],
+			["fh1r", "f6r"],
+			["fh1l", "f6l"],
+			["fh1r", "f6rr"],
+			["fh1l", "f6ll"],
+			["fh2r", "f5r"],
+			["fh2l", "f5l"],
+			["fh3r", "f5r"],
+			["fh3l", "f5l"],
+			["fh3r", "f1r"],
+			["fh3l", "f1l"],
+			{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.3, "beamShortBound":0.27, "optional":true, "breakGroup":"wheel_FR"},
+			["fw1rr", "s5r"],
+			["fw1r", "s5r"],
+			{"breakGroup":"wheel_FL"},
+			["fw1ll", "s5l"],
+			["fw1l", "s5l"],
+			{"breakGroup":"", "optional":false},
+			["fh1r", "s5r"],
+			["fh1l", "s5l"],
+			["fh4r", "s7r"],
+			["fh4l", "s7l"],
+			["fh4r", "s5r"],
+			["fh4l", "s5l"],
+			{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.14, "beamShortBound":0.16},
+			["fh3r", "s1l"],
+			["fh3l", "s1r"],
+			{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.15, "beamShortBound":0.17},
+			["fh3r", "fx1l"],
+			["fh3l", "fx1r"],
+			{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.36, "beamShortBound":0.36},
+			["fh3r", "fx1r"],
+			["fh3l", "fx1l"],
+			{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.07, "beamShortBound":0.07},
+			["fh2r", "fx3l"],
+			["fh2l", "fx3r"],
+			["fh2r", "fx4l"],
+			["fh2l", "fx4r"],
+			{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.16, "beamShortBound":0.16},
+			["fh2r", "f1r"],
+			["fh2l", "f1l"],
+			["fh2r", "f1rr"],
+			["fh2l", "f1ll"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "breakGroup":""}]},
+
+	"Golf87_brake_F":{
+		"information":{
+			"name":"VW Golf Front Brakes",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_brake_F",
+		"scalenodeWeight":0.62,
+		"scalebeamSpring":0.46,
+		"scalebeamDamp":0.58,
+		"scalebeamDeform":0.39,
+		"scalebeamStrength":0.51,
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_brakedisc_FR", ["wheel_FR", "wheelhub_a_FR", "wheelhub_b_FR"], ["Golf87"]],
+			["Golf87_brakedisc_FL", ["wheel_FL", "wheelhub_a_FL", "wheelhub_b_FL"], ["Golf87"]]],
+
+		"hubWheels":[
+			["name", "group", "node1:", "node2:", "nodeS", "nodeArm:", "wheelDir"],
+			{"brakeTorque":850, "parkingTorque":0}]},
+
+	"Golf87_coilover_F":{
+		"information":{
+			"name":"VW Golf Front Coilovers",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_coilover_F",
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_coilover_F", ["Golf87_shockbottom_F", "Golf87_shocktop_F"]]],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamPrecompression":1.16, "beamType":"|BOUNDED", "beamLongBound":0.0, "beamShortBound":0.18, "beamSpring":65000, "beamDeform":52000, "beamStrength":84000, "beamDamp":2900, "beamLimitSpring":601000, "beamLimitDamp":1600},
+			["fh1r", "fs1r", {"beamDampRebound":3500.0}],
+			["fh1l", "fs1l", {"beamDampRebound":3500.0}],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}]},
+
+	"Golf87_swaybar_F":{
+		"information":{
+			"name":"VW Golf Front Sway Bar",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_swaybar_F",
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"nodeMaterial":"|NM_METAL", "frictionCoef":0.7, "group":"", "nodeWeight":2.5, "selfCollision":false, "collision":false},
+			["arbf", 0.0, -1.1, 0.5],
+			{"group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamLimitSpring":6001000, "beamLimitDamp":350, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamPrecompression":1.0, "beamSpring":6001000, "beamDamp":300, "beamDeform":300000, "beamStrength":1000000},
+			["arbf", "fh1r"],
+			["arbf", "fh1l"],
+			{"beamSpring":1801000, "beamDamp":10},
+			["arbf", "f5r"],
+			["arbf", "f5l"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}]},
+
+	"Golf87_swaybar_F_sport":{
+		"information":{
+			"name":"VW Golf Sport Front Sway Bar",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_swaybar_F",
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"nodeMaterial":"|NM_METAL", "frictionCoef":0.7, "group":"", "nodeWeight":2.5, "selfCollision":false, "collision":false},
+			["arbf", 0.0, -1.1, 0.5],
+			{"group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamLimitSpring":6001000, "beamLimitDamp":350, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamPrecompression":1.0, "beamSpring":6001000, "beamDamp":300, "beamDeform":300000, "beamStrength":1000000},
+			["arbf", "fh1r"],
+			["arbf", "fh1l"],
+			{"beamSpring":2801000, "beamDamp":10},
+			["arbf", "f5r"],
+			["arbf", "f5l"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}]},
+
+	"Golf87_steering":{
+		"information":{
+			"name":"VW Golf Steering",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_steering",
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_tierod", ["Golf87_tierod_F", "Golf87_steeringbox_F"]]],
+
+		"hydros":[
+			["id1:", "id2:"],
+			{"beamPrecompression":1.005, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamSpring":21001000, "beamDamp":50, "beamDeform":67000, "beamStrength":84000},
+			["fh3r", "s1r", {"factor":-0.17, "steeringWheelLock":460.0}],
+			["fh3l", "s1l", {"factor":0.17, "steeringWheelLock":460.0}],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}]},
+
+	"Golf87_steering_rally":{
+		"information":{
+			"name":"VW Golf Rally Steering",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_steering",
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_tierod", ["Golf87_tierod_F", "Golf87_steeringbox_F"]]],
+
+		"hydros":[
+			["id1:", "id2:"],
+			{"beamPrecompression":1.0, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamSpring":22001000, "beamDamp":50, "beamDeform":90000, "beamStrength":110000},
+			["fh3r", "s1r", {"factor":-0.26, "steeringWheelLock":270.0}],
+			["fh3l", "s1l", {"factor":0.26, "steeringWheelLock":270.0}]]}
+}

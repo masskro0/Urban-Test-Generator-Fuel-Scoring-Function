@@ -117,21 +117,9 @@ def _add_parked_cars(individual):
     parked_cars = list()
     index = 0
     for position in car_positions:
-        init_state = {"position": position[0],
-                      "orientation": position[1],
-                      "movementMode": "_BEAMNG",
-                      "speed": 50}
-        model = "ETK800"
-        car = {"id": "parked_{}".format(index),
-               "init_state": init_state,
-               "model": model}
-        parked_cars.append(car)
-        """
-        parked_cars.append({"name": "etk800", "position": position[0], "zRot": position[1]})
-        """
+        parked_cars.append({"name": "golf", "position": position[0], "zRot": position[1]})
         index += 1
-
-    individual["participants"].extend(parked_cars)
+    individual["obstacles"].extend(parked_cars)
 
 
 def _merge_lanes(population):
@@ -564,6 +552,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Refactor
 #       TODO Comments
 #       TODO Fix lane markings
+#       TODO Add Golf
 
 # TODO Observer/Specifications:
 
@@ -573,6 +562,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Add weather presets
 #       TODO Double test cases by placing spawn point on the other side
 #       TODO Improve performance
+#       TODO Make Golf colidable
 #       TODO Converter:
 #           TODO Add input checking
 #           TODO Implement Sensor deployment

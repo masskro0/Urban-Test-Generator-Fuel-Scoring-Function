@@ -34,448 +34,1106 @@ singleton Material(trafficlight)
     annotation = "TRAFFIC_SIGNALS";
 };
 
-singleton Material(etk800)
+//TEXTURES FOR GOLF
+
+
+singleton Material(_87Golf_BodyMat)
 {
-   mapTo = "etk800";
-    diffuseMap[2] = "vehicles/etk800/etk800_c.dds";
-    specularMap[2] = "vehicles/etk800/etk800_s.dds";
-    normalMap[2] = "vehicles/etk800/etk800_n.dds";
-    diffuseMap[1] = "vehicles/etk800/etk800_d.dds";
-    specularMap[1] = "vehicles/etk800/etk800_s.dds";
-    normalMap[1] = "vehicles/etk800/etk800_n.dds";
-    diffuseMap[0] = "vehicles/common/null.dds";
-    specularMap[0] = "vehicles/common/null.dds";
-    normalMap[0] = "vehicles/etk800/etk800_n.dds";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    specularPower[1] = "32";
-    pixelSpecular[1] = "1";
-    specularPower[2] = "128";
-    pixelSpecular[2] = "1";
-    diffuseColor[0] = "1 1 1 1";
-    diffuseColor[1] = "1 1 1 1";
-    diffuseColor[2] = "1 1 1 1";
-    useAnisotropic[0] = "1";
-    useAnisotropic[1] = "1";
-    useAnisotropic[2] = "1";
-    castShadows = "1";
-    translucent = "1";
-    translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    dynamicCubemap = true;
-    instanceDiffuse[2] = true;
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "BodyMat";
+   doubleSided = "1";
+   diffuseMap[2] = "vehicles/87Golf/Textures/87GolfBody_c.dds";
+   specularMap[2] = "vehicles/87Golf/Textures/87GolfBody_s.dds";
+   diffuseMap[1] = "vehicles/87Golf/Textures/87GolfBody_d.dds";
+   specularMap[1] = "vehicles/87Golf/Textures/87GolfBody_s.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+
+//Diamond Silver Metallic
+   //diffuseColor[2] = "0.541176 0.541176 0.541176 1";
+//Blue Mica
+   //diffuseColor[2] = "0 0.00784314 0.219608 1";
+//Red Mica
+   //diffuseColor[2] = "0.403922 0.0313726 0.00392157 1";
+//Tornado Red
+   //diffuseColor[2] = "0.882353 0.0705882 0.00784314 1";
+//World Rally Blue (Custom)
+   //diffuseColor[2] = "0 0.225 0.808 1";
+//Neon Green (Custom)
+   //diffuseColor[2] = "0.051 0.416 0.00392 1";
+//Black Graphite Metallic (Custom)
+   //diffuseColor[2] = "0.028 0.035 0.035 1";
+//Player-Generated Color
+   diffuseColor[2] = "0 0.05 0.2 1";
+
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   beamngDiffuseColorSlot = 2;
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_lettering)
+singleton Material(_87Golf_PartsMat)
 {
-    mapTo = "etk800_lettering";
-    specularMap[0] = "vehicles/etk800/etk800_lettering_s.dds";
-    normalMap[0] = "vehicles/etk800/etk800_lettering_n.dds";
-    diffuseMap[0] = "vehicles/etk800/etk800_lettering_d.dds";
-    reflectivityMap[0] = "vehicles/etk800/etk800_lettering_s.dds";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    diffuseColor[0] = "1 1 1 1";
-    useAnisotropic[0] = "1";
-    castShadows = "0";
-    translucent = "1";
-    //translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    dynamicCubemap = true;
-    materialTag0 = "beamng"; materialTag1 = "vehicle"; materialTag2 = "decal";
-    //translucentZWrite = "1";
+   mapTo = "PartsMat";
+   doubleSided = "1";
+   diffuseMap[2] = "vehicles/87Golf/Textures/87GolfParts_c.dds";
+   specularMap[2] = "vehicles/87Golf/Textures/87GolfParts_s.dds";
+   diffuseMap[1] = "vehicles/87Golf/Textures/87GolfParts_d.dds";
+   specularMap[1] = "vehicles/87Golf/Textures/87GolfParts_s.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+
+//Diamond Silver Metallic
+   //diffuseColor[2] = "0.541176 0.541176 0.541176 1";
+//Blue Mica
+   //diffuseColor[2] = "0 0.00784314 0.219608 1";
+//Red Mica
+   //diffuseColor[2] = "0.403922 0.0313726 0.00392157 1";
+//Tornado Red
+   //diffuseColor[2] = "0.882353 0.0705882 0.00784314 1";
+//World Rally Blue (Custom)
+   //diffuseColor[2] = "0 0.225 0.808 1";
+//Neon Green (Custom)
+   //diffuseColor[2] = "0.051 0.416 0.00392 1";
+//Black Graphite Metallic (Custom)
+   //diffuseColor[2] = "0.028 0.035 0.035 1";
+//Player-Generated Color
+   diffuseColor[2] = "0 0.05 0.2 1";
+
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   beamngDiffuseColorSlot = 2;
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_seats)
+singleton Material(_87Golf_InteriorMat)
 {
-    mapTo = "etk800_seats";
-    normalMap[0] = "vehicles/etk800/etk800_seats_n.dds";
-    diffuseMap[0] = "vehicles/etk800/etk800_seats_d.dds";
-    specularMap[0] = "vehicles/etk800/etk800_seats_s.dds";
-    diffuseColor[0] = "1 1 1 1";
-    specularPower[0] = "32";
-    useAnisotropic[0] = "1";
-    castShadows = "1";
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "InteriorMat";
+   doubleSided = "1";
+   diffuseMap[2] = "vehicles/87Golf/Textures/87GolfInterior_c.dds";
+   specularMap[2] = "vehicles/87Golf/Textures/87GolfInterior_s.dds";
+   diffuseMap[1] = "vehicles/87Golf/Textures/87GolfInterior_d.dds";
+   specularMap[1] = "vehicles/87Golf/Textures/87GolfInterior_s.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   diffuseColor[2] = "0.5 0.5 0.5 0.1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   beamngDiffuseColorSlot = 0;
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_interior)
+singleton Material(_87Golf_MiscMat)
 {
-    mapTo = "etk800_interior";
-    normalMap[0] = "vehicles/etk800/etk800_interior_n.dds";
-    diffuseMap[0] = "vehicles/etk800/etk800_interior_d.dds";
-    specularMap[0] = "vehicles/etk800/etk800_interior_s.dds";
-    diffuseColor[0] = "1 1 1 1";
-    specularPower[0] = "32";
-    useAnisotropic[0] = "1";
-    castShadows = "1";
-    translucent = "0";
-    translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    cubemap = "global_cubemap_metalblurred";
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "MiscMat";
+   doubleSided = "1";
+   diffuseMap[2] = "vehicles/87Golf/Textures/87GolfMisc_c.dds";
+   specularMap[2] = "vehicles/87Golf/Textures/87GolfMisc_s.dds";
+   diffuseMap[1] = "vehicles/87Golf/Textures/87GolfMisc_d.dds";
+   specularMap[1] = "vehicles/87Golf/Textures/87GolfMisc_s.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   diffuseColor[2] = "0.5 0.5 0.5 0.1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   beamngDiffuseColorSlot = 0;
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_screen)
+singleton Material(_87Golf_Chrome)
 {
-    mapTo = "etk800_screen";
-    diffuseMap[0] = "@etk800_screen";
-    specularMap[0] = "vehicles/common/null.dds";
-    diffuseColor[0] = "1 1 1 1";
-    specularPower[0] = "32";
-    useAnisotropic[0] = "1";
-    castShadows = "1";
-    translucent = "0";
-    translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    emissive[0] = "1";
-    //cubemap = "global_cubemap_metalblurred";
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "Chrome";
+   doubleSided = "1";
+   diffuseMap[2] = "vehicles/87Golf/87Golf_c.dds";
+   specularMap[2] = "vehicles/87Golf/87Golf_s.dds";
+   //normalMap[2] = "vehicles/87Golf/87Golf_n.dds";
+   diffuseMap[1] = "vehicles/87Golf/87Golf_d.dds";
+   specularMap[1] = "vehicles/87Golf/87Golf_s.dds";
+   normalMap[1] = "vehicles/87Golf/87Golf_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   //normalMap[0] = "vehicles/87Golf/87Golf_n.dds";
+   //diffuseMap[3] = "vehicles/87Golf/87Golf_dirt.dds";
+   //normalMap[3] = "vehicles/87Golf/87Golf_n.dds";
+   specularPower[0] = "48";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "48";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   diffuseColor[2] = "0.455 0.455 0.455 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   //diffuseColor[3] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   beamngDiffuseColorSlot = 0;
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_gauges_screen)
+singleton Material(_87Golf_IntMetal)
 {
-    mapTo = "etk800_gauges_screen";
-    diffuseMap[0] = "@etk800_gauges_screen";
-    opacityMap[0] = "vehicles/etk800/etk800_gauges_screen.dds";
-    specularMap[0] = "vehicles/common/null.dds";
-    diffuseColor[0] = "1 1 1 1";
-    specularPower[0] = "32";
-    useAnisotropic[0] = "1";
-    castShadows = "0";
-    translucent = "1";
-    emissive[0] = "1";
-    //cubemap = "global_cubemap_metalblurred";
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "IntMetal";
+   doubleSided = "1";
+   diffuseMap[2] = "vehicles/87Golf/87Golf_c.dds";
+   specularMap[2] = "vehicles/87Golf/87Golf_s.dds";
+   //normalMap[2] = "vehicles/87Golf/87Golf_n.dds";
+   diffuseMap[1] = "vehicles/87Golf/87Golf_d.dds";
+   specularMap[1] = "vehicles/87Golf/87Golf_s.dds";
+   normalMap[1] = "vehicles/87Golf/87Golf_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   //normalMap[0] = "vehicles/87Golf/87Golf_n.dds";
+   //diffuseMap[3] = "vehicles/87Golf/87Golf_dirt.dds";
+   //normalMap[3] = "vehicles/87Golf/87Golf_n.dds";
+   specularPower[0] = "10";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "10";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   diffuseColor[2] = "0.69 0.69 0.69 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   //diffuseColor[3] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   beamngDiffuseColorSlot = 0;
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
+};
+
+singleton Material(_87Golf_FrontSeatMat)
+{
+   mapTo = "FrontSeatMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfFrontSeats.jpg";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_HeadlightsMat)
+{
+   mapTo = "HeadlightsMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfHeadlights";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_DashMat)
+{
+   mapTo = "DashMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfDash";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_SeatFLMat)
+{
+   mapTo = "SeatFLMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfSeatFL";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_SeatFRMat)
+{
+   mapTo = "SeatFRMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfSeatFL";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_RearSeatMat)
+{
+   mapTo = "RearSeatMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfRearSeats";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_SteerMat)
+{
+   mapTo = "SteerMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfSteer";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_SStalkMat)
+{
+   mapTo = "SStalkMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfBlackPlastics";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_WStalkMat)
+{
+   mapTo = "WStalkMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfBlackPlastics";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_DoorLMat)
+{
+   mapTo = "DoorLMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfDoorL";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_DoorRMat)
+{
+   mapTo = "DoorRMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfDoorR";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_HoodMat)
+{
+   mapTo = "HoodMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfHood";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_TrunkMat)
+{
+   mapTo = "TrunkMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfTrunk";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_FasciaMat)
+{
+   mapTo = "FasciaMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfFascia";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_MShiftMat)
+{
+   mapTo = "MShiftMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfShift";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_AShiftMat)
+{
+   mapTo = "AShiftMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfShift";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_PBMat)
+{
+   mapTo = "PBMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfPB";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_DPRMat)
+{
+   mapTo = "DPRMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfShift";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_DPLMat)
+{
+   mapTo = "DPLMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfShift";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_CPMat)
+{
+   mapTo = "CPMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfShift";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_BPMat)
+{
+   mapTo = "BPMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfShift";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_GPMat)
+{
+   mapTo = "GPMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfShift";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_MirrorIMat)
+{
+   mapTo = "MirrorIMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMirrors";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_MirrorLMat)
+{
+   mapTo = "MirrorLMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMirrors";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_UAFMat)
+{
+   mapTo = "UAFMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_LAFMat)
+{
+   mapTo = "LAFMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_HubFRMat)
+{
+   mapTo = "HubFRMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_HubFLMat)
+{
+   mapTo = "HubFLMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_HalfShaftMat)
+{
+   mapTo = "HalfShaftMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_FuelTankMat)
+{
+   mapTo = "FuelTankMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfFuelTank";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_ExhaustMat)
+{
+   mapTo = "ExhaustMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_Engine)
+{
+   mapTo = "Engine";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfEngine";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_EngineBayCrap)
+{
+   mapTo = "EngineBayCrap";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfEngParts";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_CoilsFMat)
+{
+   mapTo = "CoilsFMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_GlassMat)
+{
+   mapTo = "GlassMat";
+   diffuseColor[0] = "0.188235 0.188235 0.188235 0.12";
+   specularPower[0] = "128";
+   doubleSided = "1";
+   translucent = "1";
+   translucentZWrite = "1";
+   alphaTest = "1";
+};
+
+singleton Material(_87Golf_LARMat)
+{
+   mapTo = "LARMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_HubRMat)
+{
+   mapTo = "HubRMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_CoilsRMat)
+{
+   mapTo = "CoilsRMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_UARMat)
+{
+   mapTo = "UARMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfMetals";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_SteerRallyMat)
+{
+   mapTo = "SteerRallyMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfSteerR";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
+};
+
+singleton Material(_87Golf_HubcapMat)
+{
+   mapTo = "HubcapMat";
+   diffuseMap[0] = "vehicles/87Golf/Textures/87GolfHubcap";
+   specular[0] = "0.5 0.5 0.5 1";
+   specularPower[0] = "50";
+   doubleSided = "1";
+   translucentBlendOp = "None";
 };
 
 
-singleton Material(etk800_gauges)
+
+
+//TEXTURES FOR WHEELS (CREDIT TO DKUTCH AND JALKKU; USED WITH PERMISSION)
+
+
+
+
+singleton Material(Dk_81_720_datsun720_2wdsteelie)
 {
-    mapTo = "etk800_gauges";
-    diffuseMap[0] = "vehicles/etk800/etk800_gauges_d.dds";
-    specularMap[0] = "vehicles/etk800/etk800_gauges_s.dds";
-    normalMap[0] = "vehicles/etk800/etk800_gauges_n.dds";
-    diffuseColor[0] = "0 0 0 1";
-    specularPower[0] = "32";
-    pixelSpecular[0] = "1";
-    useAnisotropic[0] = "1";
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
-    cubemap = "global_cubemap_metalblurred";
+   mapTo = "datsun720_2wdsteelie";
+   diffuseMap[1] = "vehicles/common/wheels/steelwheel_03a_d.dds";
+   specularMap[1] = "vehicles/common/wheels/steelwheel_03a_s.dds";
+   normalMap[1] = "vehicles/common/wheels/steelwheel_03a_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/common/wheels/steelwheel_03a_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_gauges_on)
+singleton Material(Dk_81_720_datsun720_2wdtire)
 {
-    mapTo = "etk800_gauges_on";
-    diffuseMap[1] = "vehicles/etk800/etk800_gauges_g.dds";
-    specularMap[1] = "vehicles/etk800/etk800_gauges_s.dds";
-    normalMap[1] = "vehicles/etk800/etk800_gauges_n.dds";
-    diffuseMap[0] = "vehicles/etk800/etk800_gauges_d.dds";
-    specularMap[0] = "vehicles/etk800/etk800_gauges_s.dds";
-    normalMap[0] = "vehicles/etk800/etk800_gauges_n.dds";
-    diffuseColor[0] = "0 0 0 1";
-    specularPower[0] = "32";
-    specularPower[1] = "32";
-    pixelSpecular[0] = "1";
-    useAnisotropic[0] = "1";
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
-    cubemap = "global_cubemap_metalblurred";
-    emissive[1] = "1";
-    diffuseColor[1] = "0 0 0 0";
-    useAnisotropic[1] = "1";
+   mapTo = "datsun720_2wdtire";
+   diffuseMap[1] = "vehicles/common/tires/tire_01a_d.dds";
+   specularMap[1] = "vehicles/common/tires/tire_01a_s.dds";
+   normalMap[1] = "vehicles/common/tires/tire_01a_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/common/tires/tire_01a_n.dds";
+   //diffuseMap[2] = "vehicles/common/tire_01a_dirt.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   //diffuseColor[2] = "1.5 1.5 1.5 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_grille)
+singleton Material(hatchMRi_hatch_MRi_Rwheels)
 {
-    mapTo = "etk800_grille";
-    diffuseMap[0] = "vehicles/etk800/etk800_grille_o.dds";
-    specularMap[0] = "vehicles/etk800/etk800_grille_s.dds";
-    normalMap[0] = "vehicles/etk800/etk800_grille_n.dds";
-    diffuseMap[1] = "vehicles/etk800/etk800_grille_d.dds";
-    specularMap[1] = "vehicles/etk800/etk800_grille_s.dds";
-    normalMap[1] = "vehicles/etk800/etk800_grille_n.dds";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    specularPower[1] = "128";
-    pixelSpecular[1] = "1";
-    diffuseColor[0] = "1 1 1 1";
-    diffuseColor[1] = "1 1 1 0.9";
-    useAnisotropic[0] = "1";
-    useAnisotropic[1] = "1";
-    castShadows = "0";
-    translucent = "1";
-    //translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    dynamicCubemap = true;
-    materialTag0 = "beamng"; materialTag1 = "vehicle"; materialTag2 = "decal";
-    //translucentZWrite = "1";
+   mapTo = "hatch_MRi_Rwheels";
+   diffuseMap[1] = "vehicles/87Golf/Textures/hatchMRi_Rwheels_d.dds";
+   //specularMap[1] = "vehicles/87Golf/Textures/ABC_81DatsunKC_tires_aftermarket_s.dds";
+   normalMap[1] = "vehicles/87Golf/Textures/hatchMRi_Rwheels_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/87Golf/Textures/hatchMRi_Rwheels_n.dds";
+   //diffuseMap[2] = "vehicles/common/tire_01a_dirt.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   //diffuseColor[2] = "1.5 1.5 1.5 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_lights)
+singleton Material(hatchMRi_hatch_MRi_Rtires)
 {
-    mapTo = "etk800_lights";
-    diffuseMap[1] = "vehicles/etk800/etk800_lights_d.dds";
-    specularMap[1] = "vehicles/etk800/etk800_lights_s.dds";
-    normalMap[1] = "vehicles/etk800/etk800_lights_n.dds";
-    diffuseMap[0] = "vehicles/common/null.dds";
-    specularMap[0] = "vehicles/common/null.dds";
-    normalMap[0] = "vehicles/etk800/etk800_lights_n.dds";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    specularPower[1] = "128";
-    pixelSpecular[1] = "1";
-    diffuseColor[0] = "1 1 1 1";
-    diffuseColor[1] = "1 1 1 1";
-    useAnisotropic[0] = "1";
-    useAnisotropic[1] = "1";
-    castShadows = "1";
-    translucent = "1";
-    translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    diffuseColor[1] = "1.5 1.5 1.5 1";
-    dynamicCubemap = true;
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "hatch_MRi_Rtires";
+   diffuseMap[1] = "vehicles/87Golf/Textures/hatchMRi_Rtires_d.dds";
+   specularMap[1] = "vehicles/87Golf/Textures/hatchMRi_Rtires_s.dds";
+   normalMap[1] = "vehicles/87Golf/Textures/hatchMRi_Rtires_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/87Golf/Textures/hatchMRi_Rtires_n.dds";
+   //diffuseMap[2] = "vehicles/common/tire_01a_dirt.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   //diffuseColor[2] = "1.5 1.5 1.5 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_lights_on)
+singleton Material(polo_tire_gravel_material)
 {
-    mapTo = "etk800_lights_on";
-    diffuseMap[2] = "vehicles/etk800/etk800_lights_g.dds";
-    specularMap[2] = "vehicles/etk800/etk800_lights_s.dds";
-    normalMap[2] = "vehicles/etk800/etk800_lights_n.dds";
-    diffuseMap[1] = "vehicles/etk800/etk800_lights_d.dds";
-    specularMap[1] = "vehicles/etk800/etk800_lights_s.dds";
-    normalMap[1] = "vehicles/etk800/etk800_lights_n.dds";
-    diffuseMap[0] = "vehicles/common/null.dds";
-    specularMap[0] = "vehicles/common/null.dds";
-    normalMap[0] = "vehicles/etk800/etk800_lights_n.dds";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    specularPower[1] = "128";
-    pixelSpecular[1] = "1";
-    diffuseColor[0] = "1 1 1 1";
-    diffuseColor[1] = "1.5 1.5 1.5 1";
-    diffuseColor[2] = "1.5 1.5 1.5 0.25";
-    useAnisotropic[0] = "1";
-    useAnisotropic[1] = "1";
-    useAnisotropic[2] = "1";
-    castShadows = "1";
-    translucent = "1";
-    translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    dynamicCubemap = true;
-    glow[2] = "1";
-    emissive[2] = "1";
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "tire_gravel-material";
+   diffuseMap[1] = "vehicles/87Golf/Textures/polo_tire_gravel.png";
+   specularMap[1] = "vehicles/87Golf/Textures/polo_tire_s.png";
+   normalMap[1] = "vehicles/87Golf/Textures/polo_tire_n.png";
+   useAnisotropic[1] = "1";
+   //diffuseColor[3] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
+   doublesided = "1";
 };
 
-singleton Material(etk800_lights_on_intense)
+singleton Material(polo_rim_material)
 {
-    mapTo = "etk800_lights_on_intense";
-    diffuseMap[2] = "vehicles/etk800/etk800_lights_g.dds";
-    specularMap[2] = "vehicles/etk800/etk800_lights_s.dds";
-    normalMap[2] = "vehicles/etk800/etk800_lights_n.dds";
-    diffuseMap[1] = "vehicles/etk800/etk800_lights_d.dds";
-    specularMap[1] = "vehicles/etk800/etk800_lights_s.dds";
-    normalMap[1] = "vehicles/etk800/etk800_lights_n.dds";
-    diffuseMap[0] = "vehicles/common/null.dds";
-    specularMap[0] = "vehicles/common/null.dds";
-    normalMap[0] = "vehicles/etk800/etk800_lights_n.dds";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    specularPower[1] = "128";
-    pixelSpecular[1] = "1";
-    diffuseColor[0] = "1 1 1 1";
-    diffuseColor[1] = "1.5 1.5 1.5 1";
-    diffuseColor[2] = "1.5 1.5 1.5 0.5";
-    useAnisotropic[0] = "1";
-    useAnisotropic[1] = "1";
-    useAnisotropic[2] = "1";
-    castShadows = "1";
-    translucent = "1";
-    translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    dynamicCubemap = true;
-    glow[2] = "1";
-    emissive[2] = "1";
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "rim-material";
+   diffuseMap[1] = "vehicles/87Golf/Textures/polo_rim.png";
+   specularMap[1] = "vehicles/87Golf/Textures/polo_rim.png";
+   normalMap[1] = "vehicles/87Golf/Textures/polo_rim.png";
+   useAnisotropic[1] = "1";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "0.1 0.1 0.1 1";
+   diffuseColor[1] = "1 1 1 0.7";
+   diffuseColor[2] = "0.06 0.06 0.06 1";
+   //diffuseColor[3] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
+   doublesided = "1";
 };
 
-singleton Material(etk800_lights_dmg)
+
+
+
+//ORIGINAL HATCH MATERIALS (CREDIT TO GABESTER)
+
+singleton Material(hatch)
 {
-    mapTo = "etk800_lights_dmg";
-    diffuseMap[1] = "vehicles/etk800/etk800_lights_dmg_d.dds";
-    specularMap[1] = "vehicles/etk800/etk800_lights_dmg_s.dds";
-    normalMap[1] = "vehicles/etk800/etk800_lights_dmg_n.dds";
-    diffuseMap[0] = "vehicles/common/null.dds";
-    specularMap[0] = "vehicles/common/null.dds";
-    normalMap[0] = "vehicles/etk800/etk800_lights_dmg_n.dds";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    specularPower[1] = "128";
-    pixelSpecular[1] = "1";
-    diffuseColor[0] = "1 1 1 1";
-    diffuseColor[1] = "1 1 1 1";
-    useAnisotropic[0] = "1";
-    useAnisotropic[1] = "1";
-    castShadows = "1";
-    translucent = "1";
-    translucentBlendOp = "None";
-    alphaTest = "0";
-    alphaRef = "0";
-    diffuseColor[1] = "1.5 1.5 1.5 1";
-    dynamicCubemap = true;
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "hatch";
+   diffuseMap[2] = "vehicles/hatch/hatch_c.dds";
+   specularMap[2] = "vehicles/hatch/hatch_s.dds";
+   normalMap[2] = "vehicles/hatch/hatch_n.dds";
+   diffuseMap[1] = "vehicles/hatch/hatch_d.dds";
+   specularMap[1] = "vehicles/hatch/hatch_s.dds";
+   normalMap[1] = "vehicles/hatch/hatch_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/hatch/hatch_n.dds";
+   //diffuseMap[3] = "vehicles/hatch/hatch_dirt.dds";
+   //normalMap[3] = "vehicles/hatch/hatch_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   diffuseColor[2] = "0.1 0.4 0.8 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   //diffuseColor[3] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   beamngDiffuseColorSlot = 2;
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_glass)
+singleton Material(hatch_interior)
 {
-    mapTo = "etk800_glass";
-    reflectivityMap[0] = "vehicles/common/glass_base.dds";
-    diffuseMap[0] = "vehicles/etk800/etk800_glass_d.dds";
-    opacityMap[0] = "vehicles/etk800/etk800_glass_d.dds";
-    diffuseMap[1] = "vehicles/etk800/etk800_glass_da.dds";
-    specularMap[0] = "vehicles/common/null.dds";
-    normalMap[0] = "vehicles/common/null_n.dds";
-    diffuseColor[1] = "0.5 0.5 0.5 0.75";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    diffuseColor[0] = "1 1.5 1.5 1";
-    useAnisotropic[0] = "1";
-    castShadows = "0";
-    translucent = "1";
-    alphaTest = "0";
-    alphaRef = "0";
-    dynamicCubemap = true;
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "hatch_interior";
+   diffuseMap[0] = "hatch_interior_d.dds";
+   normalMap[0] = "hatch_interior_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   useAnisotropic[0] = "1";
+   specularMap[0] = "hatch_interior_s.dds";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
+   diffuseColor[0] = "0.8 0.8 0.8 1";
 };
 
-singleton Material(etk800_glass_int)
+singleton Material(hatch_gauges)
 {
-    mapTo = "etk800_glass_int";
-    diffuseMap[0] = "vehicles/etk800/etk800_glass_d.dds";
-    specularMap[0] = "vehicles/common/null.dds";
-    specularPower[0] = "128";
-    pixelSpecular[0] = "1";
-    diffuseColor[0] = "1 1.5 1.5 1";
-    useAnisotropic[0] = "1";
-    castShadows = "0";
-    translucent = "1";
-    alphaTest = "0";
-    doubleSided = "0";
-    alphaRef = "0";
-    dynamicCubemap = false;
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "hatch_gauges";
+   diffuseMap[0] = "hatch_gauges_d.dds";
+   specularMap[0] = "hatch_gauges_s.dds";
+   normalMap[0] = "hatch_gauges_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   useAnisotropic[0] = "1";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
+   diffuseColor[0] = "0.75 0.75 0.75 1";
 };
 
-singleton Material(etk800_glass_dmg)
+singleton Material(hatch_gauges_on)
 {
-    mapTo = "etk800_glass_dmg";
-    diffuseMap[0] = "vehicles/etk800/etk800_glass_dmg_d.dds";
-    opacityMap[0] = "vehicles/etk800/etk800_glass_dmg_d.dds";
-    specularMap[0] = "vehicles/common/glass_dmg_s.dds";
-    normalMap[0] = "vehicles/common/glass_dmg_n.dds";
-    diffuseMap[1] = "vehicles/etk800/etk800_glass_dmg_d.dds";
-    specularMap[1] = "vehicles/common/glass_dmg_s.dds";
-    normalMap[1] = "vehicles/common/glass_dmg_n.dds";
-    specularPower[0] = "128";
-    specularPower[1] = "128";
-    diffuseColor[0] = "1 1 1 1.5";
-    diffuseColor[1] = "1 1 1 0.75";
-    useAnisotropic[0] = "1";
-    castShadows = "0";
-    translucent = "1";
-    alphaTest = "0";
-    alphaRef = "0";
-    dynamicCubemap = true;
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "hatch_gauges_on";
+   diffuseMap[1] = "hatch_gauges_g.dds";
+   specularMap[1] = "hatch_gauges_s.dds";
+   normalMap[1] = "hatch_gauges_n.dds";
+   diffuseMap[0] = "hatch_gauges_d.dds";
+   specularMap[0] = "hatch_gauges_s.dds";
+   normalMap[0] = "hatch_gauges_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   glow[1] = "1";
+   emissive[1] = "1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
+   diffuseColor[0] = "0.75 0.75 0.75 1";
+   diffuseColor[1] = "1.5 1.5 1.5 0.2";
 };
 
-singleton Material(etk800_windshield_dmg)
+singleton Material(hatch_glass)
 {
-    mapTo = "etk800_windshield_dmg";
-    reflectivityMap[0] = "vehicles/common/glass_base.dds";
-    diffuseMap[0] = "vehicles/etk800/etk800_glass_dmg_d.dds";
-    specularMap[0] = "vehicles/common/glass_dmg_s.dds";
-    normalMap[0] = "vehicles/common/windshield_dmg_n.dds";
-    specularPower[0] = "32";
-    diffuseColor[0] = "1.5 1.5 1.5 1";
-    useAnisotropic[0] = "1";
-    castShadows = "0";
-    translucent = "1";
-    alphaTest = "0";
-    alphaRef = "0";
-    dynamicCubemap = true;
-    materialTag0 = "beamng"; materialTag1 = "vehicle";
+   mapTo = "hatch_glass";
+   diffuseMap[0] = "vehicles/87Golf/hatch_glass_d.dds";
+   specularMap[0] = "vehicles/87Golf/hatch_glass_s.dds";
+   diffuseMap[1] = "vehicles/87Golf/hatch_glass_da.dds";
+   specularMap[1] = "vehicles/87Golf/hatch_glass_s.dds";
+   //diffuseMap[2] = "vehicles/87Golf/hatch_glass_dirt.dds";
+   specularPower[0] = "128";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "128";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   //diffuseColor[2] = "1.5 1.5 1.5 1";
+   castShadows = "0";
+   translucent = "1";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_reverselight)
+singleton Material(hatch_lights_on)
 {
-    mapTo = "etk800_reverselight";
+   mapTo = "hatch_lights_on";
+   diffuseMap[2] = "vehicles/87Golf/hatch_lights_g.dds";
+   specularMap[2] = "vehicles/87Golf/hatch_lights_s.dds";
+   normalMap[2] = "vehicles/87Golf/hatch_lights_n.dds";
+   diffuseMap[1] = "vehicles/87Golf/hatch_lights_d.dds";
+   specularMap[1] = "vehicles/87Golf/hatch_lights_s.dds";
+   normalMap[1] = "vehicles/87Golf/hatch_lights_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/87Golf/hatch_lights_n.dds";
+   //diffuseMap[3] = "vehicles/87Golf/hatch_lights_dirt.dds";
+   //normalMap[3] = "vehicles/87Golf/hatch_lights_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1.5 1.5 1.5 1";
+   diffuseColor[2] = "1.5 1.5 1.5 0.12";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   //diffuseColor[3] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   glow[2] = "1";
+   emissive[2] = "1";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_signal_R)
+singleton Material(hatch_lights_on_intense)
 {
-    mapTo = "etk800_signal_R";
+   mapTo = "hatch_lights_on_intense";
+   diffuseMap[2] = "vehicles/87Golf/hatch_lights_g.dds";
+   specularMap[2] = "vehicles/87Golf/hatch_lights_s.dds";
+   normalMap[2] = "vehicles/87Golf/hatch_lights_n.dds";
+   diffuseMap[1] = "vehicles/87Golf/hatch_lights_d.dds";
+   specularMap[1] = "vehicles/87Golf/hatch_lights_s.dds";
+   normalMap[1] = "vehicles/87Golf/hatch_lights_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/87Golf/hatch_lights_n.dds";
+   //diffuseMap[3] = "vehicles/87Golf/hatch_lights_dirt.dds";
+   //normalMap[3] = "vehicles/87Golf/hatch_lights_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1.5 1.5 1.5 1";
+   diffuseColor[2] = "1.5 1.5 1.5 0.20";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   useAnisotropic[2] = "1";
+   //diffuseColor[3] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   cubemap = "BNG_Sky_02_cubemap";
+   glow[2] = "1";
+   emissive[2] = "1";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_signal_L)
+singleton Material(hatch_glass_dmg)
 {
-    mapTo = "etk800_signal_L";
+   mapTo = "hatch_glass_dmg";
+   diffuseMap[0] = "vehicles/87Golf/hatch_glass_dmg_d.dds";
+   specularMap[0] = "vehicles/common/glass_dmg_s.dds";
+   normalMap[0] = "vehicles/common/glass_dmg_n.dds";
+   //diffuseMap[2] = "vehicles/87Golf/hatch_glass_dirt.dds";
+   specularPower[0] = "32";
+   diffuseColor[0] = "1.5 1.5 1.5 1";
+   useAnisotropic[0] = "1";
+   //diffuseColor[2] = "1.5 1.5 1.5 1";
+   castShadows = "0";
+   translucent = "1";
+   alphaTest = "1";
+   alphaRef = "0";
+   //cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_headlight)
+singleton Material(hatch_lights)
 {
-    mapTo = "etk800_headlight";
+   mapTo = "hatch_lights";
+   diffuseMap[1] = "vehicles/87Golf/hatch_lights_d.dds";
+   specularMap[1] = "vehicles/87Golf/hatch_lights_s.dds";
+   normalMap[1] = "vehicles/87Golf/hatch_lights_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/87Golf/hatch_lights_n.dds";
+   //diffuseMap[2] = "vehicles/87Golf/hatch_lights_dirt.dds";
+   //normalMap[2] = "vehicles/87Golf/hatch_lights_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   //diffuseColor[2] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   diffuseColor[1] = "1.5 1.5 1.5 1";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_runninglight)
+singleton Material(hatch_lights_dmg)
 {
-    mapTo = "etk800_runninglight";
+   mapTo = "hatch_lights_dmg";
+   diffuseMap[1] = "vehicles/87Golf/hatch_lights_dmg_d.dds";
+   specularMap[1] = "vehicles/87Golf/hatch_lights_dmg_s.dds";
+   normalMap[1] = "vehicles/87Golf/hatch_lights_dmg_n.dds";
+   diffuseMap[0] = "vehicles/common/null.dds";
+   specularMap[0] = "vehicles/common/null.dds";
+   normalMap[0] = "vehicles/87Golf/hatch_lights_dmg_n.dds";
+   //diffuseMap[2] = "vehicles/87Golf/hatch_lights_dirt.dds";
+   //normalMap[2] = "vehicles/87Golf/hatch_lights_dmg_n.dds";
+   specularPower[0] = "16";
+   pixelSpecular[0] = "1";
+   specularPower[1] = "16";
+   pixelSpecular[1] = "1";
+   diffuseColor[0] = "1 1 1 1";
+   diffuseColor[1] = "1 1 1 1";
+   useAnisotropic[0] = "1";
+   useAnisotropic[1] = "1";
+   //diffuseColor[2] = "1.5 1.5 1.5 1";
+   castShadows = "1";
+   translucent = "1";
+   translucentBlendOp = "None";
+   alphaTest = "1";
+   alphaRef = "0";
+   diffuseColor[1] = "1.5 1.5 1.5 1";
+   cubemap = "BNG_Sky_02_cubemap";
+   materialTag0 = "beamng"; materialTag1 = "vehicle";
 };
 
-singleton Material(etk800_parkinglight)
+singleton Material(hatch_reverselight)
 {
-    mapTo = "etk800_parkinglight";
+   mapTo = "hatch_reverselight";
 };
 
-singleton Material(etk800_chmsl)
+singleton Material(hatch_signal_R)
 {
-    mapTo = "etk800_chmsl";
+   mapTo = "hatch_signal_R";
 };
 
-singleton Material(etk800_foglight)
+singleton Material(hatch_signal_L)
 {
-    mapTo = "etk800_foglight";
+   mapTo = "hatch_signal_L";
 };
 
-singleton Material(etk800_taillight)
+singleton Material(hatch_headlight)
 {
-    mapTo = "etk800_taillight";
+   mapTo = "hatch_headlight";
 };
 
-singleton Material(etk800_taillight_L)
+singleton Material(hatch_parkinglight)
 {
-    mapTo = "etk800_taillight_L";
+   mapTo = "hatch_parkinglight";
 };
 
-singleton Material(etk800_taillight_R)
+singleton Material(hatch_chmsl)
 {
-    mapTo = "etk800_taillight_R";
+   mapTo = "hatch_chmsl";
 };
 
-singleton Material(etk800_highbeam)
+singleton Material(hatch_taillight)
 {
-    mapTo = "etk800_highbeam";
+   mapTo = "hatch_taillight";
 };
 
+singleton Material(hatch_highbeam)
+{
+   mapTo = "highbeam";
+};
 

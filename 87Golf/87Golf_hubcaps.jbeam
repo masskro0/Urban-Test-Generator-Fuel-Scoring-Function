@@ -1,0 +1,61 @@
+{
+	"Golf87_hubcap_F":{
+		"information":{
+			"name":"VW Golf Front Hubcaps",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_hubcap_F",
+		"scalenodeWeight":0.62,
+		"scalebeamSpring":0.46,
+		"scalebeamDamp":0.58,
+		"scalebeamDeform":0.39,
+		"scalebeamStrength":0.51,
+		"selfCollisionThickness":0.02,
+		"remoteCollisionThickness":0.06,
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_hubcap_FR", ["hubcap_FR"], ["ibishu_hubcap_02a"]],
+			["Golf87_hubcap_FL", ["hubcap_FL"], ["ibishu_hubcap_02a"]]],
+
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"collision":true, "selfCollision":false, "nodeWeight":0.75, "nodeMaterial":"|NM_RUBBER", "frictionCoef":1.0, "group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamPrecompression":1.0}],
+
+		"hubWheels":[
+			["name", "group", "node1:", "node2:", "nodeS", "nodeArm:", "wheelDir"],
+			{"enableHubcaps":true, "hubcapSelfCollision":true, "hubcapCollision":true, "hubcapOffset":0.0, "hubcapWidth":0.04, "hubcapBeamSpring":401000, "hubcapBeamDamp":20, "hubcapBeamDeform":116000, "hubcapBeamStrength":130000, "hubcapAttachBeamSpring":201000, "hubcapAttachBeamDamp":50, "hubcapAttachBeamDeform":3400, "hubcapAttachBeamStrength":3600, "hubcapNodeWeight":0.15, "hubcapCenterNodeWeight":0.2, "hubcapNodeMaterial":"|NM_RUBBER", "hubcapFrictionCoef":1.0}]},
+
+	"Golf87_hubcap_R":{
+		"information":{
+			"name":"VW Golf Rear Hubcaps",
+			"authors":"gabester"},
+
+		"slotType":"Golf87_hubcap_R",
+		"scalenodeWeight":0.62,
+		"scalebeamSpring":0.46,
+		"scalebeamDamp":0.58,
+		"scalebeamDeform":0.39,
+		"scalebeamStrength":0.51,
+		"selfCollisionThickness":0.02,
+		"remoteCollisionThickness":0.06,
+		"flexbodies":[
+			["mesh", "[group]:", "nonFlexMaterials"],
+			["Golf87_hubcap_RR", ["hubcap_RR"], ["ibishu_hubcap_02a"]],
+			["Golf87_hubcap_RL", ["hubcap_RL"], ["ibishu_hubcap_02a"]]],
+
+		"nodes":[
+			["id", "posX", "posY", "posZ"],
+			{"collision":true, "selfCollision":false, "nodeWeight":0.75, "nodeMaterial":"|NM_RUBBER", "frictionCoef":1.0, "group":""}],
+
+		"beams":[
+			["id1:", "id2:"],
+			{"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0, "beamPrecompression":1.0}],
+
+		"hubWheels":[
+			["name", "group", "node1:", "node2:", "nodeS", "nodeArm:", "wheelDir"],
+			{"enableHubcaps":true, "hubcapSelfCollision":true, "hubcapCollision":true, "hubcapOffset":0.0, "hubcapWidth":0.04, "hubcapBeamSpring":401000, "hubcapBeamDamp":20, "hubcapBeamDeform":116000, "hubcapBeamStrength":130000, "hubcapAttachBeamSpring":201000, "hubcapAttachBeamDamp":50, "hubcapAttachBeamDeform":3400, "hubcapAttachBeamStrength":3600, "hubcapNodeWeight":0.15, "hubcapCenterNodeWeight":0.2, "hubcapNodeMaterial":"|NM_RUBBER", "hubcapFrictionCoef":1.0}]}
+}
