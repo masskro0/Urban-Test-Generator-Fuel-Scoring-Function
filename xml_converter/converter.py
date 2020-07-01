@@ -37,6 +37,7 @@ def _get_nodes(divider_line, road_segments, fac, width=0.2):
 
 
 def _get_offset_nodes(road_segments, line, offset, direction):
+    print(line)
     outer_line = line.parallel_offset(offset, direction)
     if isinstance(outer_line, MultiLineString):
         temp_list = list()
@@ -241,6 +242,12 @@ class Converter:
                 prioritysign = StaticObject(pos=pos, rot=rot, name=name_sign,
                                             scale=(1.2, 1.2, 1.2), shape='/levels/urban/art/objects/priority.dae')
                 self.scenario.add_object(prioritysign)
+            elif obstacle.tag == "etk800":
+                rot = (rot[0], rot[1], 90 - rot[2])
+                name_car = "etk800_" + str(id_number)
+                etk800 = StaticObject(pos=pos, rot=rot, name=name_car,
+                                      scale=(1.2, 1.2, 1.2), shape='/levels/urban/art/objects/etk800.DAE')
+                self.scenario.add_object(etk800)
             elif obstacle.tag == "trafficlightsingle":
                 name_light = "trafficlightsingle_" + str(id_number)
                 name_pole = "polesingle_" + str(id_number)

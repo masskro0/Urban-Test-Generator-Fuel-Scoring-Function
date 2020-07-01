@@ -91,20 +91,18 @@ class DBCBuilder:
                                        str(init_state.get("orientation")), init_state.get("movementMode"),
                                        str(init_state.get("speed"))))
 
-        ai = ElementTree.SubElement(participant, "ai")
-        ElementTree.SubElement(ai, 'roadCenterDistance id="{}"'.format("egoLaneDist"))
-
-        movement = ElementTree.SubElement(participant, "movement")
-        for waypoint in waypoints:
-            position = waypoint.get("position")
-            waypoint_tag = ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}"'
-                                                            ' movementMode="{}"'
-                                                  .format('{0:.10f}'.format(round(position[0], 2)),
-                                                          '{0:.10f}'.format(round(position[1], 2)),
-                                                          str(waypoint.get("tolerance")),
-                                                          waypoint.get("movementMode")))
-            if waypoint.get("speedLimit"):
-                waypoint_tag.set("speedLimit", str(waypoint.get("speedLimit")))
+        if waypoints is not None:
+            movement = ElementTree.SubElement(participant, "movement")
+            for waypoint in waypoints:
+                position = waypoint.get("position")
+                waypoint_tag = ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}"'
+                                                                ' movementMode="{}"'
+                                                      .format('{0:.10f}'.format(round(position[0], 2)),
+                                                              '{0:.10f}'.format(round(position[1], 2)),
+                                                              str(waypoint.get("tolerance")),
+                                                              waypoint.get("movementMode")))
+                if waypoint.get("speedLimit"):
+                    waypoint_tag.set("speedLimit", str(waypoint.get("speedLimit")))
 
     def add_precond_partic_sc_speed(self, vc_pos, sc_speed):
         """Adds a precondition for a position, which must be satisfied in order to continue the test.
