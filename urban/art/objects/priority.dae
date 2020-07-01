@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.83.1 commit date:2020-06-25, commit time:09:47, hash:8289fc688b3e</authoring_tool>
+    </contributor>
+    <created>2020-06-29T01:30:52</created>
+    <modified>2020-06-29T01:30:52</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_cameras>
+    <camera id="Camera-camera" name="Camera">
+      <optics>
+        <technique_common>
+          <perspective>
+            <xfov sid="xfov">39.59775</xfov>
+            <aspect_ratio>1.777778</aspect_ratio>
+            <znear sid="znear">0.1</znear>
+            <zfar sid="zfar">100</zfar>
+          </perspective>
+        </technique_common>
+      </optics>
+      <extra>
+        <technique profile="blender">
+          <shiftx sid="shiftx" type="float">0</shiftx>
+          <shifty sid="shifty" type="float">0</shifty>
+          <dof_distance sid="dof_distance" type="float">10</dof_distance>
+        </technique>
+      </extra>
+    </camera>
+  </library_cameras>
+  <library_lights>
+    <light id="Light-light" name="Light">
+      <technique_common>
+        <point>
+          <color sid="color">1000 1000 1000</color>
+          <constant_attenuation>1</constant_attenuation>
+          <linear_attenuation>0</linear_attenuation>
+          <quadratic_attenuation>0.00111109</quadratic_attenuation>
+        </point>
+      </technique_common>
+      <extra>
+        <technique profile="blender">
+          <type sid="type" type="int">0</type>
+          <flag sid="flag" type="int">0</flag>
+          <mode sid="mode" type="int">1</mode>
+          <gamma sid="blender_gamma" type="float">1</gamma>
+          <red sid="red" type="float">1</red>
+          <green sid="green" type="float">1</green>
+          <blue sid="blue" type="float">1</blue>
+          <shadow_r sid="blender_shadow_r" type="float">0</shadow_r>
+          <shadow_g sid="blender_shadow_g" type="float">0</shadow_g>
+          <shadow_b sid="blender_shadow_b" type="float">0</shadow_b>
+          <energy sid="blender_energy" type="float">1000</energy>
+          <dist sid="blender_dist" type="float">29.99998</dist>
+          <spotsize sid="spotsize" type="float">75</spotsize>
+          <spotblend sid="spotblend" type="float">0.15</spotblend>
+          <att1 sid="att1" type="float">0</att1>
+          <att2 sid="att2" type="float">1</att2>
+          <falloff_type sid="falloff_type" type="int">2</falloff_type>
+          <clipsta sid="clipsta" type="float">0.04999995</clipsta>
+          <clipend sid="clipend" type="float">30.002</clipend>
+          <bias sid="bias" type="float">1</bias>
+          <soft sid="soft" type="float">3</soft>
+          <bufsize sid="bufsize" type="int">2880</bufsize>
+          <samp sid="samp" type="int">3</samp>
+          <buffers sid="buffers" type="int">1</buffers>
+          <area_shape sid="area_shape" type="int">1</area_shape>
+          <area_size sid="area_size" type="float">0.1</area_size>
+          <area_sizey sid="area_sizey" type="float">0.1</area_sizey>
+          <area_sizez sid="area_sizez" type="float">1</area_sizez>
+        </technique>
+      </extra>
+    </light>
+  </library_lights>
+  <library_effects>
+    <effect id="german_road_signs_solid-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.64 0.64 0.64 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="eca_bld_cleanmetalb-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.1430893 0.1430893 0.1430893 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images/>
+  <library_materials>
+    <material id="german_road_signs_solid-material" name="german_road_signs_solid">
+      <instance_effect url="#german_road_signs_solid-effect"/>
+    </material>
+    <material id="eca_bld_cleanmetalb-material" name="eca_bld_cleanmetalb">
+      <instance_effect url="#eca_bld_cleanmetalb-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Plane_021-mesh" name="Plane.021">
+      <mesh>
+        <source id="Plane_021-mesh-positions">
+          <float_array id="Plane_021-mesh-positions-array" count="162">-0.1917868 -0.002999961 0.9946465 -0.2499998 0.001999974 1.23 0.2500001 0.001999974 0.7300003 -0.2499999 0.001999974 0.7300004 -0.2499999 -9.99977e-4 0.7300012 -0.02233934 -0.002999961 1.045058 0.1555811 0.001999974 1.567766 0.1555811 0.001999974 1.532234 -0.1555797 0.001999974 1.532234 -0.1555797 0.001999974 1.567766 0.04583948 0.001999974 1.567766 -0.04583811 0.001999974 1.567766 0.04583948 0.001999974 1.532234 -0.04583811 0.001999974 1.532234 0.01528024 0.05483496 1.567766 -0.01527887 0.05483496 1.567766 0.01528024 0.05483496 1.532234 -0.01527887 0.05483496 1.532234 0.05112427 0.001999974 1.567766 0.05112427 0.001999974 1.532234 -0.05135703 0.001999974 1.567766 -0.05135703 0.001999974 1.532234 2.83122e-7 0 1.245535 -0.3044645 0 1.55 0.3044651 0 1.55 2.83122e-7 0 1.854465 2.83122e-7 9.99987e-4 1.245535 -0.3044645 9.9997e-4 1.55 0.3044651 9.99987e-4 1.55 2.83122e-7 9.99968e-4 1.854465 -0.04583764 0.001999974 1.127766 0.01528042 0.05483496 1.092234 0.05112481 0.001999974 1.092234 -0.05135655 0.001999974 1.127766 -0.04583805 0.001999974 0.867766 0.01527994 0.05483496 0.8322345 0.01379281 0.05388855 -0.2999998 -0.01379138 0.05388855 -0.2999998 -0.02758342 0.02999997 -0.2999998 -0.01379138 0.006111264 -0.2999998 0.01379281 0.006111264 -0.2999998 0.02758491 0.02999997 -0.2999998 0.01379281 0.05388855 1.764696 -0.01379138 0.05388855 1.764696 -0.02758342 0.02999997 1.764696 -0.01379138 0.006111264 1.764696 0.01379281 0.006111264 1.764696 0.02758491 0.02999997 1.764696 0.01379281 0.05388855 1.764696 -0.01379138 0.05388855 1.764696 -0.02758342 0.02999997 1.764696 -0.01379138 0.006111264 1.764696 0.01379281 0.006111264 1.764696 0.02758491 0.02999997 1.764696</float_array>
+          <technique_common>
+            <accessor source="#Plane_021-mesh-positions-array" count="54" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane_021-mesh-normals">
+          <float_array id="Plane_021-mesh-normals-array" count="51">0 -1 0 0 1 0 -0.4996582 0.8662227 0 0.8656343 0.5006769 0 -0.8656343 0.5006769 0 0.4996582 0.8662227 0 0 1 0 -0.4999893 -0.8660317 0 -1 0 0 -0.4999893 0.8660317 0 0.4999893 0.8660317 0 1 0 0 0.4999893 -0.8660317 0 0 0 1 0.8656359 0.5006741 0 -0.865636 0.5006741 0 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#Plane_021-mesh-normals-array" count="17" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane_021-mesh-map-0">
+          <float_array id="Plane_021-mesh-map-0-array" count="204">0.3762553 0.5063207 0.3762554 0.763451 0.2476902 0.6348859 0.3762553 0.5063207 0.5048206 0.6348859 0.3762554 0.763451 0.7192751 3.12812e-5 0.999969 0.09551095 0.719275 0.09551078 0.2800961 3.10901e-5 0.2949262 0.09551036 0.2800961 0.0955106 0.5410594 3.12812e-5 0.705074 0.09551078 0.5410594 0.09551078 0.2949262 0.09551036 0.4589412 3.10901e-5 0.4589411 0.09551078 0.4589412 3.10901e-5 0.5410594 0.09551078 0.4589411 0.09551078 0.7050741 3.12812e-5 0.719275 0.09551078 0.705074 0.09551078 3.08989e-5 3.08989e-5 0.2800961 0.0955106 3.08989e-5 0.0955106 0.9998996 1.0043e-4 1.00049e-4 0.9999 9.998e-5 9.998e-5 0.1845611 2.049274 0.1304675 -1.049742 0.1845611 -1.049836 0.07637411 2.049461 0.02228057 -1.049554 0.07637411 -1.049648 0.02228057 2.049555 -0.03181284 -1.049461 0.02228057 -1.049554 -0.08590644 2.049742 -0.1399999 -1.049273 -0.08590644 -1.049367 0.1304676 2.049368 0.07637411 -1.049648 0.1304675 -1.049742 -0.03181284 2.049648 -0.08590644 -1.049367 -0.03181284 -1.049461 0.2291128 -0.9474552 0.2291128 -1.049836 0.2734448 -1.02424 0.7192751 3.12812e-5 0.999969 3.14724e-5 0.999969 0.09551095 0.2800961 3.10901e-5 0.2949262 3.08989e-5 0.2949262 0.09551036 0.5410594 3.12812e-5 0.7050741 3.12812e-5 0.705074 0.09551078 0.2949262 0.09551036 0.2949262 3.08989e-5 0.4589412 3.10901e-5 0.4589412 3.10901e-5 0.5410594 3.12812e-5 0.5410594 0.09551078 0.7050741 3.12812e-5 0.7192751 3.12812e-5 0.719275 0.09551078 3.08989e-5 3.08989e-5 0.2800961 3.10901e-5 0.2800961 0.0955106 0.9998996 1.0043e-4 0.9999001 0.9999 1.00049e-4 0.9999 0.1845611 2.049274 0.1304676 2.049368 0.1304675 -1.049742 0.07637411 2.049461 0.02228057 2.049555 0.02228057 -1.049554 0.02228057 2.049555 -0.03181284 2.049648 -0.03181284 -1.049461 -0.08590644 2.049742 -0.1399999 2.049836 -0.1399999 -1.049273 0.1304676 2.049368 0.07637411 2.049461 0.07637411 -1.049648 -0.03181284 2.049648 -0.08590644 2.049742 -0.08590644 -1.049367 0.2734448 -1.02424 0.2734448 -0.9730504 0.2291128 -0.9474552 0.2291128 -0.9474552 0.1847808 -0.9730504 0.1847808 -1.02424 0.1847808 -1.02424 0.2291128 -1.049836 0.2291128 -0.9474552</float_array>
+          <technique_common>
+            <accessor source="#Plane_021-mesh-map-0-array" count="102" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Plane_021-mesh-vertices">
+          <input semantic="POSITION" source="#Plane_021-mesh-positions"/>
+        </vertices>
+        <lines count="3">
+          <input semantic="VERTEX" source="#Plane_021-mesh-vertices" offset="0"/>
+          <p>3 2 3 1 33 30</p>
+        </lines>
+        <triangles material="german_road_signs_solid-material" count="2">
+          <input semantic="VERTEX" source="#Plane_021-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Plane_021-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Plane_021-mesh-map-0" offset="2" set="0"/>
+          <p>22 0 0 25 0 1 23 0 2 22 0 3 24 0 4 25 0 5</p>
+        </triangles>
+        <triangles material="eca_bld_cleanmetalb-material" count="32">
+          <input semantic="VERTEX" source="#Plane_021-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Plane_021-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Plane_021-mesh-map-0" offset="2" set="0"/>
+          <p>18 1 6 7 1 7 19 1 8 20 1 9 13 2 10 21 1 11 14 3 12 12 3 13 16 3 14 13 4 15 15 4 16 17 4 17 15 2 18 16 5 19 17 2 20 10 5 21 19 1 22 12 5 23 9 1 24 21 1 25 8 1 26 29 6 27 26 6 28 27 6 29 45 7 30 38 8 31 39 7 32 43 9 33 36 10 34 37 9 35 42 10 36 41 11 37 36 10 38 46 12 39 39 7 40 40 12 41 44 8 42 37 9 43 38 8 44 47 11 45 40 12 46 41 11 47 50 13 48 53 13 49 48 13 50 18 1 51 6 1 52 7 1 53 20 1 54 11 2 55 13 2 56 14 14 57 10 14 58 12 14 59 13 15 60 11 15 61 15 15 62 15 2 63 14 5 64 16 5 65 10 5 66 18 1 67 19 1 68 9 1 69 20 1 70 21 1 71 29 16 72 28 16 73 26 16 74 45 7 75 44 8 76 38 8 77 43 9 78 42 10 79 36 10 80 42 10 81 47 11 82 41 11 83 46 12 84 45 7 85 39 7 86 44 8 87 43 9 88 37 9 89 47 11 90 46 12 91 40 12 92 48 13 93 49 13 94 50 13 95 50 13 96 51 13 97 52 13 98 52 13 99 53 13 100 50 13 101</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="base00" name="base00" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <node id="start01" name="start01" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+          <node id="de_signs_priority_right_1_a100" name="de_signs_priority_right_1_a100" type="NODE">
+            <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+            <instance_geometry url="#Plane_021-mesh" name="de_signs_priority_right_1_a100">
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="german_road_signs_solid-material" target="#german_road_signs_solid-material">
+                    <bind_vertex_input semantic="Plane_021-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                  </instance_material>
+                  <instance_material symbol="eca_bld_cleanmetalb-material" target="#eca_bld_cleanmetalb-material">
+                    <bind_vertex_input semantic="Plane_021-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                  </instance_material>
+                </technique_common>
+              </bind_material>
+            </instance_geometry>
+          </node>
+        </node>
+        <node id="detail900" name="detail900" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        </node>
+        <node id="detail350" name="detail350" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        </node>
+        <node id="collision-1" name="collision-1" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        </node>
+        <node id="bb__autobillboard25" name="bb__autobillboard25" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        </node>
+      </node>
+      <node id="Camera" name="Camera" type="NODE">
+        <matrix sid="transform">0.6859207 -0.3240135 0.6515582 7.358891 0.7276763 0.3054208 -0.6141704 -6.925791 0 0.8953956 0.4452714 4.958309 0 0 0 1</matrix>
+        <instance_camera url="#Camera-camera"/>
+      </node>
+      <node id="Light" name="Light" type="NODE">
+        <matrix sid="transform">-0.2908646 -0.7711008 0.5663932 4.076245 0.9551712 -0.1998834 0.2183912 1.005454 -0.05518906 0.6045247 0.7946723 5.903862 0 0 0 1</matrix>
+        <instance_light url="#Light-light"/>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>
