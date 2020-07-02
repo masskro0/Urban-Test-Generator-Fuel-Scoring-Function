@@ -1,5 +1,5 @@
 from copy import deepcopy
-from random import randint, random
+from random import randint, random, choice
 import numpy as np
 from scipy.interpolate import splev
 from shapely import affinity
@@ -55,46 +55,58 @@ def _add_ego_car(individual):
 
 
 def _add_parked_cars(individual):
-    def _get_orthogonal_position(p1, p0, width, direction, offset):
+    def _get_orthogonal_position(p1, p0, width, direction, offset, rotation):
         rotation_direction = 1 if direction == "right" else -1
         line = LineString([p1, p0])
-        fac = (width/2 + offset) / line.length
+        fac = (width / 2 + offset) / line.length
         vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
         vector = affinity.rotate(vector, 90 * rotation_direction, vector.coords[0])
-        angle = get_angle((p1[0] + 5, p1[1]), p1, vector.coords[1]) + 270
+        angle = get_angle((p1[0] + 5, p1[1]), p1, vector.coords[1]) + 270 - rotation
         return vector.coords[1], angle
 
     car_positions = list()
     for lane in individual.get("lanes"):
         if lane.get("type") == "intersection":
             continue
-        # method = randint(0, 2)
-        method = 1
+        # method = randint(0, 1)
+        method = 0
         left = True if random() >= 0.4 else False
         right = True if random() >= 0.4 else False
         control_points = lane.get("control_points")
         width = lane.get("width")
         if method == 0:
-            # Cars are parallel to the street, but outside the road.
-            offset = randint(-2, 2)
+            rotations = [0, 45]
+            rotation = choice(rotations)
+            if rotation == 45:
+                offset = 3.5
+                max_distance = 4
+            else:
+                offset = randint(-2, 2)
+                max_distance = 5.5
             if left:
                 iterator = 1
                 while iterator < len(control_points):
-                    p1, angle = _get_orthogonal_position(control_points[iterator], control_points[iterator - 1],
-                                                         width, "left", offset)
+                    point1 = control_points[iterator]
+                    point2 = control_points[iterator - 1]
+                    if point1 == point2:
+                        continue
+                    p1, angle = _get_orthogonal_position(point1, point2, width, "left", offset, rotation)
                     if abs(euclidean(p1, control_points[-1])) < 12:
                         break
-                    if len(car_positions) == 0 or abs(euclidean(p1, car_positions[-1][0])) > 5.5:
+                    if len(car_positions) == 0 or abs(euclidean(p1, car_positions[-1][0])) > max_distance:
                         car_positions.append((p1, angle))
                     iterator += 1
             if right:
                 iterator = 1
                 while iterator < len(control_points):
-                    p1, angle = _get_orthogonal_position(control_points[iterator], control_points[iterator - 1],
-                                                  width, "right", offset)
+                    point1 = control_points[iterator]
+                    point2 = control_points[iterator - 1]
+                    if point1 == point2:
+                        continue
+                    p1, angle = _get_orthogonal_position(point1, point2, width, "right", offset, rotation)
                     if abs(euclidean(p1, control_points[-1])) < 12:
                         break
-                    if len(car_positions) == 0 or abs(euclidean(p1, car_positions[-1][0])) > 5.5:
+                    if len(car_positions) == 0 or abs(euclidean(p1, car_positions[-1][0])) > max_distance:
                         car_positions.append((p1, angle))
                     iterator += 1
         elif method == 1:
@@ -104,16 +116,9 @@ def _add_parked_cars(individual):
             if right:
                 pass
             pass
-        elif method == 2:
-            # Cars are on a parking lot 45 degrees to the street.
-            if left:
-                pass
-            if right:
-                pass
-            pass
     parked_cars = list()
     for position in car_positions:
-        if random() <= 0.25:
+        if random() <= 0.3:
             continue
         parked_cars.append({"name": "golf", "position": position[0], "zRot": position[1]})
     individual["obstacles"].extend(parked_cars)
