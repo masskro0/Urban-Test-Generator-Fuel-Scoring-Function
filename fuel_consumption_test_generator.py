@@ -65,7 +65,7 @@ def _add_parked_cars(individual):
         return vector.coords[1], global_angle
 
     car_positions = list()
-    for lane in individual.get("lanes"):
+    for idx, lane in enumerate(individual.get("lanes")):
         if lane.get("type") == "intersection":
             continue
         left = True if random() >= 0.4 else False
@@ -84,7 +84,7 @@ def _add_parked_cars(individual):
             offset = randint(-2, 2)
             max_distance = 5.5
         if left:
-            iterator = 1
+            iterator = 1 if idx == 0 else 8
             while iterator < len(control_points):
                 point1 = control_points[iterator]
                 point2 = control_points[iterator - 1]
@@ -97,7 +97,7 @@ def _add_parked_cars(individual):
                     car_positions.append((p1, angle))
                 iterator += 1
         if right:
-            iterator = 1
+            iterator = 1 if idx == 0 else 8
             while iterator < len(control_points):
                 point1 = control_points[iterator]
                 point2 = control_points[iterator - 1]
@@ -534,11 +534,10 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Lane switch when turning for multiple lanes
-#       TODO Add other participants
-#       TODO Control traffic lights
-#       TODO Fix parked cars on road
 #       TODO Waypoints are broken
 #       TODO Make AI not crash into parked cars
+#       TODO Add other participants
+#       TODO Control traffic lights
 #       TODO Create init population
 #       TODO Mutation
 #       TODO Repair function
