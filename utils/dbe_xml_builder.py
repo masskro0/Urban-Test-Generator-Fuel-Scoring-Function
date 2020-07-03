@@ -6,6 +6,58 @@ from pathlib import Path
 from shutil import move
 
 
+def indent(elem, level=0):
+    """Pretty prints a xml file.
+    :param elem: XML tag.
+    :param level: Number of empty spaces, initially zero (meaning it starts only a new line).
+    :return: Void.
+    """
+    i = "\n" + level * "    "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "    "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level + 1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
+
+def save_xml(name, root, xml_type):
+    """Creates and saves the XML file, and moves it to the scenario folder.
+    :param xml_type: environment or criteria.
+    :param root: Root of the XML file.
+    :param name: Desired name of this file.
+    :return: Void, but it creates a XML file.
+    """
+    # Wrap it in an ElementTree instance, and save as XML.
+    tree = ElementTree.ElementTree(root)
+    indent(root)
+    full_name = name + '.dbe.xml' if xml_type == "environment" else name + '.dbc.xml'
+
+    current_path_of_file = Path(getcwd())
+    current_path_of_file = path.realpath(current_path_of_file) + "\\" + full_name
+
+    destination_path = Path(getcwd())
+    destination_path = path.realpath(destination_path) + "\\scenario"
+
+    tree.write(full_name, encoding="utf-8", xml_declaration=True)
+
+    if not path.exists(destination_path):
+        mkdir(destination_path)
+
+    # Delete old files with the same name.
+    if path.exists(destination_path + "\\" + full_name):
+        remove(destination_path + "\\" + full_name)
+
+    # Move created file to scenario folder.
+    move(current_path_of_file, destination_path)
+
+
 class DBEBuilder:
 
     def __init__(self):
@@ -20,26 +72,6 @@ class DBEBuilder:
         self.timeOfDay.text = "0"
 
         self.lanes = ElementTree.SubElement(self.root, "lanes")
-
-    def indent(self, elem, level=0):
-        """Pretty prints a xml file.
-        :param elem: XML tag.
-        :param level: Number of empty spaces, initially zero (meaning it starts only a new line).
-        :return: Void.
-        """
-        i = "\n" + level * "    "
-        if len(elem):
-            if not elem.text or not elem.text.strip():
-                elem.text = i + "    "
-            if not elem.tail or not elem.tail.strip():
-                elem.tail = i
-            for elem in elem:
-                self.indent(elem, level + 1)
-            if not elem.tail or not elem.tail.strip():
-                elem.tail = i
-        else:
-            if level and (not elem.tail or not elem.tail.strip()):
-                elem.tail = i
 
     def add_obstacles(self, obstacle_list):
         """Adds obstacles to the XML files.
@@ -122,31 +154,3 @@ class DBEBuilder:
             ElementTree.SubElement(lane, 'laneSegment x="{}" y="{}" width="{}"'
                                    .format('{0:.10f}'.format(round(segment[0], 2)),
                                            '{0:.10f}'.format(round(segment[1], 2)), str(width)))
-
-    def save_xml(self, name):
-        """Creates and saves the XML file, and moves it to the scenario folder.
-        :param name: Desired name of this file.
-        :return: Void, but it creates a XML file.
-        """
-        # Wrap it in an ElementTree instance, and save as XML.
-        tree = ElementTree.ElementTree(self.root)
-        self.indent(self.root)
-        full_name = name + '.dbe.xml'
-
-        current_path_of_file = Path(getcwd())
-        current_path_of_file = path.realpath(current_path_of_file) + "\\" + full_name
-
-        destination_path = Path(getcwd())
-        destination_path = path.realpath(destination_path) + "\\scenario"
-
-        tree.write(full_name, encoding="utf-8", xml_declaration=True)
-
-        if not path.exists(destination_path):
-            mkdir(destination_path)
-
-        # Delete old files with the same name.
-        if path.exists(destination_path + "\\" + full_name):
-            remove(destination_path + "\\" + full_name)
-
-        # Move created file to scenario folder.
-        move(current_path_of_file, destination_path)

@@ -140,23 +140,49 @@ def _merge_lanes(population):
 def _add_traffic_signs(last_point, intersection_point, current_left_lanes, current_right_lanes,
                        new_left_lanes, new_right_lanes, layout, number_of_ways, direction, left_point,
                        straight_point, right_point, width, width_opposite):
+    def opposite_direction(my_point, my_right_point):
+        line = LineString([(intersection_point[0], intersection_point[1]),
+                           (my_point[0], my_point[1])])
+        my_z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
+        angle = int(round(get_angle((my_right_point[0], my_right_point[1]),
+                                    line.coords[0], line.coords[1])))
+        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
+        fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + offset) / line.length
+        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+        vector = affinity.rotate(vector, -90, vector.coords[1])
+        fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + 0.2) / vector.length
+        vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
+        my_position = vector.coords[0]
+        if sign_on_my_lane == "stopsign":
+            obstacles.append({"name": "prioritysign", "position": my_position, "zRot": my_z_rot})
+        else:
+            if new_left_lanes + new_right_lanes == 2:
+                obstacles.append({"name": "trafficlightsingle", "position": my_position, "zRot": my_z_rot})
+            else:
+                obstacles.append({"name": "trafficlightdouble", "position": my_position, "zRot": my_z_rot})
+
+    def my_direction(my_point, my_right_point):
+        line = LineString([(intersection_point[0], intersection_point[1]),
+                           (my_point[0], my_point[1])])
+        my_z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
+        angle = int(round(get_angle((my_right_point[0], my_right_point[1]), line.coords[0], line.coords[1])))
+        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
+        fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + offset) / line.length
+        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
+        vector = affinity.rotate(vector, -90, vector.coords[1])
+        fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + 0.2) / vector.length
+        vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
+        my_position = vector.coords[0]
+        return my_position, my_z_rot
+
     # Calculate traffic sign position.
     old_width = width / (current_left_lanes + current_right_lanes)
     new_width = width_opposite / (new_left_lanes + new_right_lanes)
     obstacles = list()
     temp_point = (intersection_point[0] + 5, intersection_point[1])
-    line = LineString([(intersection_point[0], intersection_point[1]),
-                       (last_point[0], last_point[1])])
+
     # Bottom direction.
-    z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
-    angle = int(round(get_angle((right_point[0], right_point[1]), line.coords[0], line.coords[1])))
-    offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
-    fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + offset) / line.length
-    vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
-    vector = affinity.rotate(vector, -90, vector.coords[1])
-    fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + 0.2) / vector.length
-    vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
-    position = vector.coords[0]
+    position, z_rot = my_direction(last_point, right_point)
     if current_left_lanes + current_right_lanes == 2:
         if random() <= 0.5:
             obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot})
@@ -168,63 +194,16 @@ def _add_traffic_signs(last_point, intersection_point, current_left_lanes, curre
 
     # Left direction.
     if number_of_ways == 4 or direction == "left" or layout == "left":
-        line = LineString([(intersection_point[0], intersection_point[1]),
-                           (left_point[0], left_point[1])])
-        z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
-        angle = int(round(get_angle((last_point[0], last_point[1]),
-                                    line.coords[0], line.coords[1])))
-        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
-        fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + offset) / line.length
-        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
-        vector = affinity.rotate(vector, -90, vector.coords[1])
-        fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + 0.2) / vector.length
-        vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
-        position = vector.coords[0]
-        if sign_on_my_lane == "stopsign":
-            obstacles.append({"name": "prioritysign", "position": position, "zRot": z_rot})
-        else:
-            if new_left_lanes + new_right_lanes == 2:
-                obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot})
-            else:
-                obstacles.append({"name": "trafficlightdouble", "position": position, "zRot": z_rot})
+        opposite_direction(left_point, last_point)
 
     # Top direction.
     if number_of_ways == 4 or direction == "straight" or layout == "straight":
-        line = LineString([(intersection_point[0], intersection_point[1]),
-                           (straight_point[0], straight_point[1])])
-        z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
-        angle = int(round(get_angle((left_point[0], left_point[1]),
-                                    line.coords[0], line.coords[1])))
-        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
-        fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + offset) / line.length
-        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
-        vector = affinity.rotate(vector, -90, vector.coords[1])
-        fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + 0.2) / vector.length
-        vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
-        position = vector.coords[0]
+        position, z_rot = my_direction(straight_point, left_point)
         obstacles.append({"name": sign_on_my_lane, "position": position, "zRot": z_rot})
 
     # Right direction.
     if number_of_ways == 4 or direction == "right" or layout == "right":
-        line = LineString([(intersection_point[0], intersection_point[1]),
-                           (right_point[0], right_point[1])])
-        z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
-        angle = int(round(get_angle((straight_point[0], straight_point[1]),
-                                    line.coords[0], line.coords[1])))
-        offset = 0.1 if angle <= 270 else ((angle - 270) / 10 + 0.2) * 1.3
-        fac = (old_width * (current_left_lanes + current_right_lanes) / 2 + offset) / line.length
-        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
-        vector = affinity.rotate(vector, -90, vector.coords[1])
-        fac = (new_width * (new_left_lanes + new_right_lanes) / 2 + 0.2) / vector.length
-        vector = affinity.scale(vector, xfact=fac, yfact=fac, origin=vector.coords[1])
-        position = vector.coords[0]
-        if sign_on_my_lane == "stopsign":
-            obstacles.append({"name": "prioritysign", "position": position, "zRot": z_rot})
-        else:
-            if new_left_lanes + new_right_lanes == 2:
-                obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot})
-            else:
-                obstacles.append({"name": "trafficlightdouble", "position": position, "zRot": z_rot})
+        opposite_direction(right_point, straight_point)
 
     return obstacles
 

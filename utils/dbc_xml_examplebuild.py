@@ -3,6 +3,7 @@ a criteria xml file.
 """
 
 from utils.dbc_xml_builder import DBCBuilder
+from utils.dbe_xml_builder import save_xml
 import os
 
 dbc = DBCBuilder()
@@ -55,4 +56,4 @@ scenario = os.getcwd() + "\\scenario"
 if not os.path.exists(scenario):
     os.mkdir(scenario)
 
-dbc.save_xml("exampleXML")
+save_xml("exampleXML", dbc.root, "criteria")

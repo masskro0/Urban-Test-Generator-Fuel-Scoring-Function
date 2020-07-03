@@ -37,11 +37,7 @@ def _get_nodes(divider_line, road_segments, fac, width=0.2):
 
 
 def _get_offset_nodes(road_segments, line, offset, direction):
-    print(line.is_valid)
-    """
-    if not line.is_valid:
-        line = line.buffer(0)
-    """
+    print(line)
     outer_line = line.parallel_offset(offset, direction)
     if isinstance(outer_line, MultiLineString):
         temp_list = list()

@@ -2,7 +2,7 @@
 an environment xml file.
 """
 
-from utils.dbe_xml_builder import DBEBuilder
+from utils.dbe_xml_builder import DBEBuilder, save_xml
 import os
 
 dbe = DBEBuilder()
@@ -38,4 +38,4 @@ scenario = os.getcwd() + "\\scenario"
 if not os.path.exists(scenario):
     os.mkdir(scenario)
 
-dbe.save_xml("exampleXML")
+save_xml("exampleXML", dbe.root, "environment")

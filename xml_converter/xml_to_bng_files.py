@@ -10,7 +10,7 @@ from beamngpy.beamngcommon import ENV
 from json import dump
 import xml.etree.ElementTree as Etree
 
-from test_run import run_test_case
+from test_execution import run_test_case
 from xml_converter.converter import Converter
 
 

@@ -3,7 +3,7 @@ from beamngpy import BeamNGpy
 from beamngpy.sensors import Electrics
 from termcolor import colored
 
-from observer import MisbehaviourObserver
+from verifier import MisbehaviourObserver
 
 
 def run_test_case(scenario, success_point):

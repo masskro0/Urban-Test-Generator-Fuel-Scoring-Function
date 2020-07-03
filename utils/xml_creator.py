@@ -5,6 +5,7 @@
 
 from utils.dbe_xml_builder import DBEBuilder
 from utils.dbc_xml_builder import DBCBuilder
+from utils.dbe_xml_builder import save_xml
 
 
 def build_environment_xml(lanes, file_name="fuelTesting", obstacles=None):
@@ -19,7 +20,7 @@ def build_environment_xml(lanes, file_name="fuelTesting", obstacles=None):
     dbe.add_lanes(lanes)
     if len(obstacles) > 0:
         dbe.add_obstacles(obstacles)
-    dbe.save_xml(file_name)
+    save_xml(file_name, dbe.root, "environment")
 
 
 def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, file_name="fuelTesting",
@@ -49,7 +50,7 @@ def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, 
         dbc.add_success_point(ego_car.get("id"), success_point)
     dbc.add_failure_conditions(ego_car.get("id"), "offroad")
     dbc.add_precond_partic_sc_speed(vc_pos, sc_speed)
-    dbc.save_xml(file_name)
+    save_xml(file_name, dbc.root, "criteria")
 
 
 def build_xml(individual, iterator: int = 0):
