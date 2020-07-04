@@ -204,7 +204,7 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
         lanes.extend([{"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
                        "right_lanes": right_lanes, "samples": 25, "type": "intersection"},
                       {"control_points": [straight_point], "width": width, "left_lanes": left_lanes,
-                       "right_lanes": right_lanes, "samples": 75, "type": "normal"}])
+                       "right_lanes": right_lanes, "samples": 100, "type": "normal"}])
         last_point = straight_point
     else:
         if number_of_ways == 4:
@@ -225,7 +225,7 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
                            "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
                            "type": "intersection"},
                           {"control_points": [left_point], "width": new_width, "left_lanes": new_left_lanes,
-                           "right_lanes": new_right_lanes, "samples": 75, "type": "normal"}])
+                           "right_lanes": new_right_lanes, "samples": 100, "type": "normal"}])
             last_point = left_point
         else:
             if number_of_ways == 4:
@@ -236,7 +236,7 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
                            "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
                            "type": "intersection"},
                           {"control_points": [right_point], "width": new_width, "left_lanes": new_left_lanes,
-                           "right_lanes": new_right_lanes, "samples": 75, "type": "normal"}])
+                           "right_lanes": new_right_lanes, "samples": 100, "type": "normal"}])
             last_point = right_point
         left_lanes = new_left_lanes
         right_lanes = new_right_lanes

@@ -3,7 +3,7 @@
 from pathlib import Path
 from glob import glob
 from termcolor import colored
-from os import getcwd, path, mkdir, environ
+from os import getcwd, path
 from os.path import exists, join
 from shutil import move
 from beamngpy.beamngcommon import ENV
@@ -25,20 +25,6 @@ def get_next_test(files_name):
     matches = glob(xml_names)
     if len(matches) > 1:
         return [matches[0], matches[1]]
-
-
-def init_scenario_folder():
-    """Creates the urban and scenarios directory in the BeamNG trunk directory, if is doesn't exists.
-    :return: Void.
-    """
-    assert environ.get("BNG_HOME") is not None, "Please set the BNG_HOME environment variable."
-    scenario_folder = ENV['BNG_HOME']
-    scenario_folder += "\\levels\\urban"
-    if not exists(scenario_folder):
-        mkdir(scenario_folder)
-    scenario_folder += "\\scenarios"
-    if not exists(scenario_folder):
-        mkdir(scenario_folder)
 
 
 def get_index():
@@ -110,7 +96,6 @@ def convert_test(dbc, dbe):
     :return: Void.
     """
     print(colored("Converting XML files to BNG files...", "grey", attrs=['bold']))
-    init_scenario_folder()
     index = get_index()
     dbc_root = Etree.parse(dbc).getroot()
     dbe_root = Etree.parse(dbe).getroot()
