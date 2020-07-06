@@ -73,6 +73,7 @@ class Converter:
         self.dbe_root = dbe_root
         self.index = index
         self.success_point = None
+        self.line = list()
 
     def _init_prefab(self):
         self.bng = BeamNGpy('localhost', 64255)
@@ -348,6 +349,7 @@ class Converter:
             for waypoint in waypoints:
                 attr = waypoint.attrib
                 z = 0 if attr.get("z") is None else attr.get("z")
+                self.line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': 13})
                 original_content.extend([
                     "    new BeamNGWaypoint(wp_{}_{}){{\n".format(vid, index),
                     "        drawDebug = \"0\";\n",

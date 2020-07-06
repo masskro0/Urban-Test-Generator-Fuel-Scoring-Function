@@ -35,7 +35,6 @@ def _add_ego_car(individual):
     waypoints = []
     for lane in ego_lanes:
         iterator = 0
-        """
         temp_points = lanes[lane].get("control_points")
         temp_points = LineString(temp_points)
         if temp_points.coords[0] == temp_points.coords[-1]:
@@ -47,9 +46,8 @@ def _add_ego_car(individual):
         offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
         temp_points = temp_points.parallel_offset(offset, "right")
         temp_points.coords = temp_points.coords[::-1]
-        control_points = b_spline(temp_points).tolist()
-        """
-        control_points = lanes[lane].get("control_points")
+        control_points = b_spline(temp_points, 75).tolist()
+        #control_points = lanes[lane].get("control_points")
         while iterator < len(control_points):
             if len(waypoints) == 0 or euclidean(control_points[iterator], waypoints[-1].get("position")) >= 2:
                 waypoint = {"position": control_points[iterator],
@@ -94,7 +92,7 @@ def _add_parked_cars(individual):
         if left:
             left_line = line.parallel_offset(width / 2 + offset, "left")
             coords = b_spline(left_line.coords)
-            iterator = 1 if idx == 0 else 10
+            iterator = 1 if idx == 0 else 16
             while iterator < len(coords):
                 point = coords[iterator]
                 if abs(euclidean(point, coords[-1])) < 12:
@@ -108,7 +106,7 @@ def _add_parked_cars(individual):
             right_line = line.parallel_offset(width / 2 + offset, "right")
             coords = right_line.coords[::-1]
             coords = b_spline(coords)
-            iterator = 1 if idx == 0 else 10
+            iterator = 1 if idx == 0 else 16
             while iterator < len(coords):
                 point = coords[iterator]
                 if abs(euclidean(point, coords[-1])) < 12:
@@ -519,8 +517,9 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Lane switch when turning for multiple lanes
+#       TODO Calculate speed for each node (looking at angles?)
+#       TODO BNG stuck at constructing buildings
 #       TODO Make cars stop in front of intersection
-#       TODO Waypoints are broken
 #       TODO Add other participants
 #       TODO Create init population
 #       TODO Mutation
@@ -544,4 +543,4 @@ class FuelConsumptionTestGenerator:
 #           TODO Add input checking
 #           TODO Implement Sensor deployment
 #       TODO Control traffic lights (not possible)
-#       TODO Parked cars on the road -> adjust waypoints
+#       TODO Parked cars on the road and adjust waypoints

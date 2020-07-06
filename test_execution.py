@@ -6,7 +6,7 @@ from termcolor import colored
 from verifier import MisbehaviourObserver
 
 
-def run_test_case(scenario, success_point):
+def run_test_case(scenario, success_point, line):
     print(colored("Starting test case {}.".format(scenario.name), "grey", attrs=['bold']))
     vehicles = scenario.vehicles
     ego = None
@@ -22,7 +22,9 @@ def run_test_case(scenario, success_point):
     bng.load_scenario(scenario)
     sleep(2)
     bng.start_scenario()
-    ego.ai_set_waypoint(success_point)
+    print(line)
+    ego.ai_set_line(line)
+    #ego.ai_set_waypoint(success_point)
     observer = MisbehaviourObserver()
     for _ in range(2000):
         # vehicle.update_vehicle()
