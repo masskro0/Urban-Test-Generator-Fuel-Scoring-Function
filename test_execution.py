@@ -21,8 +21,8 @@ def run_test_case(scenario, success_point):
     bng = beamng.open()
     bng.load_scenario(scenario)
     sleep(2)
-    ego.ai_set_waypoint(success_point)
     bng.start_scenario()
+    ego.ai_set_waypoint(success_point)
     observer = MisbehaviourObserver()
     for _ in range(2000):
         # vehicle.update_vehicle()

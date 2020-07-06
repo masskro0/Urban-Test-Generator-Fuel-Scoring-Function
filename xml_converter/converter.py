@@ -37,7 +37,7 @@ def _get_nodes(divider_line, road_segments, fac, width=0.2):
 
 
 def _get_offset_nodes(road_segments, line, offset, direction):
-    print(line)
+    #print(line)
     outer_line = line.parallel_offset(offset, direction)
     if isinstance(outer_line, MultiLineString):
         temp_list = list()
@@ -52,7 +52,7 @@ def _get_offset_nodes(road_segments, line, offset, direction):
     return nodes
 
 
-def _b_spline(old_coords):
+def b_spline(old_coords, samples=NUM_NODES):
     """Calculate {@code samples} samples on a bspline. This is the road representation function.
     :param old_coords: List of tuples.
     :return: Array with samples, representing a bspline of the given control points of the lanes.
@@ -61,7 +61,7 @@ def _b_spline(old_coords):
     count = len(old_coords)
     degree = clip(2, 0, count - 1)
     kv = concatenate(([0] * degree, arange(count - degree + 1), [count - degree] * degree))
-    u = linspace(False, (count - degree), NUM_NODES)
+    u = linspace(False, (count - degree), samples)
     return array(splev(u, (kv, old_coords.T, degree))).T
 
 
@@ -110,7 +110,7 @@ class Converter:
             d = segment.attrib
             width = float(d.get("width"))
             tuples.append((float(d.get("x")), float(d.get("y"))))
-        tuples = _b_spline(tuples)
+        tuples = b_spline(tuples)
         for coords in tuples:
             nodes.append((coords[0], coords[1], 0.01, width))
         road.nodes.extend(nodes)
@@ -124,7 +124,7 @@ class Converter:
             d = segment.attrib
             linestring_nodes.append((float(d.get("x")), float(d.get("y"))))
             widths.append(float(d.get("width")))
-        linestring_nodes = _b_spline(linestring_nodes)
+        linestring_nodes = b_spline(linestring_nodes)
         line = LineString(linestring_nodes)
         outer_offset = int(road_segments[0].attrib.get("width")) / 2 - 0.4
         self._add_outer_marking(road_segments, rid, line, outer_offset, "left")

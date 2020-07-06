@@ -1,6 +1,7 @@
 from copy import deepcopy
 from random import randint, random, choice
-import numpy as np
+
+from numpy import asarray, clip, concatenate, arange, linspace, array, linalg
 from scipy.interpolate import splev
 from shapely import affinity
 from shapely.geometry import LineString, shape
@@ -15,6 +16,7 @@ from utils.utility_functions import convert_points_to_lines, convert_splines_to_
     get_resize_factor_intersection
 from utils.validity_checks import intersection_check_width, intersection_check_last
 from utils.xml_creator import build_all_xml
+from xml_converter.converter import b_spline
 
 MIN_DEGREES = 70
 MAX_DEGREES = 290
@@ -56,29 +58,10 @@ def _add_ego_car(individual):
 
 
 def _add_parked_cars(individual):
-    print(individual)
-    lanes = individual.get("lanes")
-    iterator = 0
-    while iterator < len(lanes) - 1:
-        print(get_angle(lanes[iterator].get("control_points")[-2], lanes[iterator].get("control_points")[-1],
-                        lanes[iterator].get("control_points")[0]))
-        iterator += 1
-
-    def _get_orthogonal_position(point_1, point_0, lane_width, direction, offset_to_car, rotation_of_car):
-        rotation_direction = 1 if direction == "right" else -1
-        line = LineString([point_1, point_0])
-        fac = (lane_width / 2 + offset_to_car) / line.length
-        vector = affinity.scale(line, xfact=fac, yfact=fac, origin=line.coords[0])
-        vector = affinity.rotate(vector, 90 * rotation_direction, vector.coords[0])
-        global_angle = get_angle((point_1[0] + 5, point_1[1]), point_1, vector.coords[1]) + 270 - rotation_of_car
-        return vector.coords[1], global_angle
-
     car_positions = list()
     for idx, lane in enumerate(individual.get("lanes")):
         if lane.get("type") == "intersection":
             continue
-        left_lanes = lane.get("left_lanes")
-        right_lanes = lane.get("right_lanes")
         control_points = lane.get("control_points")
         width = lane.get("width")
         rotations = [0, 45, 90]
@@ -90,35 +73,37 @@ def _add_parked_cars(individual):
             offset = 3
             max_distance = 3
         else:
-            offset = randint(-2, 2)
+            offset = 2
             max_distance = 5.5
-        right = True if random() >= 0.4 else False
-        left = True if random() and (offset > 0 or left_lanes + right_lanes > 2 or not right) >= 0.4 else False
+        right = True if random() >= 0.3 else False
+        left = True if random() >= 0.3 else False
+        line = LineString(control_points)
         if left:
-            iterator = 1 if idx == 0 else 8
-            while iterator < len(control_points):
-                point1 = control_points[iterator]
-                point2 = control_points[iterator - 1]
-                if point1 == point2:
-                    continue
-                p1, angle = _get_orthogonal_position(point1, point2, width, "left", offset, rotation)
-                if abs(euclidean(p1, control_points[-1])) < 12:
+            left_line = line.parallel_offset(width / 2 + offset, "left")
+            coords = b_spline(left_line.coords)
+            iterator = 1
+            while iterator < len(coords):
+                point = coords[iterator]
+                if abs(euclidean(point, coords[-1])) < 12:
                     break
-                if len(car_positions) == 0 or abs(euclidean(p1, car_positions[-1][0])) > max_distance:
-                    car_positions.append((p1, angle))
+                if len(car_positions) == 0 or abs(euclidean(point, car_positions[-1][0])) > max_distance:
+                    angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
+                                      coords[iterator - 1], point) - rotation
+                    car_positions.append((point, angle))
                 iterator += 1
         if right:
-            iterator = 1 if idx == 0 else 8
-            while iterator < len(control_points):
-                point1 = control_points[iterator]
-                point2 = control_points[iterator - 1]
-                if point1 == point2:
-                    continue
-                p1, angle = _get_orthogonal_position(point1, point2, width, "right", offset, rotation)
-                if abs(euclidean(p1, control_points[-1])) < 12:
+            right_line = line.parallel_offset(width / 2 + offset, "right")
+            coords = right_line.coords[::-1]
+            coords = b_spline(coords)
+            iterator = 1
+            while iterator < len(coords):
+                point = coords[iterator]
+                if abs(euclidean(point, coords[-1])) < 12:
                     break
-                if len(car_positions) == 0 or abs(euclidean(p1, car_positions[-1][0])) > max_distance:
-                    car_positions.append((p1, angle))
+                if len(car_positions) == 0 or abs(euclidean(point, car_positions[-1][0])) > max_distance:
+                    angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
+                                       coords[iterator - 1], point) + 180 - rotation
+                    car_positions.append((point, angle))
                 iterator += 1
     parked_cars = list()
     for position in car_positions:
@@ -251,18 +236,18 @@ class FuelConsumptionTestGenerator:
         for lane in lanes:
             samples = lane.get("samples")
             # Calculate splines for each lane.
-            point_list = np.asarray(lane.get("control_points"))
+            point_list = asarray(lane.get("control_points"))
             count = len(point_list)
-            degree = np.clip(self.SPLINE_DEGREE, 1, count - 1)
+            degree = clip(self.SPLINE_DEGREE, 1, count - 1)
 
             # Calculate knot vector.
-            kv = np.concatenate(([0] * degree, np.arange(count - degree + 1), [count - degree] * degree))
+            kv = concatenate(([0] * degree, arange(count - degree + 1), [count - degree] * degree))
 
             # Calculate query range.
-            u = np.linspace(False, (count - degree), samples)
+            u = linspace(False, (count - degree), samples)
 
             # Calculate result.
-            splined_list.append({"control_points": np.array(splev(u, (kv, point_list.T, degree))).T,
+            splined_list.append({"control_points": array(splev(u, (kv, point_list.T, degree))).T,
                                  "width": lane.get("width")})
         return splined_list
 
@@ -273,7 +258,7 @@ class FuelConsumptionTestGenerator:
         :return: A new random point as dict type.
         """
         last_point_tmp = (last_point[0], last_point[1])
-        last_point_tmp = np.asarray(last_point_tmp)
+        last_point_tmp = asarray(last_point_tmp)
         x_min = int(round(last_point[0] - self.MAX_SEGMENT_LENGTH))
         x_max = int(round(last_point[0] + self.MAX_SEGMENT_LENGTH))
         y_min = int(round(last_point[1] - self.MAX_SEGMENT_LENGTH))
@@ -282,7 +267,7 @@ class FuelConsumptionTestGenerator:
             x_pos = randint(x_min, x_max)
             y_pos = randint(y_min, y_max)
             point = (x_pos, y_pos)
-            dist = np.linalg.norm(np.asarray(point) - last_point_tmp)
+            dist = linalg.norm(asarray(point) - last_point_tmp)
             deg = None
             if penultimate_point is not None:
                 deg = get_angle((penultimate_point[0], penultimate_point[0]),
@@ -476,8 +461,8 @@ class FuelConsumptionTestGenerator:
                 lane = splined_list[iterator]
                 individual.get("lanes")[iterator]["control_points"] = lane.get("control_points").tolist()
                 iterator += 1
-            _add_ego_car(individual)
             _add_parked_cars(individual)
+            _add_ego_car(individual)
         return population
 
     def _create_start_population(self):
@@ -528,11 +513,9 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Lane switch when turning for multiple lanes
+#       TODO Make cars stop in front of intersection
 #       TODO Waypoints are broken
-#       TODO Parked cars on the road and inside each other
-#       TODO Make AI not crash into parked cars
 #       TODO Add other participants
-#       TODO Control traffic lights
 #       TODO Create init population
 #       TODO Mutation
 #       TODO Repair function
@@ -542,7 +525,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Comments
 #       TODO Fix lane markings
 
-# TODO Observer/Specifications:
+# TODO Verifier:
 
 # TODO May-have:
 #       TODO Remove redundant XML information
@@ -550,8 +533,9 @@ class FuelConsumptionTestGenerator:
 #       TODO Add weather presets
 #       TODO Double test cases by placing spawn point on the other side
 #       TODO Improve performance
-#       TODO Make Golf colidable
-#       TODO Fix Shapely TopologyException
+#       TODO Make all objects colidable
+#       TODO Fix Shapely's TopologyException
 #       TODO Converter:
 #           TODO Add input checking
 #           TODO Implement Sensor deployment
+#       TODO Control traffic lights (not possible)
