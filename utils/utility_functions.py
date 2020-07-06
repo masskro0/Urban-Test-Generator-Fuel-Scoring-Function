@@ -26,26 +26,6 @@ def convert_points_to_lines(lanes):
     return lanes_lines
 
 
-def convert_splines_to_lines(lanes):
-    """Turns a list of points into a list of LineStrings.
-    :param lanes: Lanes of an individual.
-    :return: List of LineStrings.
-    """
-    lanes_lines = []
-    for lane in lanes:
-        control_points = lane.get("control_points")
-        lines = []
-        iterator = 0
-        while iterator < (len(control_points) - 1):
-            p1 = (control_points[iterator][0], control_points[iterator][1])
-            p2 = (control_points[iterator + 1][0], control_points[iterator + 1][1])
-            line = LineString([p1, p2])
-            lines.append(line)
-            iterator += 1
-        lanes_lines.append(lines)
-    return lanes_lines
-
-
 def get_resize_factor(length, width):
     """Returns the resize factor for the width lines so all lines have
     one specific length.
@@ -161,6 +141,8 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     :return: New lanes, lanes for the ego car, latest added point, number of left/right lanes of the lane which
     should receive new points, lane indices for this intersection as list type, current lane index.
     """
+    def add_opposite_lanes():
+        pass
     lanes = []
     ego_lanes = []
     intersection_lanes = []

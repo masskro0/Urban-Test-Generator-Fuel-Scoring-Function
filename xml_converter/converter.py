@@ -4,8 +4,9 @@ from os.path import join
 from math import radians, sin, cos
 from numpy import dot
 from shapely.geometry import LineString, MultiLineString
-from numpy import asarray, clip, concatenate, arange, linspace, array
+from numpy import asarray, clip, concatenate, arange, linspace, array, around
 from scipy.interpolate import splev
+
 
 NUM_NODES = 100
 
@@ -37,7 +38,6 @@ def _get_nodes(divider_line, road_segments, fac, width=0.2):
 
 
 def _get_offset_nodes(road_segments, line, offset, direction):
-    #print(line)
     outer_line = line.parallel_offset(offset, direction)
     if isinstance(outer_line, MultiLineString):
         temp_list = list()
@@ -54,6 +54,7 @@ def _get_offset_nodes(road_segments, line, offset, direction):
 
 def b_spline(old_coords, samples=NUM_NODES):
     """Calculate {@code samples} samples on a bspline. This is the road representation function.
+    :param samples: Number of samples to return.
     :param old_coords: List of tuples.
     :return: Array with samples, representing a bspline of the given control points of the lanes.
     """
@@ -126,19 +127,29 @@ class Converter:
             widths.append(float(d.get("width")))
         linestring_nodes = b_spline(linestring_nodes)
         line = LineString(linestring_nodes)
-        outer_offset = int(road_segments[0].attrib.get("width")) / 2 - 0.4
-        self._add_outer_marking(road_segments, rid, line, outer_offset, "left")
-        self._add_outer_marking(road_segments, rid, line, outer_offset, "right")
-        left_lanes = int(lane.attrib.get("leftLanes"))
-        right_lanes = int(lane.attrib.get("rightLanes"))
-        if left_lanes != 0 and right_lanes != 0:
-            self._add_yellow_divider_line(road_segments, rid, line, left_lanes, right_lanes)
-        if left_lanes > 1:
-            self._add_separator_lines(road_segments, rid, line, left_lanes, right_lanes,
-                                      int(road_segments[0].attrib.get("width")), "left")
-        if right_lanes > 1:
-            self._add_separator_lines(road_segments, rid, line, left_lanes, right_lanes,
-                                      int(road_segments[0].attrib.get("width")), "right")
+        coords = line.coords
+        if not line.is_simple:
+            temp_coords = around(list(line.coords), 2).tolist()
+            coords = list()
+            for coord in temp_coords:
+                coords.append(tuple(coord))
+            coords = list(set(coords))
+            if len(coords) > 1:
+                line.coords = coords
+        if len(coords) > 1:
+            outer_offset = int(road_segments[0].attrib.get("width")) / 2 - 0.4
+            self._add_outer_marking(road_segments, rid, line, outer_offset, "left")
+            self._add_outer_marking(road_segments, rid, line, outer_offset, "right")
+            left_lanes = int(lane.attrib.get("leftLanes"))
+            right_lanes = int(lane.attrib.get("rightLanes"))
+            if left_lanes != 0 and right_lanes != 0:
+                self._add_yellow_divider_line(road_segments, rid, line, left_lanes, right_lanes)
+            if left_lanes > 1:
+                self._add_separator_lines(road_segments, rid, line, left_lanes, right_lanes,
+                                          int(road_segments[0].attrib.get("width")), "left")
+            if right_lanes > 1:
+                self._add_separator_lines(road_segments, rid, line, left_lanes, right_lanes,
+                                          int(road_segments[0].attrib.get("width")), "right")
 
     def _add_outer_marking(self, road_segments, rid, line, offset, direction):
         nodes = _get_offset_nodes(road_segments, line, offset, direction)
@@ -246,7 +257,7 @@ class Converter:
                 rot = (rot[0], rot[1], 90 - rot[2])
                 name_car = "Golf_" + str(id_number)
                 golf = StaticObject(pos=pos, rot=rot, name=name_car,
-                                      scale=(1.2, 1.2, 1.2), shape='/vehicles/87Golf/87Golf.dae')
+                                    scale=(1.2, 1.2, 1.2), shape='/vehicles/87Golf/87Golf.dae')
                 self.scenario.add_object(golf)
             elif obstacle.tag == "trafficlightsingle":
                 name_light = "trafficlightsingle_" + str(id_number)
