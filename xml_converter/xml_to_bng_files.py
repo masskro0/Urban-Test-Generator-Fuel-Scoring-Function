@@ -115,4 +115,4 @@ def convert_test(dbc, dbe):
     for match in matches:
         move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
     update_index(index)
-    run_test_case(converter.scenario, converter.success_point, converter.line)
+    run_test_case(converter.scenario, converter.lines)

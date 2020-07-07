@@ -74,8 +74,7 @@ class Converter:
         self.dbc_root = dbc_root
         self.dbe_root = dbe_root
         self.index = index
-        self.success_point = None
-        self.line = list()
+        self.lines = list()
 
     def _init_prefab(self):
         self.bng = BeamNGpy('localhost', 64255)
@@ -344,11 +343,13 @@ class Converter:
         prefab_file.close()
         original_content[-1] = ""
         participants = self.dbc_root.findall("participants/participant")
+        line = list()
         for participant in participants:
             waypoints = participant.findall("movement/waypoint")
             vid = participant.get("id")
             index = 0
             i = 0
+            current_index = 0
             while i < len(waypoints):
                 attr = waypoints[i].attrib
                 z = 0 if attr.get("z") is None else attr.get("z")
@@ -365,33 +366,47 @@ class Converter:
                     "        canSaveDynamicFields = \"1\";\n",
                     "    };\n"
                 ])
-                if 0 < i < len(waypoints) - 1:
+                if 1 < i < len(waypoints) - 1:
                     attr_prev = waypoints[i-1].attrib
                     attr_next = waypoints[i+1].attrib
                     p1 = (float(attr_prev.get("x")), float(attr_prev.get("y")))
                     p2 = (float(attr.get("x")), float(attr.get("y")))
                     p3 = (float(attr_next.get("x")), float(attr_next.get("y")))
                     angle = get_angle(p1, p2, p3)
-                    if i == len(waypoints) - 1:
-                        speed = 0
-                    elif 170 <= angle <= 190:
-                        speed = 13.33
-                    elif 150 <= angle < 170 or 190 > angle >= 210:
-                        speed = 11
-                    elif 130 <= angle < 150 or 210 > angle >= 230:
-                        speed = 9.5
-                    elif 110 <= angle < 130 or 230 > angle >= 250:
-                        speed = 6
-                    elif 90 <= angle < 110 or 250 > angle >= 270:
-                        speed = 3
-                    elif angle < 90 or angle > 270:
-                        speed = 2
+                    if int(attr.get("lane")) != current_index:
+                        current_index = int(attr.get("lane"))
+                        line[-1]["speed"] = 0
+                        line[-2]["speed"] = 0
+                        line[-3]["speed"] = 0
+                        self.lines.append(line)
+                        line = list()
                     else:
-                        speed = 1
-                    self.line[-1]["speed"] = (speed + float(self.line[-1].get("speed"))) / 2
+                        if 170 <= angle <= 190:
+                            speed = 13.33
+                        elif 150 <= angle < 170 or 190 > angle >= 210:
+                            speed = 10
+                        elif 130 <= angle < 150 or 210 > angle >= 230:
+                            speed = 8.5
+                        elif 110 <= angle < 130 or 230 > angle >= 250:
+                            speed = 6
+                        elif 90 <= angle < 110 or 250 > angle >= 270:
+                            speed = 3
+                        elif angle < 90 or angle > 270:
+                            speed = 2
+                        else:
+                            speed = 1
+                        if len(line) > 0:
+                            line[-1]["speed"] = 0 if line[-1].get("speed") == 0 else \
+                                 (speed + float(line[-1].get("speed"))) / 2
+                        line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
                 else:
-                    speed = 13.33
-                self.line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
+                    speed = 0 if i == len(waypoints) - 1 else 13.33
+                    line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
+                    if i == len(waypoints) - 1:
+                        line[-1]["speed"] = 0
+                        line[-2]["speed"] = 0
+                        line[-3]["speed"] = 0
+                        self.lines.append(line)
                 index += 1
                 i += 1
             if vid == "ego":

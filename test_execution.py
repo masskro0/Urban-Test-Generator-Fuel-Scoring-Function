@@ -2,11 +2,12 @@ from time import sleep
 from beamngpy import BeamNGpy
 from beamngpy.sensors import Electrics
 from termcolor import colored
+from scipy.spatial.distance import euclidean
 
 from verifier import MisbehaviourObserver
 
 
-def run_test_case(scenario, success_point, line):
+def run_test_case(scenario, lines):
     print(colored("Starting test case {}.".format(scenario.name), "grey", attrs=['bold']))
     vehicles = scenario.vehicles
     ego = None
@@ -20,10 +21,16 @@ def run_test_case(scenario, success_point, line):
     ego.attach_sensor('electrics', electrics)
     bng = beamng.open()
     bng.load_scenario(scenario)
-    sleep(2)
+    sleep(1)
     bng.start_scenario()
-    ego.ai_set_line(line)
-    #ego.ai_set_waypoint(success_point)
+    for line in lines:
+        ego.ai_set_line(line)
+        while True:
+            ego.update_vehicle()
+            pos = ego.state.get("pos")
+            if euclidean((pos[0], pos[1]), (line[-1].get("pos")[0], line[-1].get("pos")[1])) < 1:
+                sleep(5)
+                break
     observer = MisbehaviourObserver()
     for _ in range(2000):
         # vehicle.update_vehicle()

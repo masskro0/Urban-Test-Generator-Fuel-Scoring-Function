@@ -28,8 +28,7 @@ def _add_ego_car(individual):
     :param individual: Individual of the population.
     :return: Void.
     """
-    # TODO Turning requires lane switch for multiple lanes.
-    samples = 50
+    samples = 65
     lanes = individual.get("lanes")
     ego_lanes = individual.get("ego_lanes")
     directions = individual.get("directions")
@@ -51,25 +50,34 @@ def _add_ego_car(individual):
         lines.append(temp_points)
 
     ego_index = 0
+    same_lane = 0
     for idx, lane in enumerate(ego_lanes):
         control_points = list(lines[idx].coords)
+        intersec_point = None
+        if idx != 0 and ego_lanes[idx] - ego_lanes[idx-1] != 1:
+            same_lane += 1
         if idx + 1 < len(ego_lanes) and ego_lanes[idx+1] - ego_lanes[idx] != 1:
+            intersec_point = lines[idx].intersection(lines[idx + 1])
             if directions[ego_index] == "right":
-                intersec_point = lines[idx].intersection(lines[idx+1])
                 index = len(control_points) // 2
                 del control_points[index:]
                 control_points.append((intersec_point.x, intersec_point.y))
+            else:
+                del control_points[samples//3:]
             ego_index += 1
         iterator = 0
         while iterator < len(control_points):
             if len(waypoints) == 0 or euclidean(control_points[iterator], waypoints[-1].get("position")) >= 1.5:
+                mode = "intersection" if intersec_point is not None and iterator == len(control_points)-1 else "normal"
                 waypoint = {"position": control_points[iterator],
                             "tolerance": 2,
-                            "movementMode": "_BEAMNG"}
+                            "movementMode": "_BEAMNG",
+                            "mode": mode,
+                            "lane": same_lane}
                 waypoints.append(waypoint)
             iterator += 1
+        del waypoints[-1]
 
-    del waypoints[-1]
     init_state = {"position": waypoints[0].get("position"),
                   "orientation": 0,
                   "movementMode": "_BEAMNG",
@@ -518,7 +526,7 @@ class FuelConsumptionTestGenerator:
         temp_list = deepcopy(self.population_list)
         # plot_all(temp_list)
         """
-        temp_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0), (56, -18)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(56, -18), (66.42900018907949, -35.06563667303917)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(111.95251871545277, -14.386921505530694), (66.42900018907949, -35.06563667303917)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(66.42900018907949, -35.06563667303917), (24.70081546266229, -62.61120980989736)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(66.42900018907949, -35.06563667303917), (82.07250047269875, -60.66409168259794)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(82.07250047269875, -60.66409168259794), (93, -78), (106, -100)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(106, -100), (116.17458624253283, -117.21853056428631)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(116.17458624253283, -117.21853056428631), (131.43646560633204, -143.04632641071578)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(116.17458624253283, -117.21853056428631), (67.19218184652311, -127.25466824696935)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(116.17458624253283, -117.21853056428631), (164.09589076757146, -102.95148557877837)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(164.09589076757146, -102.95148557877837), (185, -117), (180, -136), (202, -150)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(202, -150), (218.87322975464218, -160.7375098438632)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(218.87322975464218, -160.7375098438632), (244.1830743866053, -176.84377460965794)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(218.87322975464218, -160.7375098438632), (236.36004916410775, -113.8951022740047)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(218.87322975464218, -160.7375098438632), (203.03183929160446, -208.16166348098747)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(203.03183929160446, -208.16166348098747), (199, -234)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}], 'type': 'urban', 'file_name': 'urban', 'score': 0, 'obstacles': [{'name': 'trafficlightdouble', 'position': (57.17563274858713, -31.813684795898926), 'zRot': 301}, {'name': 'trafficlightdouble', 'position': (68.79834731350073, -25.532211569541644), 'zRot': 204}, {'name': 'trafficlightdouble', 'position': (76.24031913968759, -39.230600112187005), 'zRot': 481}, {'name': 'trafficlightdouble', 'position': (65.22966316383085, -45.083719857953724), 'zRot': 393}, {'name': 'trafficlightdouble', 'position': (107.41309349699178, -114.57861676458914), 'zRot': 301}, {'name': 'trafficlightsingle', 'position': (120.82255361580486, -111.45256149595109), 'zRot': 197}, {'name': 'trafficlightdouble', 'position': (124.60540493519154, -119.29884212064418), 'zRot': 481}, {'name': 'trafficlightsingle', 'position': (111.04176847156504, -122.55746133083845), 'zRot': 372}, {'name': 'stopsign', 'position': (209.78469463680085, -159.93219660557347), 'zRot': 328}, {'name': 'prioritysign', 'position': (213.22654069244717, -152.4172152195793), 'zRot': 250}, {'name': 'stopsign', 'position': (227.96176487248349, -161.54282308215295), 'zRot': 508}, {'name': 'prioritysign', 'position': (224.72447787082518, -169.1022749620757), 'zRot': 432}], 'success_point': (199, -234), 'ego_lanes': [0, 1, 4, 5, 6, 9, 10, 11, 14, 15], 'directions': ['straight', 'left', 'right']}]
+        temp_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(45, 0), (65.0, 0.0)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(60.6422128626171, 49.809734904587266), (65.0, 0.0)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (53.75244728280674, -48.71850323926175)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(53.75244728280674, -48.71850323926175), (48, -67), (71, -80)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(71, -80), (88.41125677440269, -89.84114513335804)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(103.42647843800049, -42.148974723603914), (88.41125677440269, -89.84114513335804)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(88.41125677440269, -89.84114513335804), (114.52814193600673, -104.60286283339511)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(114.52814193600673, -104.60286283339511), (110, -120), (113, -144)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(113, -144), (115.48069469178418, -163.84555753427335)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(115.48069469178418, -163.84555753427335), (66.78684896764108, -175.19938458039985)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(115.48069469178418, -163.84555753427335), (164.97879686110647, -156.77888351919907)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(164.97879686110647, -156.77888351919907), (186, -165)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(186, -165), (204.62622989340113, -172.28447389714378)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(237.66551035642988, -134.75573895329933), (204.62622989340113, -172.28447389714378)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(204.62622989340113, -172.28447389714378), (200.8252437783114, -222.1397896072353)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(204.62622989340113, -172.28447389714378), (232.5655747335029, -183.21118474285947)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(232.5655747335029, -183.21118474285947), (252, -196)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}], 'type': 'urban', 'file_name': 'urban', 'score': 0, 'obstacles': [{'name': 'trafficlightdouble', 'position': (59.05, -7.7), 'zRot': 360}, {'name': 'trafficlightsingle', 'position': (60.08300247150686, 8.011943291411415), 'zRot': 275}, {'name': 'trafficlightsingle', 'position': (67.3827262590846, -8.350006920612024), 'zRot': 437}, {'name': 'trafficlightsingle', 'position': (77.32558528725693, -88.39979587690314), 'zRot': 331}, {'name': 'trafficlightsingle', 'position': (82.81443433294334, -81.97743236146859), 'zRot': 253}, {'name': 'trafficlightsingle', 'position': (97.0941748266809, -89.92441636140953), 'zRot': 511}, {'name': 'stopsign', 'position': (110.37046362670881, -156.82519155652415), 'zRot': 277}, {'name': 'prioritysign', 'position': (118.73836026392928, -155.60239582167418), 'zRot': 188}, {'name': 'prioritysign', 'position': (112.32084440789399, -172.48887554204092), 'zRot': 373}, {'name': 'trafficlightdouble', 'position': (194.74374008350833, -176.6874723251886), 'zRot': 339}, {'name': 'trafficlightdouble', 'position': (203.86877534242944, -161.492056994373), 'zRot': 229}, {'name': 'trafficlightdouble', 'position': (217.07913942858326, -168.88673286690485), 'zRot': 519}, {'name': 'trafficlightdouble', 'position': (211.5460318814063, -182.81097571145983), 'zRot': 446}], 'success_point': (252, -196), 'ego_lanes': [0, 1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 16, 17], 'directions': ['right', 'straight', 'left', 'straight']}]
         temp_list = self._spline_population(temp_list)
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
@@ -539,7 +547,7 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Lane switch when turning for multiple lanes
-#       TODO Make cars stop in front of intersection
+#       TODO Waypoints are still wrong at three way intersections dir right layout left
 #       TODO Parked cars are still on the road
 #       TODO Add other participants
 #       TODO Create init population
