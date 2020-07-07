@@ -22,7 +22,6 @@ def run_test_case(scenario, success_point, line):
     bng.load_scenario(scenario)
     sleep(2)
     bng.start_scenario()
-    print(line)
     ego.ai_set_line(line)
     #ego.ai_set_waypoint(success_point)
     observer = MisbehaviourObserver()

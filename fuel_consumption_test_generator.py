@@ -29,12 +29,13 @@ def _add_ego_car(individual):
     :return: Void.
     """
     # TODO Turning requires lane switch for multiple lanes.
-    # TODO Adopt to different number of lanes.
+    samples = 50
     lanes = individual.get("lanes")
     ego_lanes = individual.get("ego_lanes")
-    waypoints = []
+    directions = individual.get("directions")
+    waypoints = list()
+    lines = list()
     for lane in ego_lanes:
-        iterator = 0
         temp_points = lanes[lane].get("control_points")
         temp_points = LineString(temp_points)
         if temp_points.coords[0] == temp_points.coords[-1]:
@@ -46,15 +47,28 @@ def _add_ego_car(individual):
         offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
         temp_points = temp_points.parallel_offset(offset, "right")
         temp_points.coords = temp_points.coords[::-1]
-        control_points = b_spline(temp_points, 75).tolist()
-        #control_points = lanes[lane].get("control_points")
+        temp_points.coords = b_spline(temp_points, samples).tolist()
+        lines.append(temp_points)
+
+    ego_index = 0
+    for idx, lane in enumerate(ego_lanes):
+        control_points = list(lines[idx].coords)
+        if idx + 1 < len(ego_lanes) and ego_lanes[idx+1] - ego_lanes[idx] != 1:
+            if directions[ego_index] == "right":
+                intersec_point = lines[idx].intersection(lines[idx+1])
+                index = len(control_points) // 2
+                del control_points[index:]
+                control_points.append((intersec_point.x, intersec_point.y))
+            ego_index += 1
+        iterator = 0
         while iterator < len(control_points):
-            if len(waypoints) == 0 or euclidean(control_points[iterator], waypoints[-1].get("position")) >= 2:
+            if len(waypoints) == 0 or euclidean(control_points[iterator], waypoints[-1].get("position")) >= 1.5:
                 waypoint = {"position": control_points[iterator],
                             "tolerance": 2,
                             "movementMode": "_BEAMNG"}
                 waypoints.append(waypoint)
             iterator += 1
+
     del waypoints[-1]
     init_state = {"position": waypoints[0].get("position"),
                   "orientation": 0,
@@ -299,8 +313,9 @@ class FuelConsumptionTestGenerator:
         lanes = [{"control_points": [p0, p1, p2], "width": calc_width(left_lanes, right_lanes),
                   "left_lanes": left_lanes, "right_lanes": right_lanes, "samples": 100, "type": "normal"}]
         ego_lanes = [0]
-        intersection_lanes = []
-        obstacles = []
+        intersection_lanes = list()
+        obstacles = list()
+        directions = list()
         tries = 0
         lane_index = 0
         number_of_pieces = 3
@@ -343,6 +358,7 @@ class FuelConsumptionTestGenerator:
                                                         intersection.get("right_point"),
                                                         lanes[lane_index].get("width"),
                                                         intersection.get("new_width")))
+                    directions.append(intersection.get("direction"))
                     lanes.extend(intersection_items.get("lanes"))
                     ego_lanes.extend(intersection_items.get("ego_lanes"))
                     last_point = intersection_items.get("last_point")
@@ -379,7 +395,8 @@ class FuelConsumptionTestGenerator:
                 tries += 1
         if number_of_pieces >= self.MIN_NODES and one_intersection:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
-            return {"lanes": lanes, "success_point": last_point, "ego_lanes": ego_lanes, "obstacles": obstacles}
+            return {"lanes": lanes, "success_point": last_point, "ego_lanes": ego_lanes, "obstacles": obstacles,
+                    "directions": directions}
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
@@ -462,6 +479,7 @@ class FuelConsumptionTestGenerator:
         :param population: List of individuals.
         :return: List of individuals with bsplined control points.
         """
+        print(population)
         for individual in population:
             splined_list = self._bspline(individual.get("lanes"))
             iterator = 0
@@ -486,17 +504,21 @@ class FuelConsumptionTestGenerator:
                               "score": 0,
                               "obstacles": urban.get("obstacles"),
                               "success_point": urban.get("success_point"),
-                              "ego_lanes": urban.get("ego_lanes")}
+                              "ego_lanes": urban.get("ego_lanes"),
+                              "directions": urban.get("directions")}
                 startpop.append(individual)
                 iterator += 1
         return startpop
 
     def genetic_algorithm(self):
+        """
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
         # plot_all(temp_list)
+        """
+        temp_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0), (56, -18)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(56, -18), (66.42900018907949, -35.06563667303917)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(111.95251871545277, -14.386921505530694), (66.42900018907949, -35.06563667303917)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(66.42900018907949, -35.06563667303917), (24.70081546266229, -62.61120980989736)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(66.42900018907949, -35.06563667303917), (82.07250047269875, -60.66409168259794)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(82.07250047269875, -60.66409168259794), (93, -78), (106, -100)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(106, -100), (116.17458624253283, -117.21853056428631)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(116.17458624253283, -117.21853056428631), (131.43646560633204, -143.04632641071578)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(116.17458624253283, -117.21853056428631), (67.19218184652311, -127.25466824696935)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(116.17458624253283, -117.21853056428631), (164.09589076757146, -102.95148557877837)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(164.09589076757146, -102.95148557877837), (185, -117), (180, -136), (202, -150)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(202, -150), (218.87322975464218, -160.7375098438632)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(218.87322975464218, -160.7375098438632), (244.1830743866053, -176.84377460965794)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(218.87322975464218, -160.7375098438632), (236.36004916410775, -113.8951022740047)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(218.87322975464218, -160.7375098438632), (203.03183929160446, -208.16166348098747)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(203.03183929160446, -208.16166348098747), (199, -234)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}], 'type': 'urban', 'file_name': 'urban', 'score': 0, 'obstacles': [{'name': 'trafficlightdouble', 'position': (57.17563274858713, -31.813684795898926), 'zRot': 301}, {'name': 'trafficlightdouble', 'position': (68.79834731350073, -25.532211569541644), 'zRot': 204}, {'name': 'trafficlightdouble', 'position': (76.24031913968759, -39.230600112187005), 'zRot': 481}, {'name': 'trafficlightdouble', 'position': (65.22966316383085, -45.083719857953724), 'zRot': 393}, {'name': 'trafficlightdouble', 'position': (107.41309349699178, -114.57861676458914), 'zRot': 301}, {'name': 'trafficlightsingle', 'position': (120.82255361580486, -111.45256149595109), 'zRot': 197}, {'name': 'trafficlightdouble', 'position': (124.60540493519154, -119.29884212064418), 'zRot': 481}, {'name': 'trafficlightsingle', 'position': (111.04176847156504, -122.55746133083845), 'zRot': 372}, {'name': 'stopsign', 'position': (209.78469463680085, -159.93219660557347), 'zRot': 328}, {'name': 'prioritysign', 'position': (213.22654069244717, -152.4172152195793), 'zRot': 250}, {'name': 'stopsign', 'position': (227.96176487248349, -161.54282308215295), 'zRot': 508}, {'name': 'prioritysign', 'position': (224.72447787082518, -169.1022749620757), 'zRot': 432}], 'success_point': (199, -234), 'ego_lanes': [0, 1, 4, 5, 6, 9, 10, 11, 14, 15], 'directions': ['straight', 'left', 'right']}]
         temp_list = self._spline_population(temp_list)
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
@@ -517,9 +539,8 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Lane switch when turning for multiple lanes
-#       TODO Calculate speed for each node (looking at angles?)
-#       TODO BNG stuck at constructing buildings
 #       TODO Make cars stop in front of intersection
+#       TODO Parked cars are still on the road
 #       TODO Add other participants
 #       TODO Create init population
 #       TODO Mutation
@@ -544,3 +565,4 @@ class FuelConsumptionTestGenerator:
 #           TODO Implement Sensor deployment
 #       TODO Control traffic lights (not possible)
 #       TODO Parked cars on the road and adjust waypoints
+#       TODO Improve speed of car

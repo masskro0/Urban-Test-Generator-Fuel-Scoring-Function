@@ -7,6 +7,8 @@ from shapely.geometry import LineString, MultiLineString
 from numpy import asarray, clip, concatenate, arange, linspace, array, around
 from scipy.interpolate import splev
 
+from utils.utility_functions import get_angle
+
 
 NUM_NODES = 100
 
@@ -346,10 +348,10 @@ class Converter:
             waypoints = participant.findall("movement/waypoint")
             vid = participant.get("id")
             index = 0
-            for waypoint in waypoints:
-                attr = waypoint.attrib
+            i = 0
+            while i < len(waypoints):
+                attr = waypoints[i].attrib
                 z = 0 if attr.get("z") is None else attr.get("z")
-                self.line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': 13})
                 original_content.extend([
                     "    new BeamNGWaypoint(wp_{}_{}){{\n".format(vid, index),
                     "        drawDebug = \"0\";\n",
@@ -363,7 +365,35 @@ class Converter:
                     "        canSaveDynamicFields = \"1\";\n",
                     "    };\n"
                 ])
+                if 0 < i < len(waypoints) - 1:
+                    attr_prev = waypoints[i-1].attrib
+                    attr_next = waypoints[i+1].attrib
+                    p1 = (float(attr_prev.get("x")), float(attr_prev.get("y")))
+                    p2 = (float(attr.get("x")), float(attr.get("y")))
+                    p3 = (float(attr_next.get("x")), float(attr_next.get("y")))
+                    angle = get_angle(p1, p2, p3)
+                    if i == len(waypoints) - 1:
+                        speed = 0
+                    elif 170 <= angle <= 190:
+                        speed = 13.33
+                    elif 150 <= angle < 170 or 190 > angle >= 210:
+                        speed = 11
+                    elif 130 <= angle < 150 or 210 > angle >= 230:
+                        speed = 9.5
+                    elif 110 <= angle < 130 or 230 > angle >= 250:
+                        speed = 6
+                    elif 90 <= angle < 110 or 250 > angle >= 270:
+                        speed = 3
+                    elif angle < 90 or angle > 270:
+                        speed = 2
+                    else:
+                        speed = 1
+                    self.line[-1]["speed"] = (speed + float(self.line[-1].get("speed"))) / 2
+                else:
+                    speed = 13.33
+                self.line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
                 index += 1
+                i += 1
             if vid == "ego":
                 self.success_point = "wp_{}_{}".format(vid, index - 1)
         original_content.append("};")
