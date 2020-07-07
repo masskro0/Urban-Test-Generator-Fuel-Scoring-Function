@@ -560,6 +560,15 @@ class FuelConsumptionTestGenerator:
 #       TODO Fix lane markings
 
 # TODO Verifier:
+#       TODO throttle misbehavior
+#       TODO accelerate and stop misbehaviour
+#       TODO left turn misbehavior
+#       TODO right turn misbehavior
+#       TODO brake misbehavior
+#       TODO safety distance misbehavior
+#       TODO engine idling misbehavior
+#       TODO varying speed
+#       TODO calculation
 
 # TODO May-have:
 #       TODO Remove redundant XML information
@@ -574,3 +583,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Control traffic lights (not possible)
 #       TODO Parked cars on the road and adjust waypoints
 #       TODO Improve speed of car
+#       TODO Improve waypoint positioning in intersections
