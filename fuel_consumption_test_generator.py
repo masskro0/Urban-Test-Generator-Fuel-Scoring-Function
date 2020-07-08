@@ -4,7 +4,7 @@ from random import randint, random, choice
 from numpy import asarray, clip, concatenate, arange, linspace, array, linalg
 from scipy.interpolate import splev
 from shapely import affinity
-from shapely.geometry import LineString, shape
+from shapely.geometry import LineString, shape, Point
 from termcolor import colored
 from os import path
 from glob import glob
@@ -137,22 +137,25 @@ def _add_parked_cars(individual):
             max_distance = 4
         elif rotation == 90:
             offset = 3
-            max_distance = 3
+            max_distance = 4.5
         else:
             offset = 2
             max_distance = 5.5
         right = True if random() >= 0.3 else False
         left = True if random() >= 0.3 else False
         line = LineString(control_points)
+        prev_lane = LineString(individual.get("lanes")[idx - 1].get("control_points")) if idx != 0 else None
+        prev_width = int(individual.get("lanes")[idx - 1].get("width")) / 2 + offset if idx != 0 else 0
         if left:
             left_line = line.parallel_offset(width / 2 + offset, "left")
             coords = b_spline(left_line.coords)
-            iterator = 1 if idx == 0 else 16
+            iterator = 1
             while iterator < len(coords):
                 point = coords[iterator]
                 if abs(euclidean(point, coords[-1])) < 12:
                     break
-                if len(car_positions) == 0 or abs(euclidean(point, car_positions[-1][0])) > max_distance:
+                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
+                                               (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
                     angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
                                       coords[iterator - 1], point) - rotation
                     car_positions.append((point, angle))
@@ -161,12 +164,13 @@ def _add_parked_cars(individual):
             right_line = line.parallel_offset(width / 2 + offset, "right")
             coords = right_line.coords[::-1]
             coords = b_spline(coords)
-            iterator = 1 if idx == 0 else 16
+            iterator = 1
             while iterator < len(coords):
                 point = coords[iterator]
                 if abs(euclidean(point, coords[-1])) < 12:
                     break
-                if len(car_positions) == 0 or abs(euclidean(point, car_positions[-1][0])) > max_distance:
+                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
+                                               (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
                     angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
                                       coords[iterator - 1], point) + 180 - rotation
                     car_positions.append((point, angle))
@@ -552,14 +556,11 @@ class FuelConsumptionTestGenerator:
         return startpop
 
     def genetic_algorithm(self):
-        """
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
         # plot_all(temp_list)
-        """
-        temp_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(45, 0), (65.0, 0.0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (95.0, 0.0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (72.82172325201157, -49.384417029756875)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (55.459550231172756, 49.0813591723832)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(55.459550231172756, 49.0813591723832), (69, 68), (71, 86), (89, 109), (84, 125), (56, 135), (57, 159), (37, 179)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(37, 179), (22.85786437626905, 193.14213562373095)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(22.85786437626905, 193.14213562373095), (48.60976812177175, 236.00050065883653)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(22.85786437626905, 193.14213562373095), (-11.875054146680867, 157.17514560679842)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-11.875054146680867, 157.17514560679842), (-22, 133)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}], 'type': 'urban', 'file_name': 'urban', 'score': 0, 'obstacles': [{'name': 'trafficlightdouble', 'position': (56.89999999999999, -6.2), 'zRot': 360}, {'name': 'trafficlightdouble', 'position': (55.483335921283526, 5.9840792786248755), 'zRot': 281}, {'name': 'trafficlightdouble', 'position': (73.1, 6.2), 'zRot': 180}, {'name': 'trafficlightdouble', 'position': (74.26135246812903, -6.055761757291975), 'zRot': 459}, {'name': 'trafficlightdouble', 'position': (35.797918471982854, 191.79863273947652), 'zRot': 495}, {'name': 'trafficlightdouble', 'position': (24.366946611572278, 180.02135932020786), 'zRot': 406}, {'name': 'trafficlightdouble', 'position': (19.306341704200857, 207.03577037889082), 'zRot': 239}], 'success_point': (-22, 133), 'ego_lanes': [0, 1, 4, 5, 6, 8, 9], 'directions': ['left', 'left']}]
         temp_list = self._spline_population(temp_list)
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
@@ -579,7 +580,6 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Parked cars are still on the road
 #       TODO Add other participants
 #       TODO Create init population
 #       TODO Mutation
