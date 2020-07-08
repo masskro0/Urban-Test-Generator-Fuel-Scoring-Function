@@ -18,8 +18,8 @@ from utils.validity_checks import intersection_check_width, intersection_check_l
 from utils.xml_creator import build_all_xml
 from xml_converter.converter import b_spline
 
-MIN_DEGREES = 70
-MAX_DEGREES = 290
+MIN_DEGREES = 90
+MAX_DEGREES = 270
 
 
 def _add_ego_car(individual):
@@ -70,10 +70,10 @@ def _add_ego_car(individual):
         opposite_dir = False
         deleted_points = list()
         lane_change = False
-        if idx != 0 and ego_lanes[idx] - ego_lanes[idx-1] != 1:
+        if idx != 0 and ego_lanes[idx] - ego_lanes[idx - 1] != 1:
             same_lane += 1
             opposite_dir = True
-        if idx + 1 < len(ego_lanes) and ego_lanes[idx+1] - ego_lanes[idx] != 1:
+        if idx + 1 < len(ego_lanes) and ego_lanes[idx + 1] - ego_lanes[idx] != 1:
             intersec_point = lines[idx].intersection(lines[idx + 1])
             lane_change = True
             index = len(control_points) // 2
@@ -87,7 +87,8 @@ def _add_ego_car(individual):
             if len(waypoints) == 0 or (euclidean(control_points[iterator], waypoints[-1].get("position")) >= 1.5 and
                                        (not opposite_dir
                                         or euclidean(control_points[0], control_points[iterator]) > 4)):
-                mode = "intersection" if intersec_point is not None and iterator == len(control_points)-1 else "normal"
+                mode = "intersection" if intersec_point is not None and iterator == len(
+                    control_points) - 1 else "normal"
                 waypoint = {"position": control_points[iterator],
                             "tolerance": 2,
                             "movementMode": "_BEAMNG",
@@ -276,9 +277,9 @@ class FuelConsumptionTestGenerator:
     def __init__(self):
         self.files_name = "urban"
         self.SPLINE_DEGREE = 3  # Sharpness of curves
-        self.MAX_TRIES = 60  # Maximum number of invalid generated points/segments
-        self.POPULATION_SIZE = 1  # Minimum number of generated roads for each generation
-        self.NUMBER_ELITES = 2  # Number of best kept roads
+        self.MAX_TRIES = 20  # Maximum number of invalid generated points/segments
+        self.POPULATION_SIZE = 5  # Minimum number of generated roads for each generation
+        self.NUMBER_ELITES = 2  # Number of best kept test cases.
         self.MIN_SEGMENT_LENGTH = 15  # Minimum length of a road segment
         self.MAX_SEGMENT_LENGTH = 30  # Maximum length of a road segment
         self.MIN_NODES = 6  # Minimum number of control points for each road
@@ -337,7 +338,7 @@ class FuelConsumptionTestGenerator:
             dist = linalg.norm(asarray(point) - last_point_tmp)
             deg = None
             if penultimate_point is not None:
-                deg = get_angle((penultimate_point[0], penultimate_point[0]),
+                deg = get_angle((penultimate_point[0], penultimate_point[1]),
                                 (last_point[0], last_point[1]),
                                 point)
             if self.MAX_SEGMENT_LENGTH >= dist >= self.MIN_SEGMENT_LENGTH:
@@ -538,22 +539,35 @@ class FuelConsumptionTestGenerator:
 
     def _create_start_population(self):
         """Creates and returns an initial population."""
-        startpop = []
-        iterator = 0
+        startpop = list()
+        i = 0
         while len(startpop) < self.POPULATION_SIZE:
             urban = self._create_urban_environment()
             if urban is not None:
-                individual = {"lanes": urban.get("lanes"),
-                              "type": "urban",
-                              "file_name": self.files_name,
-                              "score": 0,
-                              "obstacles": urban.get("obstacles"),
-                              "success_point": urban.get("success_point"),
-                              "ego_lanes": urban.get("ego_lanes"),
-                              "directions": urban.get("directions")}
-                startpop.append(individual)
-                iterator += 1
+                startpop.append({"lanes": urban.get("lanes"),
+                                 "type": "urban",
+                                 "file_name": self.files_name,
+                                 "score": 0,
+                                 "obstacles": urban.get("obstacles"),
+                                 "success_point": urban.get("success_point"),
+                                 "ego_lanes": urban.get("ego_lanes"),
+                                 "directions": urban.get("directions"),
+                                 "fitness": 0})
+                i += 1
         return startpop
+
+    def _choose_elite(self, population):
+        """Chooses the test cases with the best fitness values.
+        :param population: List of individuals.
+        :return: List of best x individuals according to their fitness value.
+        """
+        population = sorted(population, key=lambda k: k['fitness'])
+        elite = list()
+        i = 0
+        while i < self.NUMBER_ELITES:
+            elite.append(population[i])
+            i += 1
+        return elite
 
     def genetic_algorithm(self):
         if len(self.population_list) == 0:
@@ -581,7 +595,6 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Add other participants
-#       TODO Create init population
 #       TODO Mutation
 #       TODO Repair function
 #       TODO Mutation validity checks
@@ -607,7 +620,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Add weather presets
 #       TODO Double test cases by placing spawn point on the other side
 #       TODO Improve performance
-#       TODO Make all objects colidable
+#       TODO Make all objects collidable
 #       TODO Converter:
 #           TODO Add input checking
 #           TODO Implement Sensor deployment

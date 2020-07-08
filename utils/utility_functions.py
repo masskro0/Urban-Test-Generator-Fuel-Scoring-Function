@@ -5,6 +5,9 @@ from shapely import affinity
 from shapely.geometry import LineString
 from math import degrees, atan2
 
+MIN_DEGREES = 90
+MAX_DEGREES = 270
+
 
 def convert_points_to_lines(lanes):
     """Turns a list of points into a list of LineStrings.
@@ -125,7 +128,6 @@ def calc_min_max_angles(num_lanes):
     :param num_lanes: Number of lanes.
     :return: Minimum and maximum angles.
     """
-    from fuel_consumption_test_generator import MIN_DEGREES, MAX_DEGREES
     return MIN_DEGREES + (num_lanes - 1) * 15, MAX_DEGREES - (num_lanes - 1) * 15
 
 
