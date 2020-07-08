@@ -29,7 +29,7 @@ def run_test_case(scenario, lines):
             ego.update_vehicle()
             pos = ego.state.get("pos")
             if euclidean((pos[0], pos[1]), (line[-1].get("pos")[0], line[-1].get("pos")[1])) < 1:
-                sleep(5)
+                sleep(2)
                 break
     observer = MisbehaviourObserver()
     for _ in range(2000):

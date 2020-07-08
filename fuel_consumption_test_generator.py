@@ -34,7 +34,8 @@ def _add_ego_car(individual):
     directions = individual.get("directions")
     waypoints = list()
     lines = list()
-    for lane in ego_lanes:
+    ego_index = 0
+    for idx, lane in enumerate(ego_lanes):
         temp_points = lanes[lane].get("control_points")
         temp_points = LineString(temp_points)
         if temp_points.coords[0] == temp_points.coords[-1]:
@@ -43,26 +44,38 @@ def _add_ego_car(individual):
         right_lanes = lanes[lane].get("right_lanes")
         width = lanes[lane].get("width")
         width_per_lane = width / (left_lanes + right_lanes)
-        offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
-        temp_points = temp_points.parallel_offset(offset, "right")
-        temp_points.coords = temp_points.coords[::-1]
+        left = False
+        if idx + 1 < len(ego_lanes) and ego_lanes[idx + 1] - ego_lanes[idx] != 1:
+            if directions[ego_index] == "left" and right_lanes > 1:
+                left = True
+            ego_index += 1
+        if left:
+            offset = right_lanes - left_lanes - 1
+            offset = offset / 2 * width_per_lane
+            temp_points = temp_points.parallel_offset(offset, "left")
+            if offset < 0:
+                temp_points.coords = temp_points.coords[::-1]
+        else:
+            offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
+            temp_points = temp_points.parallel_offset(offset, "right")
+            temp_points.coords = temp_points.coords[::-1]
         temp_points.coords = b_spline(temp_points, samples).tolist()
         lines.append(temp_points)
 
     ego_index = 0
     same_lane = 0
-    for idx, lane in enumerate(ego_lanes):
+    for idx, lane in enumerate(lines):
         control_points = list(lines[idx].coords)
         intersec_point = None
         opposite_dir = False
         deleted_points = list()
-        dir = False
+        lane_change = False
         if idx != 0 and ego_lanes[idx] - ego_lanes[idx-1] != 1:
             same_lane += 1
             opposite_dir = True
         if idx + 1 < len(ego_lanes) and ego_lanes[idx+1] - ego_lanes[idx] != 1:
             intersec_point = lines[idx].intersection(lines[idx + 1])
-            dir = True
+            lane_change = True
             index = len(control_points) // 2
             deleted_points = control_points[index:]
             control_points = control_points[:index]
@@ -83,7 +96,7 @@ def _add_ego_car(individual):
                 waypoints.append(waypoint)
             iterator += 1
         del waypoints[-1]
-        if dir:
+        if lane_change:
             iterator = 0
             while iterator < len(deleted_points):
                 if len(waypoints) == 0 or euclidean(deleted_points[iterator], waypoints[-1].get("position")) >= 1.5:
@@ -539,11 +552,14 @@ class FuelConsumptionTestGenerator:
         return startpop
 
     def genetic_algorithm(self):
+        """
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
         # plot_all(temp_list)
+        """
+        temp_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(45, 0), (65.0, 0.0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (95.0, 0.0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (72.82172325201157, -49.384417029756875)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (55.459550231172756, 49.0813591723832)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(55.459550231172756, 49.0813591723832), (69, 68), (71, 86), (89, 109), (84, 125), (56, 135), (57, 159), (37, 179)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(37, 179), (22.85786437626905, 193.14213562373095)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(22.85786437626905, 193.14213562373095), (48.60976812177175, 236.00050065883653)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(22.85786437626905, 193.14213562373095), (-11.875054146680867, 157.17514560679842)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-11.875054146680867, 157.17514560679842), (-22, 133)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}], 'type': 'urban', 'file_name': 'urban', 'score': 0, 'obstacles': [{'name': 'trafficlightdouble', 'position': (56.89999999999999, -6.2), 'zRot': 360}, {'name': 'trafficlightdouble', 'position': (55.483335921283526, 5.9840792786248755), 'zRot': 281}, {'name': 'trafficlightdouble', 'position': (73.1, 6.2), 'zRot': 180}, {'name': 'trafficlightdouble', 'position': (74.26135246812903, -6.055761757291975), 'zRot': 459}, {'name': 'trafficlightdouble', 'position': (35.797918471982854, 191.79863273947652), 'zRot': 495}, {'name': 'trafficlightdouble', 'position': (24.366946611572278, 180.02135932020786), 'zRot': 406}, {'name': 'trafficlightdouble', 'position': (19.306341704200857, 207.03577037889082), 'zRot': 239}], 'success_point': (-22, 133), 'ego_lanes': [0, 1, 4, 5, 6, 8, 9], 'directions': ['left', 'left']}]
         temp_list = self._spline_population(temp_list)
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
@@ -563,7 +579,6 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Lane switch when turning for multiple lanes
 #       TODO Parked cars are still on the road
 #       TODO Add other participants
 #       TODO Create init population
@@ -599,4 +614,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Control traffic lights (not possible)
 #       TODO Parked cars on the road and adjust waypoints
 #       TODO Improve speed of car
-#       TODO Improve waypoint positioning in intersections
+#       TODO Improve traffic sign positioning
