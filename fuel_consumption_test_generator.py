@@ -54,20 +54,26 @@ def _add_ego_car(individual):
     for idx, lane in enumerate(ego_lanes):
         control_points = list(lines[idx].coords)
         intersec_point = None
+        opposite_dir = False
+        deleted_points = list()
+        dir = False
         if idx != 0 and ego_lanes[idx] - ego_lanes[idx-1] != 1:
             same_lane += 1
+            opposite_dir = True
         if idx + 1 < len(ego_lanes) and ego_lanes[idx+1] - ego_lanes[idx] != 1:
             intersec_point = lines[idx].intersection(lines[idx + 1])
+            dir = True
+            index = len(control_points) // 2
+            deleted_points = control_points[index:]
+            control_points = control_points[:index]
             if directions[ego_index] == "right":
-                index = len(control_points) // 2
-                del control_points[index:]
                 control_points.append((intersec_point.x, intersec_point.y))
-            else:
-                del control_points[samples//3:]
             ego_index += 1
         iterator = 0
         while iterator < len(control_points):
-            if len(waypoints) == 0 or euclidean(control_points[iterator], waypoints[-1].get("position")) >= 1.5:
+            if len(waypoints) == 0 or (euclidean(control_points[iterator], waypoints[-1].get("position")) >= 1.5 and
+                                       (not opposite_dir
+                                        or euclidean(control_points[0], control_points[iterator]) > 4)):
                 mode = "intersection" if intersec_point is not None and iterator == len(control_points)-1 else "normal"
                 waypoint = {"position": control_points[iterator],
                             "tolerance": 2,
@@ -77,6 +83,20 @@ def _add_ego_car(individual):
                 waypoints.append(waypoint)
             iterator += 1
         del waypoints[-1]
+        if dir:
+            iterator = 0
+            while iterator < len(deleted_points):
+                if len(waypoints) == 0 or euclidean(deleted_points[iterator], waypoints[-1].get("position")) >= 1.5:
+                    mode = "intersection" if intersec_point is not None and iterator == len(
+                        deleted_points) - 1 else "normal"
+                    waypoint = {"position": deleted_points[iterator],
+                                "tolerance": 2,
+                                "movementMode": "_BEAMNG",
+                                "mode": mode,
+                                "lane": same_lane + 1}
+                    waypoints.append(waypoint)
+                iterator += 1
+            del waypoints[-1]
 
     init_state = {"position": waypoints[0].get("position"),
                   "orientation": 0,
@@ -519,14 +539,11 @@ class FuelConsumptionTestGenerator:
         return startpop
 
     def genetic_algorithm(self):
-        """
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
         # plot_all(temp_list)
-        """
-        temp_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(45, 0), (65.0, 0.0)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(60.6422128626171, 49.809734904587266), (65.0, 0.0)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (53.75244728280674, -48.71850323926175)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(53.75244728280674, -48.71850323926175), (48, -67), (71, -80)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(71, -80), (88.41125677440269, -89.84114513335804)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(103.42647843800049, -42.148974723603914), (88.41125677440269, -89.84114513335804)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(88.41125677440269, -89.84114513335804), (114.52814193600673, -104.60286283339511)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(114.52814193600673, -104.60286283339511), (110, -120), (113, -144)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(113, -144), (115.48069469178418, -163.84555753427335)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(115.48069469178418, -163.84555753427335), (66.78684896764108, -175.19938458039985)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(115.48069469178418, -163.84555753427335), (164.97879686110647, -156.77888351919907)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(164.97879686110647, -156.77888351919907), (186, -165)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(186, -165), (204.62622989340113, -172.28447389714378)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(237.66551035642988, -134.75573895329933), (204.62622989340113, -172.28447389714378)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(204.62622989340113, -172.28447389714378), (200.8252437783114, -222.1397896072353)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(204.62622989340113, -172.28447389714378), (232.5655747335029, -183.21118474285947)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(232.5655747335029, -183.21118474285947), (252, -196)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}], 'type': 'urban', 'file_name': 'urban', 'score': 0, 'obstacles': [{'name': 'trafficlightdouble', 'position': (59.05, -7.7), 'zRot': 360}, {'name': 'trafficlightsingle', 'position': (60.08300247150686, 8.011943291411415), 'zRot': 275}, {'name': 'trafficlightsingle', 'position': (67.3827262590846, -8.350006920612024), 'zRot': 437}, {'name': 'trafficlightsingle', 'position': (77.32558528725693, -88.39979587690314), 'zRot': 331}, {'name': 'trafficlightsingle', 'position': (82.81443433294334, -81.97743236146859), 'zRot': 253}, {'name': 'trafficlightsingle', 'position': (97.0941748266809, -89.92441636140953), 'zRot': 511}, {'name': 'stopsign', 'position': (110.37046362670881, -156.82519155652415), 'zRot': 277}, {'name': 'prioritysign', 'position': (118.73836026392928, -155.60239582167418), 'zRot': 188}, {'name': 'prioritysign', 'position': (112.32084440789399, -172.48887554204092), 'zRot': 373}, {'name': 'trafficlightdouble', 'position': (194.74374008350833, -176.6874723251886), 'zRot': 339}, {'name': 'trafficlightdouble', 'position': (203.86877534242944, -161.492056994373), 'zRot': 229}, {'name': 'trafficlightdouble', 'position': (217.07913942858326, -168.88673286690485), 'zRot': 519}, {'name': 'trafficlightdouble', 'position': (211.5460318814063, -182.81097571145983), 'zRot': 446}], 'success_point': (252, -196), 'ego_lanes': [0, 1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 16, 17], 'directions': ['right', 'straight', 'left', 'straight']}]
         temp_list = self._spline_population(temp_list)
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
@@ -547,7 +564,6 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Lane switch when turning for multiple lanes
-#       TODO Waypoints are still wrong at three way intersections dir right layout left
 #       TODO Parked cars are still on the road
 #       TODO Add other participants
 #       TODO Create init population
