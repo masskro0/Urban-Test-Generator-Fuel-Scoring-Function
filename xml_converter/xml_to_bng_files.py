@@ -84,11 +84,6 @@ def create_json_file(index, participants, author, tod, multiple_prefabs=False, s
         dump(data, outfile, indent=4)
 
 
-def create_lua_file():
-    # Cars can stop at red light, needs waypoint.
-    raise NotImplementedError()
-
-
 def convert_test(dbc, dbe):
     """Converts the XML files into BeamNG files.
     :param dbc: Path to the criteria XML file.

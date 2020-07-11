@@ -78,9 +78,12 @@ class DBCBuilder:
         init_state = participant.get("init_state")
         waypoints = participant.get("waypoints")
         model = participant.get("model")
+        color = participant.get("color")
+        triggers = participant.get("triggerPoints")
         participant = ElementTree.SubElement(self.participants, "participant")
         participant.set("id", participant_id)
         participant.set("model", model)
+        participant.set("color", color)
         ElementTree.SubElement(participant, 'initialState x="{}" y="{}"'
                                             ' orientation="{}" movementMode="{}"'
                                             ' speed="{}"'
@@ -88,16 +91,31 @@ class DBCBuilder:
                                        str(init_state.get("orientation")), init_state.get("movementMode"),
                                        str(init_state.get("speed"))))
 
+        if triggers is not None:
+            trigger_root = ElementTree.SubElement(participant, "triggerPoints")
+            for idx, trigger_point in enumerate(triggers.get("triggerPoints")):
+                trigger = ElementTree.SubElement(trigger_root, 'triggerPoint')
+                trigger.set("x", str(trigger_point.get("position")[0]))
+                trigger.set("y", str(trigger_point.get("position")[1]))
+                trigger.set("tolerance", str(trigger_point.get("tolerance")))
+                trigger.set("action", trigger_point.get("action"))
+                if trigger_point.get("action") == "spawn_and_start":
+                    spawn_point = triggers.get("spawnPoints")[idx]
+                    ElementTree.SubElement(trigger, 'spawnPoint x="{}" y="{}" orientation="{}"'
+                                           .format(str(spawn_point.get("position")[0]),
+                                                   str(spawn_point.get("position")[1]),
+                                                   str(spawn_point.get("orientation"))))
+
         if waypoints is not None:
             movement = ElementTree.SubElement(participant, "movement")
             for waypoint in waypoints:
                 position = waypoint.get("position")
                 waypoint_tag = ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}"'
-                                                                ' movementMode="{}" mode="{}" lane="{}"'
+                                                                ' movementMode="{}" lane="{}"'
                                                       .format('{0:.10f}'.format(round(position[0], 2)),
                                                               '{0:.10f}'.format(round(position[1], 2)),
                                                               str(waypoint.get("tolerance")),
-                                                              waypoint.get("movementMode"), waypoint.get("mode"),
+                                                              waypoint.get("movementMode"),
                                                               waypoint.get("lane")))
                 if waypoint.get("speedLimit"):
                     waypoint_tag.set("speedLimit", str(waypoint.get("speedLimit")))

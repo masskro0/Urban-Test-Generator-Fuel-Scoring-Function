@@ -143,8 +143,6 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     :return: New lanes, lanes for the ego car, latest added point, number of left/right lanes of the lane which
     should receive new points, lane indices for this intersection as list type, current lane index.
     """
-    def add_opposite_lanes():
-        pass
     lanes = []
     ego_lanes = []
     intersection_lanes = []
@@ -166,19 +164,19 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
         lanes.append({"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
                       "right_lanes": right_lanes, "samples": 25, "type": "intersection"})
     elif layout == "left":
-        lanes.append({"control_points": [left_point, intersec_point], "width": new_width, "left_lanes": new_left_lanes,
-                      "right_lanes": new_right_lanes, "samples": 25, "type": "intersection"})
+        lanes.append({"control_points": [intersec_point, left_point], "width": new_width, "left_lanes": new_right_lanes,
+                      "right_lanes": new_left_lanes, "samples": 25, "type": "intersection"})
     elif layout == "right":
         lanes.append({"control_points": [intersec_point, right_point], "width": new_width,
-                      "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
+                      "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
                       "type": "intersection"})
     if intersection.get("direction") == "straight":
         if number_of_ways == 4:
-            lanes.extend([{"control_points": [left_point, intersec_point], "width": new_width,
+            lanes.extend([{"control_points": [intersec_point, left_point], "width": new_width,
                           "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
                            "type": "intersection"},
                          {"control_points": [intersec_point, right_point], "width": new_width,
-                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
+                          "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
                           "type": "intersection"}])
             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
             lane_index += 5

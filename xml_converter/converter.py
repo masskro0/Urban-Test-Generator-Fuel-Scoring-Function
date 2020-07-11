@@ -9,7 +9,6 @@ from scipy.interpolate import splev
 
 from utils.utility_functions import get_angle
 
-
 NUM_NODES = 100
 
 
@@ -84,6 +83,7 @@ class Converter:
         self.bng.user = None
         self.scenario.make(self.bng)
         self._change_object_options()
+        self._add_trigger_points()
         self._add_waypoints()
 
     def add_to_prefab(self):
@@ -131,7 +131,7 @@ class Converter:
         line = LineString(linestring_nodes)
         coords = line.coords
         if not line.is_simple:
-            temp_coords = around(list(line.coords), 2).tolist()
+            temp_coords = list(around(list(line.coords), 2))
             coords = list()
             for coord in temp_coords:
                 coords.append(tuple(coord))
@@ -341,15 +341,15 @@ class Converter:
         prefab_file = open(prefab_path, "r")
         original_content = prefab_file.readlines()
         prefab_file.close()
-        original_content[-1] = ""
         participants = self.dbc_root.findall("participants/participant")
-        line = list()
         for participant in participants:
+            lines = list()
+            line = list()
             waypoints = participant.findall("movement/waypoint")
             vid = participant.get("id")
             index = 0
             i = 0
-            current_index = 0
+            current_index = int(waypoints[0].attrib.get("lane"))
             while i < len(waypoints):
                 attr = waypoints[i].attrib
                 z = 0 if attr.get("z") is None else attr.get("z")
@@ -367,8 +367,8 @@ class Converter:
                     "    };\n"
                 ])
                 if 1 < i < len(waypoints) - 1:
-                    attr_prev = waypoints[i-1].attrib
-                    attr_next = waypoints[i+1].attrib
+                    attr_prev = waypoints[i - 1].attrib
+                    attr_next = waypoints[i + 1].attrib
                     p1 = (float(attr_prev.get("x")), float(attr_prev.get("y")))
                     p2 = (float(attr.get("x")), float(attr.get("y")))
                     p3 = (float(attr_next.get("x")), float(attr_next.get("y")))
@@ -378,7 +378,7 @@ class Converter:
                         line[-1]["speed"] = 0
                         line[-2]["speed"] = 0
                         line[-3]["speed"] = 0
-                        self.lines.append(line)
+                        lines.append(line)
                         line = list()
                     else:
                         if 170 <= angle <= 190:
@@ -397,7 +397,7 @@ class Converter:
                             speed = 1
                         if len(line) > 0:
                             line[-1]["speed"] = 0 if line[-1].get("speed") == 0 else \
-                                 (speed + float(line[-1].get("speed"))) / 2
+                                (speed + float(line[-1].get("speed"))) / 2
                         line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
                 else:
                     speed = 0 if i == len(waypoints) - 1 else 13.33
@@ -406,12 +406,62 @@ class Converter:
                         line[-1]["speed"] = 0
                         line[-2]["speed"] = 0
                         line[-3]["speed"] = 0
-                        self.lines.append(line)
+                        lines.append(line)
                 index += 1
                 i += 1
             if vid == "ego":
                 self.success_point = "wp_{}_{}".format(vid, index - 1)
+            self.lines.append(lines)
         original_content.append("};")
+        prefab_file = open(prefab_path, "w")
+        prefab_file.writelines(original_content)
+        prefab_file.close()
+
+    def _add_trigger_points(self):
+        prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
+        prefab_file = open(prefab_path, "r")
+        original_content = prefab_file.readlines()
+        prefab_file.close()
+        original_content[-1] = ""
+        participants = self.dbc_root.findall("participants/participant")
+        for participant in participants:
+            trigger_points = participant.findall("triggerPoints/triggerPoint")
+            vid = participant.get("id")
+            index = 0
+            for trigger_point in trigger_points:
+                attr = trigger_point.attrib
+                spawn_point = trigger_point.find("spawnPoint")
+                z_spawn = 0 if attr.get("z") is None else spawn_point.get("z")
+                z_rot_spawn = -90 if spawn_point.get("orientation") is None \
+                    else -float(spawn_point.get("orientation")) - 90
+                z = 0 if attr.get("z") is None else attr.get("z")
+                original_content.extend([
+                    "    new BeamNGTrigger(trigger_{}_{}){{\n".format(vid, index),
+                    "        TriggerType = \"Sphere\";\n",
+                    "        TriggerMode = \"Contains\";\n",
+                    "        TriggerTestType = \"Race corners\";\n",
+                    "        luaFunction = \""
+                    + "local function teleportPlayer(data)\\n    local vehicleName = \\\"{}\\\"\\n\\n    if "
+                      "data.event == \\'enter\\' then\\n        TorqueScript.eval(vehicleName..\\\'.position = "
+                      "\\\"{} {} {}\\\";\\\')\\n        TorqueScript.eval(vehicleName..\\\'.rotation = \\\"0 0 "
+                      "01 {}\\\";\\\')\\n    end\\nend\\n\\nreturn teleportPlayer ".format(vid, spawn_point.get("x"),
+                                                                                           spawn_point.get("y"),
+                                                                                           z_spawn, z_rot_spawn)
+                    + "\";\n",
+                    "        tickPeriod = \"2000\";\n",
+                    "        debug = \"0\";\n",
+                    "        ticking = \"0\";\n",
+                    "        triggerColor = \"9 255 0 45\";\n",
+                    "        defaultOnLeave = \"0\";\n",
+                    "        position = \"" + attr.get("x") + " " + attr.get("y") + " " + str(z) + "\";\n",
+                    "        scale = \"" + attr.get("tolerance") + " " + attr.get("tolerance") + " "
+                    + attr.get("tolerance") + "\";\n",
+                    "        rotationMatrix = \"1 0 0 0 1 0 0 0 1\";\n",
+                    "        canSave = \"1\";\n",
+                    "        canSaveDynamicFields = \"1\";\n",
+                    "    };\n"
+                ])
+                index += 1
         prefab_file = open(prefab_path, "w")
         prefab_file.writelines(original_content)
         prefab_file.close()
