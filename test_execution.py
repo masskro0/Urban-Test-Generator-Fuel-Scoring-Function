@@ -34,7 +34,7 @@ def run_test_case(scenario, lines):
                     if idx != 0 and i < len(lines[idx]):
                         vehicle.ai_set_line(lines[idx][i])
                 i += 1
-                sleep(6)
+                sleep(7)
                 break
     observer = MisbehaviourObserver()
     for _ in range(2000):

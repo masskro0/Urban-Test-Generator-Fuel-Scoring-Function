@@ -193,27 +193,28 @@ def _add_other_participants(individual):
     spawn_lanes.append(ego_lanes[-1])
     spawn_points = list()
     trigger_points = list()
-    samples = 40
+    samples = 50
     i = 0
     waypoints = list()
     while i < len(spawn_lanes) - 1:
         lines = list()
         if spawn_lanes[i + 1] - spawn_lanes[i] == 1:
-            spawn_point = lanes[spawn_lanes[i]].get("control_points")[-1]
-            end_point = lanes[spawn_lanes[i + 1]].get("control_points")[-1]
-            middle_point = lanes[spawn_lanes[i]].get("control_points")[0]
+            spawn_index = i if random() < 0.5 else i + 1
+            end_index = i + 1 if spawn_index == i else i
+            spawn_point = lanes[spawn_lanes[spawn_index]].get("control_points")[-1]
+            end_point = lanes[spawn_lanes[end_index]].get("control_points")[-1]
+            middle_point = lanes[spawn_lanes[spawn_index]].get("control_points")[0]
             orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point, middle_point)
-            spawn_points.append({"position": spawn_point, "orientation": orientation})
-            tolerance = lanes[spawn_lanes[i]-1].get("width") / 2 + 2
-            trigger_points.append({"position": lanes[spawn_lanes[i]-1].get("control_points")[0],
+            tolerance = lanes[spawn_lanes[i] - 1].get("width") / 2 + 2
+            trigger_points.append({"position": lanes[spawn_lanes[i] - 1].get("control_points")[0],
                                    "action": "spawn_and_start",
                                    "tolerance": tolerance})
 
             # Reversed because car spawns from the opposite direction.
-            left_lanes = lanes[spawn_lanes[i]].get("right_lanes")
-            right_lanes = lanes[spawn_lanes[i]].get("left_lanes")
-            width = lanes[spawn_lanes[i]].get("width")
-            points = lanes[spawn_lanes[i]].get("control_points")
+            left_lanes = lanes[spawn_lanes[spawn_index]].get("right_lanes")
+            right_lanes = lanes[spawn_lanes[spawn_index]].get("left_lanes")
+            width = lanes[spawn_lanes[spawn_index]].get("width")
+            points = lanes[spawn_lanes[spawn_index]].get("control_points")
             points = points[::-1]
             line = LineString(points)
             width_per_lane = width / (left_lanes + right_lanes)
@@ -229,19 +230,21 @@ def _add_other_participants(individual):
                 offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
                 line = line.parallel_offset(offset, "right")
                 line.coords = line.coords[::-1]
+                line.coords = line.coords[:-4]
             line.coords = b_spline(list(line.coords), samples).tolist()
             lines.append(line)
 
-            left_lanes = lanes[spawn_lanes[i + 1]].get("left_lanes")
-            right_lanes = lanes[spawn_lanes[i + 1]].get("right_lanes")
-            width = lanes[spawn_lanes[i + 1]].get("width")
-            points = lanes[spawn_lanes[i + 1]].get("control_points")
+            left_lanes = lanes[spawn_lanes[end_index]].get("left_lanes")
+            right_lanes = lanes[spawn_lanes[end_index]].get("right_lanes")
+            width = lanes[spawn_lanes[end_index]].get("width")
+            points = lanes[spawn_lanes[end_index]].get("control_points")
             line = LineString(points)
             width_per_lane = width / (left_lanes + right_lanes)
             offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
             line = line.parallel_offset(offset, "right")
             line.coords = line.coords[::-1]
             line.coords = b_spline(list(line.coords), samples).tolist()
+            line.coords = line.coords[samples//10:]
             lines.append(line)
             for line in lines:
                 for point in list(line.coords):
@@ -249,8 +252,10 @@ def _add_other_participants(individual):
                         waypoint = {"position": point,
                                     "tolerance": 2,
                                     "movementMode": "_BEAMNG",
-                                    "lane": spawn_lanes[i]}
+                                    "lane": spawn_lanes[spawn_index]}
                         waypoints.append(waypoint)
+            spawn_points.append({"position": list(lines[0].coords)[0], "orientation": orientation})
+
         i += 1
     init_state = {"position": waypoints[0].get("position"),
                   "orientation": spawn_points[0].get("orientation"),
@@ -1321,7 +1326,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Varying speed
 #       TODO Calculation
 
-# TODO May-have:
+# TODO May-have/Improvements:
 #       TODO Remove redundant XML information
 #       TODO Daytime
 #       TODO Add weather presets
@@ -1338,3 +1343,5 @@ class FuelConsumptionTestGenerator:
 #       TODO Make trigger points dependent on vid (others shouldnt trigger anything)
 #       TODO Place trigger on right lane instead of middle of road
 #       TODO ai_set_line via Lua
+#       TODO Test generator should calc speed of waypoints, not converter
+#       TODO Main lane and append side lanes instead of explicitly adding intersection
