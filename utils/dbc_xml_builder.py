@@ -99,6 +99,7 @@ class DBCBuilder:
                 trigger.set("y", str(trigger_point.get("position")[1]))
                 trigger.set("tolerance", str(trigger_point.get("tolerance")))
                 trigger.set("action", trigger_point.get("action"))
+                trigger.set("vid", trigger_point.get("vid"))
                 if trigger_point.get("action") == "spawn_and_start":
                     spawn_point = triggers.get("spawnPoints")[idx]
                     ElementTree.SubElement(trigger, 'spawnPoint x="{}" y="{}" orientation="{}"'

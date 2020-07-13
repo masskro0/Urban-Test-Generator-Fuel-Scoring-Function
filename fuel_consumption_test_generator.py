@@ -184,7 +184,7 @@ def _add_other_participants(individual):
     lanes = individual.get("lanes")
     print(ego_lanes)
 
-    # Method 1.1: Drive from one opposite lane to another at an intersection.
+    # Drive from one opposite lane to another at an intersection.
     # Get lanes where a car can spawn, be teleported to or drive to.
     spawn_lanes = [0]
     for idx, lane in enumerate(lanes):
@@ -200,15 +200,18 @@ def _add_other_participants(individual):
         lines = list()
         if spawn_lanes[i + 1] - spawn_lanes[i] == 1:
             spawn_index = i if random() < 0.5 else i + 1
-            end_index = i + 1 if spawn_index == i else i
+            end_indices = [spawn_lanes[i] - 1, spawn_lanes[i], spawn_lanes[i] + 1]
+            end_index = choice(end_indices)
             spawn_point = lanes[spawn_lanes[spawn_index]].get("control_points")[-1]
-            end_point = lanes[spawn_lanes[end_index]].get("control_points")[-1]
+            end_point = lanes[end_index].get("control_points")[-1] if end_index != spawn_lanes[i] - 1 \
+                else lanes[end_index].get("control_points")[0]
             middle_point = lanes[spawn_lanes[spawn_index]].get("control_points")[0]
             orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point, middle_point)
             tolerance = lanes[spawn_lanes[i] - 1].get("width") / 2 + 2
             trigger_points.append({"position": lanes[spawn_lanes[i] - 1].get("control_points")[0],
                                    "action": "spawn_and_start",
-                                   "tolerance": tolerance})
+                                   "tolerance": tolerance,
+                                   "vid": "ego"})
 
             # Reversed because car spawns from the opposite direction.
             left_lanes = lanes[spawn_lanes[spawn_index]].get("right_lanes")
@@ -230,18 +233,21 @@ def _add_other_participants(individual):
                 offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
                 line = line.parallel_offset(offset, "right")
                 line.coords = line.coords[::-1]
-                line.coords = line.coords[:-4]
             line.coords = b_spline(list(line.coords), samples).tolist()
+            line.coords = line.coords[:-4]
             lines.append(line)
 
-            left_lanes = lanes[spawn_lanes[end_index]].get("left_lanes")
-            right_lanes = lanes[spawn_lanes[end_index]].get("right_lanes")
-            width = lanes[spawn_lanes[end_index]].get("width")
-            points = lanes[spawn_lanes[end_index]].get("control_points")
+            left_lanes = lanes[end_index].get("left_lanes")
+            right_lanes = lanes[end_index].get("right_lanes")
+            width = lanes[end_index].get("width")
+            points = lanes[end_index].get("control_points")
             line = LineString(points)
             width_per_lane = width / (left_lanes + right_lanes)
             offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
-            line = line.parallel_offset(offset, "right")
+            if end_index != spawn_lanes[i] - 1:
+                line = line.parallel_offset(offset, "right")
+            else:
+                line = line.parallel_offset(offset, "left")
             line.coords = line.coords[::-1]
             line.coords = b_spline(list(line.coords), samples).tolist()
             line.coords = line.coords[samples//10:]
@@ -1340,7 +1346,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Parked cars on the road and adjust waypoints
 #       TODO Improve speed of car
 #       TODO Improve traffic sign positioning
-#       TODO Make trigger points dependent on vid (others shouldnt trigger anything)
 #       TODO Place trigger on right lane instead of middle of road
 #       TODO ai_set_line via Lua
 #       TODO Test generator should calc speed of waypoints, not converter

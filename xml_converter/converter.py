@@ -441,10 +441,13 @@ class Converter:
                     "        TriggerMode = \"Contains\";\n",
                     "        TriggerTestType = \"Race corners\";\n",
                     "        luaFunction = \""
-                    + "local function teleportPlayer(data)\\n    local vehicleName = \\\"{}\\\"\\n\\n    if "
-                      "data.event == \\'enter\\' then\\n        TorqueScript.eval(vehicleName..\\\'.position = "
+                    + "local function teleportPlayer(data)\\n    local egoName = data.subjectName\\n    "
+                      "local vehicleName = \\\"{}\\\"\\n\\n    if "
+                      "data.event == \\'enter\\' and egoName == \\'{}\\' then\\n        "
+                      "TorqueScript.eval(vehicleName..\\\'.position = "
                       "\\\"{} {} {}\\\";\\\')\\n        TorqueScript.eval(vehicleName..\\\'.rotation = \\\"0 0 "
-                      "01 {}\\\";\\\')\\n    end\\nend\\n\\nreturn teleportPlayer ".format(vid, spawn_point.get("x"),
+                      "01 {}\\\";\\\')\\n    end\\nend\\n\\nreturn teleportPlayer ".format(vid, attr.get("vid"),
+                                                                                           spawn_point.get("x"),
                                                                                            spawn_point.get("y"),
                                                                                            z_spawn, z_rot_spawn)
                     + "\";\n",
