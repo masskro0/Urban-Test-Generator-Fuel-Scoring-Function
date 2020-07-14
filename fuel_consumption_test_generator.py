@@ -199,30 +199,35 @@ def _add_other_participants(individual):
     while i < len(spawn_lanes) - 1:
         lines = list()
         if spawn_lanes[i + 1] - spawn_lanes[i] == 1:
-            spawn_index = i if random() < 0.5 else i + 1
+            spawn_indices = [spawn_lanes[i], spawn_lanes[i] + 1, spawn_lanes[i] + 2]
+            spawn_index = choice(spawn_indices)
             end_indices = [spawn_lanes[i] - 1, spawn_lanes[i], spawn_lanes[i] + 1]
             end_index = choice(end_indices)
-            spawn_point = lanes[spawn_lanes[spawn_index]].get("control_points")[-1]
+            while end_index == spawn_index:
+                end_index = choice(end_indices)
+            spawn_point = lanes[spawn_index].get("control_points")[-1]
             end_point = lanes[end_index].get("control_points")[-1] if end_index != spawn_lanes[i] - 1 \
                 else lanes[end_index].get("control_points")[0]
-            middle_point = lanes[spawn_lanes[spawn_index]].get("control_points")[0]
+            middle_point = lanes[spawn_index].get("control_points")[0]
             orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point, middle_point)
             tolerance = lanes[spawn_lanes[i] - 1].get("width") / 2 + 2
-            trigger_points.append({"position": lanes[spawn_lanes[i] - 1].get("control_points")[0],
+            trigger = lanes[spawn_lanes[i] - 1].get("control_points")[0] if spawn_index != spawn_lanes[i] + 2 \
+                else lanes[spawn_lanes[i] - 2].get("control_points")[0]
+            trigger_points.append({"position": trigger,
                                    "action": "spawn_and_start",
                                    "tolerance": tolerance,
                                    "vid": "ego"})
 
             # Reversed because car spawns from the opposite direction.
-            left_lanes = lanes[spawn_lanes[spawn_index]].get("right_lanes")
-            right_lanes = lanes[spawn_lanes[spawn_index]].get("left_lanes")
-            width = lanes[spawn_lanes[spawn_index]].get("width")
-            points = lanes[spawn_lanes[spawn_index]].get("control_points")
+            left_lanes = lanes[spawn_index].get("right_lanes")
+            right_lanes = lanes[spawn_index].get("left_lanes")
+            width = lanes[spawn_index].get("width")
+            points = lanes[spawn_index].get("control_points")
             points = points[::-1]
             line = LineString(points)
             width_per_lane = width / (left_lanes + right_lanes)
             angle = get_angle(spawn_point, middle_point, end_point)
-            left = True if (60 <= angle <= 120 or 240 <= angle <= 300) and right_lanes > 1 else False
+            left = True if (240 <= angle <= 300) and right_lanes > 1 else False
             if left:
                 offset = right_lanes - left_lanes - 1
                 offset = offset / 2 * width_per_lane
@@ -258,7 +263,7 @@ def _add_other_participants(individual):
                         waypoint = {"position": point,
                                     "tolerance": 2,
                                     "movementMode": "_BEAMNG",
-                                    "lane": spawn_lanes[spawn_index]}
+                                    "lane": spawn_index}
                         waypoints.append(waypoint)
             spawn_points.append({"position": list(lines[0].coords)[0], "orientation": orientation})
 
