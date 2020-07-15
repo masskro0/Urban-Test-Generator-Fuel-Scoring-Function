@@ -127,6 +127,7 @@ def _add_parked_cars(individual):
         width = lane.get("width")
         rotations = [0, 45, 90]
         rotation = choice(rotations)
+        noise = [x / 10 for x in range(-15, 21)]
         if rotation == 45:
             offset = 3.5
             max_distance = 4
@@ -142,32 +143,34 @@ def _add_parked_cars(individual):
         prev_lane = LineString(individual.get("lanes")[idx - 1].get("control_points")) if idx != 0 else None
         prev_width = int(individual.get("lanes")[idx - 1].get("width")) / 2 + offset if idx != 0 else 0
         if left:
-            left_line = line.parallel_offset(width / 2 + offset, "left")
-            coords = b_spline(left_line.coords)
+            left_lines = [line.parallel_offset(width / 2 + offset + x, "left") for x in noise]
             iterator = 1
-            while iterator < len(coords):
+            while iterator < len(left_lines[0].coords):
+                left_line = choice(left_lines)
+                coords = b_spline(left_line.coords)
                 point = coords[iterator]
                 if abs(euclidean(point, coords[-1])) < 12:
                     break
                 if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
                                                (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
                     angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
-                                      coords[iterator - 1], point) - rotation
+                                      coords[iterator - 1], point) - rotation + randint(-8, 8)
                     car_positions.append((point, angle))
                 iterator += 1
         if right:
-            right_line = line.parallel_offset(width / 2 + offset, "right")
-            coords = right_line.coords[::-1]
-            coords = b_spline(coords)
+            right_lines = [line.parallel_offset(width / 2 + offset + x, "right") for x in noise]
             iterator = 1
-            while iterator < len(coords):
+            while iterator < len(right_lines[0].coords):
+                right_line = choice(right_lines)
+                coords = right_line.coords[::-1]
+                coords = b_spline(coords)
                 point = coords[iterator]
                 if abs(euclidean(point, coords[-1])) < 12:
                     break
                 if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
                                                (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
                     angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
-                                      coords[iterator - 1], point) + 180 - rotation
+                                      coords[iterator - 1], point) + 180 - rotation + randint(-8, 8)
                     car_positions.append((point, angle))
                 iterator += 1
     parked_cars = list()
@@ -255,7 +258,7 @@ def _add_other_participants(individual):
                 line = line.parallel_offset(offset, "left")
             line.coords = line.coords[::-1]
             line.coords = b_spline(list(line.coords), samples).tolist()
-            line.coords = line.coords[samples//10:]
+            line.coords = line.coords[samples // 10:]
             lines.append(line)
             for line in lines:
                 for point in list(line.coords):
@@ -1329,7 +1332,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Comments
 #       TODO Fix lane markings
 #       TODO Evaluation of how many cars my PC can take
-#       TODO Add noise to parked cars
+#       TODO Color of parked cars
 #       TODO Fix bug with double traffic lights on single lane roads
 
 # TODO Verifier:
