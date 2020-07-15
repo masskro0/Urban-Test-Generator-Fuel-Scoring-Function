@@ -6,6 +6,7 @@ from numpy import dot
 from shapely.geometry import LineString, MultiLineString
 from numpy import asarray, clip, concatenate, arange, linspace, array, around
 from scipy.interpolate import splev
+from re import findall
 
 from utils.utility_functions import get_angle
 
@@ -233,6 +234,7 @@ class Converter:
         if obstacles is None:
             obstacles = list()
         id_number = 0
+        first_golf = True
         for obstacle in obstacles:
             obstacle_attr = obstacle.attrib
             z = 0 if obstacle_attr.get("z") is None else obstacle_attr.get("z")
@@ -261,6 +263,20 @@ class Converter:
                 golf = StaticObject(pos=pos, rot=rot, name=name_car,
                                     scale=(1.2, 1.2, 1.2), shape='/vehicles/87Golf/87Golf.dae')
                 self.scenario.add_object(golf)
+                if first_golf:
+                    color = findall("\d+\.\d+", obstacle_attr.get("color"))
+                    materials_path = join(ENV['BNG_HOME'], "levels", "urban", "art", "objects", "materials.cs")
+                    materials = open(materials_path, "r")
+                    original_content = materials.readlines()
+                    materials.close()
+                    for idx, line in enumerate(original_content):
+                        if "Golfcolor" in line:
+                            original_content[idx + 1] = "   diffuseColor[2] = \"{} {} {} {}\";\n" \
+                                .format(color[0], color[1], color[2], color[3])
+                    first_golf = False
+                    materials = open(materials_path, "w")
+                    materials.writelines(original_content)
+                    materials.close()
             elif obstacle.tag == "trafficlightsingle":
                 name_light = "trafficlightsingle_" + str(id_number)
                 name_pole = "polesingle_" + str(id_number)

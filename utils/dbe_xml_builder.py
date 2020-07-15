@@ -97,6 +97,7 @@ class DBEBuilder:
             base_radius = obstacle.get("baseRadius")
             upper_width = obstacle.get("upperWidth")
             upper_length = obstacle.get("upperLength")
+            color = obstacle.get("color")
             full_string = '' + name + ' x="' + str(x) + '" y="' + str(y) + '"'
             if z:
                 full_string += ' z="' + str(z) + '"'
@@ -120,6 +121,8 @@ class DBEBuilder:
                 full_string += ' upperWidth="' + str(upper_width) + '"'
             if upper_length:
                 full_string += ' upperLength="' + str(upper_length) + '"'
+            if color:
+                full_string += ' color="' + str(color) + '"'
             ElementTree.SubElement(obstacles, full_string)
 
     def add_lanes(self, lanes):

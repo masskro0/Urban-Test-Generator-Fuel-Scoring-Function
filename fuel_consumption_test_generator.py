@@ -1,5 +1,5 @@
 from copy import deepcopy
-from random import randint, random, choice
+from random import randint, random, choice, uniform
 
 from numpy import asarray, clip, concatenate, arange, linspace, array
 from scipy.interpolate import splev
@@ -127,7 +127,7 @@ def _add_parked_cars(individual):
         width = lane.get("width")
         rotations = [0, 45, 90]
         rotation = choice(rotations)
-        noise = [x / 10 for x in range(-15, 21)]
+        noise = [x / 10 for x in range(-10, 10)]
         if rotation == 45:
             offset = 3.5
             max_distance = 4
@@ -174,10 +174,11 @@ def _add_parked_cars(individual):
                     car_positions.append((point, angle))
                 iterator += 1
     parked_cars = list()
+    color = (round(uniform(0,1), 2), round(uniform(0,1), 2), round(uniform(0,1), 2), round(uniform(1,1.3), 2))
     for position in car_positions:
         if random() <= 0.4:
             continue
-        parked_cars.append({"name": "golf", "position": position[0], "zRot": position[1]})
+        parked_cars.append({"name": "golf", "position": position[0], "zRot": position[1], "color": color})
     individual["obstacles"].extend(parked_cars)
 
 
@@ -1332,7 +1333,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Comments
 #       TODO Fix lane markings
 #       TODO Evaluation of how many cars my PC can take
-#       TODO Color of parked cars
 #       TODO Fix bug with double traffic lights on single lane roads
 
 # TODO Verifier:
