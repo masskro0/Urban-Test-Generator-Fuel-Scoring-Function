@@ -193,7 +193,7 @@ def _add_other_participants(individual):
     spawn_lanes.append(ego_lanes[-1])
     spawn_points = list()
     trigger_points = list()
-    samples = 50
+    samples = 45
     i = 0
     waypoints = list()
     while i < len(spawn_lanes) - 1:
@@ -1317,6 +1317,9 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
+#       TODO Teleporting cars shouldnt be visible to ego
+#       TODO BNG AI can avoid crashes
+#       TODO Try code from dev branch to control traffic lights
 #       TODO Add other participants
 #       TODO Mutation
 #       TODO Repair function
@@ -1325,6 +1328,9 @@ class FuelConsumptionTestGenerator:
 #       TODO Refactor
 #       TODO Comments
 #       TODO Fix lane markings
+#       TODO Evaluation of how many cars my PC can take
+#       TODO Add noise to parked cars
+#       TODO Fix bug with double traffic lights on single lane roads
 
 # TODO Verifier:
 #       TODO Throttle misbehavior
