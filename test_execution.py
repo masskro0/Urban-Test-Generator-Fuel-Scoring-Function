@@ -31,7 +31,7 @@ def run_test_case(scenario, lines):
             pos = ego.state.get("pos")
             if euclidean((pos[0], pos[1]), (line[-1].get("pos")[0], line[-1].get("pos")[1])) < 1.5:
                 for idx, vehicle in enumerate(vehicles.keys()):
-                    if idx != 0 and i < len(lines[idx]):
+                    if idx < len(lines) and idx != 0 and i < len(lines[idx]):
                         vehicle.ai_set_line(lines[idx][i])
                 i += 1
                 sleep(7)

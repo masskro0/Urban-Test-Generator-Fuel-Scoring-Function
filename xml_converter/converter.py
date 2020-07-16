@@ -359,9 +359,11 @@ class Converter:
         prefab_file.close()
         participants = self.dbc_root.findall("participants/participant")
         for participant in participants:
+            waypoints = participant.findall("movement/waypoint")
+            if len(waypoints) == 0:
+                continue
             lines = list()
             line = list()
-            waypoints = participant.findall("movement/waypoint")
             vid = participant.get("id")
             index = 0
             i = 0

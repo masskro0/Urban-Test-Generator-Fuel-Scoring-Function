@@ -1321,7 +1321,7 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Teleporting cars shouldnt be visible to ego
+#       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
 #       TODO BNG AI can avoid crashes
 #       TODO Try code from dev branch to control traffic lights
 #       TODO Add other participants
@@ -1332,7 +1332,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Refactor
 #       TODO Comments
 #       TODO Fix lane markings
-#       TODO Evaluation of how many cars my PC can take
 #       TODO Fix bug with double traffic lights on single lane roads
 
 # TODO Verifier:

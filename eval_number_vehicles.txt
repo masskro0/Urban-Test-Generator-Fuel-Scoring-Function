@@ -1,0 +1,4 @@
+6: CPU 100%, longer loading time ~ 30sec, fluent fps ~45
+8: CPU 100%, loading time over 40sec, fps ~10
+10: CPU 100%, loading time over 1min, fps ~ 3
+12: CPU 100%, loading time over 80sec, fps 1-2, PC freezes, stuttering, programms crashing
