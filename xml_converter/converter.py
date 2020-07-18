@@ -75,6 +75,10 @@ class Converter:
         self.dbe_root = dbe_root
         self.index = index
         self.lines = list()
+        self.lights = list()
+        self.light_content = list()
+        self.light_index = 0
+        self.blinking = False
 
     def _init_prefab(self):
         self.bng = BeamNGpy('localhost', 64255)
@@ -84,8 +88,11 @@ class Converter:
         self.bng.user = None
         self.scenario.make(self.bng)
         self._change_object_options()
+        self._add_lights_to_prefab()
         self._add_trigger_points()
         self._add_waypoints()
+        if self.blinking:
+            self._blinking_traffic_lights()
 
     def add_to_prefab(self):
         self._init_prefab()
@@ -291,6 +298,9 @@ class Converter:
                 traffic_light_coords = (
                     traffic_light_coords[0] + pole_coords[0], traffic_light_coords[1] + pole_coords[1],
                     traffic_light_coords[2] + pole_coords[2])
+                mode = obstacle_attr.get("mode")
+                if mode is not None:
+                    self._handle_mode(mode, traffic_light_coords)
                 traffic_light = StaticObject(name=name_light, pos=traffic_light_coords, rot=rot,
                                              scale=(1, 1, 1),
                                              shape='/levels/urban/art/objects/trafficlight1a.dae')
@@ -318,7 +328,19 @@ class Converter:
                 traffic_light2_coords = (
                     traffic_light2_coords[0] + pole_coords[0], traffic_light2_coords[1] + pole_coords[1],
                     traffic_light2_coords[2] + pole_coords[2])
-
+                mode = obstacle_attr.get("mode")
+                if mode is not None:
+                    rot_matrix = _calc_rot_matrix(rad_x, rad_y, radians(-float(z_rot)))
+                    light_pos_1 = (-0.25, 2.09, 5.48)
+                    light_pos_2 = (-0.25, 5.72, 5.89)
+                    light_pos_1 = dot(rot_matrix, light_pos_1)
+                    light_pos_1 = (light_pos_1[0] + pole_coords[0], light_pos_1[1] + pole_coords[1],
+                                   light_pos_1[2] + pole_coords[2])
+                    light_pos_2 = dot(rot_matrix, light_pos_2)
+                    light_pos_2 = (light_pos_2[0] + pole_coords[0], light_pos_2[1] + pole_coords[1],
+                                   light_pos_2[2] + pole_coords[2])
+                    self._handle_mode(mode, light_pos_1)
+                    self._handle_mode(mode, light_pos_2)
                 pole = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(0.75, 0.75, 0.75),
                                     shape='/levels/urban/art/objects/pole_light_signal1.dae')
                 self.scenario.add_object(pole)
@@ -331,6 +353,57 @@ class Converter:
             else:
                 raise NotImplementedError("Error. Object type \"{}\" is not supported.".format(obstacle.tag))
             id_number += 1
+
+    def _handle_mode(self, mode, pos):
+        if mode == "blinking":
+            light = "   new PointLight(traffic_blinking_" + str(self.light_index) + "){\n" \
+                    "       radius = \"0.300000012\";\n" \
+                    "       isEnabled = \"1\";\n" \
+                    "       color = \"1 0.662744999 0 2\";\n" \
+                    "       brightness = \"10\";\n" \
+                    "       castShadows = \"0\";\n" \
+                    "       priority = \"1\";\n" \
+                    "       animate = \"0\";\n" \
+                    "       animationPeriod = \"1\";\n" \
+                    "       animationPhase = \"1\";\n" \
+                    "       flareType = \"BNG_Sunflare_2\";\n" \
+                    "       flareScale = \"0.400000006\";\n" \
+                    "       attenuationRatio = \"0 1 1\";\n" \
+                    "       shadowType = \"DualParaboloidSinglePass\";\n" \
+                    "       texSize = \"512\";\n" \
+                    "       overDarkFactor = \"2000 1000 500 100\";\n" \
+                    "       shadowDistance = \"400\";\n" \
+                    "       shadowSoftness = \"0.150000006\";\n" \
+                    "       numSplits = \"1\";\n" \
+                    "       logWeight = \"0.910000026\";\n" \
+                    "       fadeStartDistance = \"0\";\n" \
+                    "       lastSplitTerrainOnly = \"0\";\n" \
+                    "       representedInLightmap = \"0\";\n" \
+                    "       shadowDarkenColor = \"0 0 0 -1\";\n" \
+                    "       includeLightmappedGeometryInShadow = \"0\";\n" \
+                    "       position = \"" + str(pos[0]) + " " + str(pos[1]) + " " + str(pos[2]) + "\";\n" \
+                    "       rotationMatrix = \"1 0 0 0 0.999999762 -0.000690533896 0 0.000690533896 0.999999762\";\n" \
+                    "       mode = \"Ignore\";\n" \
+                    "       canSave = \"1\";\n" \
+                    "       canSaveDynamicFields = \"1\";\n" \
+                    "   };\n"
+            self.light_content.append(light)
+            self.lights.append({"id": "traffic_blinking_{}".format(self.light_index),
+                                "position": (pos[0], pos[1], pos[2]), "mode": mode})
+            self.light_index += 1
+            self.blinking = True
+
+    def _add_lights_to_prefab(self):
+        prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
+        prefab_file = open(prefab_path, "r")
+        original_content = prefab_file.readlines()
+        prefab_file.close()
+        original_content[-1] = ""
+        for light in self.light_content:
+            original_content.append(light)
+        prefab_file = open(prefab_path, "w")
+        prefab_file.writelines(original_content)
+        prefab_file.close()
 
     def _add_participants(self):
         participants = self.dbc_root.findall("participants/participant")
@@ -440,7 +513,6 @@ class Converter:
         prefab_file = open(prefab_path, "r")
         original_content = prefab_file.readlines()
         prefab_file.close()
-        original_content[-1] = ""
         participants = self.dbc_root.findall("participants/participant")
         for participant in participants:
             trigger_points = participant.findall("triggerPoints/triggerPoint")
@@ -486,3 +558,30 @@ class Converter:
         prefab_file = open(prefab_path, "w")
         prefab_file.writelines(original_content)
         prefab_file.close()
+
+    def _blinking_traffic_lights(self):
+        content = "local M = {}\n" \
+                  "local socket = require(\"socket\")\n" \
+                  "local time = 0\n" \
+                  "local function onRaceTick(raceTickTime)\n"
+        for idx, light in enumerate(self.lights):
+            pos = light.get("position")
+            content += "  local light_" + str(idx) + " = scenetree.findObject(\"" + light.get("id") + "\")\n" \
+                       "  local p1_" + str(idx) + " = Point3F(" + str(pos[0]) + ", " + str(pos[1]) + ", -33)\n" \
+                       "  local p2_" + str(idx) + " = Point3F(" + str(pos[0]) + ", " + str(pos[1]) \
+                       + ", " + str(pos[2]) + ")\n"
+        content += "  time = time + raceTickTime\n" \
+                   "  if time == math.floor(time) then\n" \
+                   "    if time % 2 == 0 then\n"
+        for idx, light in enumerate(self.lights):
+            content += "      light_" + str(idx) + ":setPosition(p1_" + str(idx) + ")\n"
+        content += "    else\n"
+        for idx, light in enumerate(self.lights):
+            content += "      light_" + str(idx) + ":setPosition(p2_" + str(idx) + ")\n"
+        content += "    end\n" \
+                   "  end\n" \
+                   "end\n" \
+                   "M.onRaceTick = onRaceTick\n" \
+                   "return M"
+        with open("urban_{}.lua".format(self.index), "w") as lua_file:
+            print(content, file=lua_file)

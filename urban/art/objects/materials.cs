@@ -15,7 +15,7 @@ singleton Material(german_road_signs_solid)
 singleton Material(trafficlight)
 {
     mapTo = "trafficlight";
-    diffuseMap[0] = "levels/urban/art/objects/traffic_cycle.png";
+	diffuseMap[0] = "levels/urban/art/objects/traffic_cycle.png";
     specularPower[0] = "32";
     pixelSpecular[0] = "1";
     diffuseColor[0] = "1 1 1 1";
@@ -23,7 +23,7 @@ singleton Material(trafficlight)
     castShadows = "0";
     translucent = "0";
     emissive[0] = "1";
-    glow[0] = "1";
+    glow[0] = "0";
     translucentBlendOp = "None";
     alphaTest = "0";
     alphaRef = "0";
