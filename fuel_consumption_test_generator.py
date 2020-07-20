@@ -174,7 +174,7 @@ def _add_parked_cars(individual):
                     car_positions.append((point, angle))
                 iterator += 1
     parked_cars = list()
-    color = (round(uniform(0,1), 2), round(uniform(0,1), 2), round(uniform(0,1), 2), round(uniform(1,1.3), 2))
+    color = (round(uniform(0, 1), 2), round(uniform(0, 1), 2), round(uniform(0, 1), 2), round(uniform(1, 1.3), 2))
     for position in car_positions:
         if random() <= 0.4:
             continue
@@ -306,9 +306,16 @@ def _merge_lanes(population):
     return population
 
 
-def _add_traffic_signs(last_point, intersection_point, current_left_lanes, current_right_lanes,
-                       new_left_lanes, new_right_lanes, layout, number_of_ways, direction, left_point,
-                       straight_point, right_point, width, width_opposite):
+def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, width, intersection):
+    intersection_point = intersection.get("intersection_point")
+    new_left_lanes = intersection.get("new_left_lanes")
+    new_right_lanes = intersection.get("new_right_lanes")
+    left_point = intersection.get("left_point")
+    straight_point = intersection.get("straight_point")
+    right_point = intersection.get("right_point")
+    layout = intersection.get("layout")
+    number_of_ways = intersection.get("number_of_ways")
+    direction = intersection.get("direction")
     def opposite_direction(my_point, my_right_point):
         line = LineString([intersection_point, my_point])
         my_z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
@@ -343,12 +350,12 @@ def _add_traffic_signs(last_point, intersection_point, current_left_lanes, curre
         my_position = vector.coords[0]
         return my_position, my_z_rot
 
-    modes = ["blinking"]
+    modes = ["off", "blinking"]
     mode = choice(modes)
 
     # Calculate traffic sign position.
     old_width = width / (current_left_lanes + current_right_lanes)
-    new_width = width_opposite / (new_left_lanes + new_right_lanes)
+    new_width = intersection.get("new_width") / (new_left_lanes + new_right_lanes)
     obstacles = list()
     temp_point = (intersection_point[0] + 5, intersection_point[1])
 
@@ -507,17 +514,10 @@ class FuelConsumptionTestGenerator:
                         and not intersection_check_width(width_lines, control_points_lines, intersection_lanes_temp):
                     left_lanes = intersection_items.get("left_lanes")
                     right_lanes = intersection_items.get("right_lanes")
-                    obstacles.extend(_add_traffic_signs(control_points[-1], intersection.get("intersection_point"),
+                    obstacles.extend(_add_traffic_signs(control_points[-1],
                                                         lanes[lane_index].get("left_lanes"),
                                                         lanes[lane_index].get("right_lanes"),
-                                                        left_lanes, right_lanes, intersection.get("layout"),
-                                                        intersection.get("number_of_ways"),
-                                                        intersection.get("direction"),
-                                                        intersection.get("left_point"),
-                                                        intersection.get("straight_point"),
-                                                        intersection.get("right_point"),
-                                                        lanes[lane_index].get("width"),
-                                                        intersection.get("new_width")))
+                                                        lanes[lane_index].get("width"), intersection))
                     directions.append(intersection.get("direction"))
                     lanes.extend(intersection_items.get("lanes"))
                     ego_lanes.extend(intersection_items.get("ego_lanes"))
@@ -704,10 +704,10 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Traffic lights
+#       TODO Traffic lights + traffic signs on them
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
 #       TODO BNG AI can avoid crashes
-#       TODO Add other participants
+#       TODO Add other participants, add traffic for 3-way-lanes
 #       TODO Mutation
 #       TODO Repair function
 #       TODO Mutation validity checks

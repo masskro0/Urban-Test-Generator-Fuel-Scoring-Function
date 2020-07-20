@@ -2,9 +2,8 @@ from beamngpy import BeamNGpy, Scenario, Road, StaticObject, Vehicle
 from beamngpy.beamngcommon import ENV
 from os.path import join
 from math import radians, sin, cos
-from numpy import dot
 from shapely.geometry import LineString, MultiLineString
-from numpy import asarray, clip, concatenate, arange, linspace, array, around
+from numpy import asarray, clip, concatenate, arange, linspace, array, around, dot
 from scipy.interpolate import splev
 from re import findall
 
@@ -65,7 +64,8 @@ def b_spline(old_coords, samples=NUM_NODES):
     degree = clip(2, 0, count - 1)
     kv = concatenate(([0] * degree, arange(count - degree + 1), [count - degree] * degree))
     u = linspace(False, (count - degree), samples)
-    return array(splev(u, (kv, old_coords.T, degree))).T
+    splines = around(array(splev(u, (kv, old_coords.T, degree))).T, 3)
+    return splines
 
 
 class Converter:
@@ -237,6 +237,16 @@ class Converter:
         prefab_file.close()
 
     def _add_obstacles(self):
+
+        def calc_coords_after_rot(coords_1, coords_2, ref_coords, my_rot_matrix):
+            coords_1 = dot(my_rot_matrix, coords_1)
+            coords_1 = (coords_1[0] + ref_coords[0], coords_1[1] + ref_coords[1],
+                        coords_1[2] + ref_coords[2])
+            coords_2 = dot(my_rot_matrix, coords_2)
+            coords_2 = (coords_2[0] + ref_coords[0], coords_2[1] + ref_coords[1],
+                        coords_2[2] + ref_coords[2])
+            return coords_1, coords_2
+
         obstacles = self.dbe_root.find("obstacles")
         if obstacles is None:
             obstacles = list()
@@ -299,11 +309,14 @@ class Converter:
                     traffic_light_coords[0] + pole_coords[0], traffic_light_coords[1] + pole_coords[1],
                     traffic_light_coords[2] + pole_coords[2])
                 mode = obstacle_attr.get("mode")
-                if mode is not None:
-                    self._handle_mode(mode, traffic_light_coords)
-                traffic_light = StaticObject(name=name_light, pos=traffic_light_coords, rot=rot,
-                                             scale=(1, 1, 1),
-                                             shape='/levels/urban/art/objects/trafficlight1a.dae')
+                if mode is not None and mode == "blinking":
+                    self._add_blinking_traffic_lights(traffic_light_coords)
+                if mode is not None and mode == "off":
+                    shape = '/levels/urban/art/objects/trafficlight1a_off.dae'
+                else:
+                    shape = '/levels/urban/art/objects/trafficlight1a.dae'
+                traffic_light = StaticObject(name=name_light, pos=traffic_light_coords, rot=rot, scale=(1, 1, 1),
+                                             shape=shape)
                 self.scenario.add_object(traffic_light)
                 pole = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(1, 1, 1.1),
                                     shape='/levels/urban/art/objects/pole_traffic1.dae')
@@ -320,78 +333,72 @@ class Converter:
                 traffic_light1_coords = (5.7, 0.17, 5.9)  # x y z coordinates when pole is placed at (0,0,0)
                 traffic_light2_coords = (2.1, 0.17, 5.5)
                 rot_matrix = _calc_rot_matrix(rad_x, rad_y, rad_z)
-                traffic_light1_coords = dot(rot_matrix, traffic_light1_coords)
-                traffic_light1_coords = (
-                    traffic_light1_coords[0] + pole_coords[0], traffic_light1_coords[1] + pole_coords[1],
-                    traffic_light1_coords[2] + pole_coords[2])
-                traffic_light2_coords = dot(rot_matrix, traffic_light2_coords)
-                traffic_light2_coords = (
-                    traffic_light2_coords[0] + pole_coords[0], traffic_light2_coords[1] + pole_coords[1],
-                    traffic_light2_coords[2] + pole_coords[2])
+                traffic_light1_coords, traffic_light2_coords \
+                    = calc_coords_after_rot(traffic_light1_coords, traffic_light2_coords, pole_coords, rot_matrix)
                 mode = obstacle_attr.get("mode")
-                if mode is not None:
+                if mode is not None and mode == "blinking":
                     rot_matrix = _calc_rot_matrix(rad_x, rad_y, radians(-float(z_rot)))
                     light_pos_1 = (-0.25, 2.09, 5.48)
                     light_pos_2 = (-0.25, 5.72, 5.89)
-                    light_pos_1 = dot(rot_matrix, light_pos_1)
-                    light_pos_1 = (light_pos_1[0] + pole_coords[0], light_pos_1[1] + pole_coords[1],
-                                   light_pos_1[2] + pole_coords[2])
-                    light_pos_2 = dot(rot_matrix, light_pos_2)
-                    light_pos_2 = (light_pos_2[0] + pole_coords[0], light_pos_2[1] + pole_coords[1],
-                                   light_pos_2[2] + pole_coords[2])
-                    self._handle_mode(mode, light_pos_1)
-                    self._handle_mode(mode, light_pos_2)
+                    light_pos_1, light_pos_2 = calc_coords_after_rot(light_pos_1, light_pos_2, pole_coords, rot_matrix)
+                    self._add_blinking_traffic_lights(light_pos_1)
+                    self._add_blinking_traffic_lights(light_pos_2)
+                if mode is not None and mode == "off":
+                    shape = '/levels/urban/art/objects/trafficlight2a_off.dae'
+                else:
+                    shape = '/levels/urban/art/objects/trafficlight2a.dae'
                 pole = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(0.75, 0.75, 0.75),
                                     shape='/levels/urban/art/objects/pole_light_signal1.dae')
                 self.scenario.add_object(pole)
                 traffic_light1 = StaticObject(name=name_light1, pos=traffic_light1_coords, rot=rot, scale=(1, 1, 1),
-                                              shape='/levels/urban/art/objects/trafficlight2a.dae')
+                                              shape=shape)
                 self.scenario.add_object(traffic_light1)
                 traffic_lights2 = StaticObject(name=name_light2, pos=traffic_light2_coords, rot=rot, scale=(1, 1, 1),
-                                               shape='/levels/urban/art/objects/trafficlight2a.dae')
+                                               shape=shape)
                 self.scenario.add_object(traffic_lights2)
             else:
                 raise NotImplementedError("Error. Object type \"{}\" is not supported.".format(obstacle.tag))
             id_number += 1
 
-    def _handle_mode(self, mode, pos):
-        if mode == "blinking":
-            light = "   new PointLight(traffic_blinking_" + str(self.light_index) + "){\n" \
-                    "       radius = \"0.300000012\";\n" \
-                    "       isEnabled = \"1\";\n" \
-                    "       color = \"1 0.662744999 0 2\";\n" \
-                    "       brightness = \"10\";\n" \
-                    "       castShadows = \"0\";\n" \
-                    "       priority = \"1\";\n" \
-                    "       animate = \"0\";\n" \
-                    "       animationPeriod = \"1\";\n" \
-                    "       animationPhase = \"1\";\n" \
-                    "       flareType = \"BNG_Sunflare_2\";\n" \
-                    "       flareScale = \"0.400000006\";\n" \
-                    "       attenuationRatio = \"0 1 1\";\n" \
-                    "       shadowType = \"DualParaboloidSinglePass\";\n" \
-                    "       texSize = \"512\";\n" \
-                    "       overDarkFactor = \"2000 1000 500 100\";\n" \
-                    "       shadowDistance = \"400\";\n" \
-                    "       shadowSoftness = \"0.150000006\";\n" \
-                    "       numSplits = \"1\";\n" \
-                    "       logWeight = \"0.910000026\";\n" \
-                    "       fadeStartDistance = \"0\";\n" \
-                    "       lastSplitTerrainOnly = \"0\";\n" \
-                    "       representedInLightmap = \"0\";\n" \
-                    "       shadowDarkenColor = \"0 0 0 -1\";\n" \
-                    "       includeLightmappedGeometryInShadow = \"0\";\n" \
-                    "       position = \"" + str(pos[0]) + " " + str(pos[1]) + " " + str(pos[2]) + "\";\n" \
-                    "       rotationMatrix = \"1 0 0 0 0.999999762 -0.000690533896 0 0.000690533896 0.999999762\";\n" \
-                    "       mode = \"Ignore\";\n" \
-                    "       canSave = \"1\";\n" \
-                    "       canSaveDynamicFields = \"1\";\n" \
-                    "   };\n"
-            self.light_content.append(light)
-            self.lights.append({"id": "traffic_blinking_{}".format(self.light_index),
-                                "position": (pos[0], pos[1], pos[2]), "mode": mode})
-            self.light_index += 1
-            self.blinking = True
+    def _add_blinking_traffic_lights(self, pos):
+        light = "   new PointLight(traffic_blinking_" + str(self.light_index) + "){\n" \
+                "       radius = \"0.300000012\";\n" \
+                "       isEnabled = \"1\";\n" \
+                "       color = \"1 0.662744999 0 2\";\n" \
+                "       brightness = \"10\";\n" \
+                "       castShadows = \"0\";\n" \
+                "       priority = \"1\";\n" \
+                "       animate = \"0\";\n" \
+                "       animationPeriod = \"1\";\n" \
+                "       animationPhase = \"1\";\n" \
+                "       flareType = \"BNG_Sunflare_2\";\n" \
+                "       flareScale = \"0.400000006\";\n" \
+                "       attenuationRatio = \"0 1 1\";\n" \
+                "       shadowType = \"DualParaboloidSinglePass\";\n" \
+                "       texSize = \"512\";\n" \
+                "       overDarkFactor = \"2000 1000 500 100\";\n" \
+                "       shadowDistance = \"400\";\n" \
+                "       shadowSoftness = \"0.150000006\";\n" \
+                "       numSplits = \"1\";\n" \
+                "       logWeight = \"0.910000026\";\n" \
+                "       fadeStartDistance = \"0\";\n" \
+                "       lastSplitTerrainOnly = \"0\";\n" \
+                "       representedInLightmap = \"0\";\n" \
+                "       shadowDarkenColor = \"0 0 0 -1\";\n" \
+                "       includeLightmappedGeometryInShadow = \"0\";\n" \
+                "       position = \"" + str(
+            pos[0]) + " " + str(pos[1]) + " " + str(pos[2]) + "\";\n" \
+                "       rotationMatrix = \"1 0 0 0 0.999999762 -0.000690533896 0 0.000690533896 0.999999762\";\n" \
+                "       mode = \"Ignore\";\n" \
+                "       canSave = \"1\";\n" \
+                "       canSaveDynamicFields = \"1\";\n" \
+                "   };\n"
+        self.light_content.append(light)
+        self.lights.append({"id": "traffic_blinking_{}".format(self.light_index),
+                            "position": (pos[0], pos[1], pos[2])})
+        self.light_index += 1
+        self.blinking = True
+
 
     def _add_lights_to_prefab(self):
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
