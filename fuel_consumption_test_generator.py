@@ -1,7 +1,7 @@
 from copy import deepcopy
 from random import randint, random, choice, uniform
 
-from numpy import asarray, clip, concatenate, arange, linspace, array
+from numpy import asarray, clip, concatenate, arange, linspace, array, around
 from scipy.interpolate import splev
 from shapely import affinity
 from shapely.geometry import LineString, shape, Point
@@ -13,7 +13,7 @@ from scipy.spatial.distance import euclidean
 
 from utils.utility_functions import convert_points_to_lines, get_angle, calc_width, \
     calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines, \
-    get_resize_factor_intersection
+    get_resize_factor_intersection, multilinestrings_to_linestring
 from utils.validity_checks import intersection_check_width, intersection_check_last
 from utils.xml_creator import build_all_xml
 from xml_converter.converter import b_spline
@@ -58,6 +58,7 @@ def _add_ego_car(individual):
         else:
             offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
             temp_points = temp_points.parallel_offset(offset, "right")
+            temp_points = multilinestrings_to_linestring(temp_points)
             temp_points.coords = temp_points.coords[::-1]
         temp_points.coords = b_spline(temp_points, samples).tolist()
         lines.append(temp_points)
@@ -256,6 +257,7 @@ def _add_other_participants(individual):
                 line = line.parallel_offset(offset, "right")
             else:
                 line = line.parallel_offset(offset, "left")
+            line = multilinestrings_to_linestring(line)
             line.coords = line.coords[::-1]
             line.coords = b_spline(list(line.coords), samples).tolist()
             line.coords = line.coords[samples // 10:]
@@ -271,19 +273,20 @@ def _add_other_participants(individual):
             spawn_points.append({"position": list(lines[0].coords)[0], "orientation": orientation})
 
         i += 1
-    init_state = {"position": waypoints[0].get("position"),
-                  "orientation": spawn_points[0].get("orientation"),
-                  "movementMode": "_BEAMNG",
-                  "speed": 50}
-    triggers = {"triggerPoints": trigger_points,
-                "spawnPoints": spawn_points}
-    other = {"id": "other_{}".format(0),
-             "init_state": init_state,
-             "waypoints": waypoints,
-             "model": "ETK800",
-             "color": choice(colors),
-             "triggerPoints": triggers}
-    individual["participants"].append(other)
+    if len(waypoints) != 0:
+        init_state = {"position": waypoints[0].get("position"),
+                      "orientation": spawn_points[0].get("orientation"),
+                      "movementMode": "_BEAMNG",
+                      "speed": 50}
+        triggers = {"triggerPoints": trigger_points,
+                    "spawnPoints": spawn_points}
+        other = {"id": "other_{}".format(0),
+                 "init_state": init_state,
+                 "waypoints": waypoints,
+                 "model": "ETK800",
+                 "color": choice(colors),
+                 "triggerPoints": triggers}
+        individual["participants"].append(other)
 
 
 def _merge_lanes(population):
@@ -316,6 +319,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     layout = intersection.get("layout")
     number_of_ways = intersection.get("number_of_ways")
     direction = intersection.get("direction")
+
     def opposite_direction(my_point, my_right_point):
         line = LineString([intersection_point, my_point])
         my_z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
@@ -332,10 +336,10 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
         else:
             if new_right_lanes == 1:
                 obstacles.append({"name": "trafficlightsingle", "position": my_position, "zRot": my_z_rot,
-                                  "mode": mode})
+                                  "mode": mode, "sign": "priority"})
             else:
                 obstacles.append({"name": "trafficlightdouble", "position": my_position, "zRot": my_z_rot,
-                                  "mode": mode})
+                                  "mode": mode, "sign": "priority"})
 
     def my_direction(my_point, my_right_point):
         line = LineString([intersection_point, my_point])
@@ -365,9 +369,11 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
         if current_left_lanes == 1:
             obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot})
         else:
-            obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot, "mode": mode})
+            obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot, "mode": mode,
+                              "sign": "yield"})
     else:
-        obstacles.append({"name": "trafficlightdouble", "position": position, "zRot": z_rot, "mode": mode})
+        obstacles.append({"name": "trafficlightdouble", "position": position, "zRot": z_rot, "mode": mode,
+                          "sign": "yield"})
     sign_on_my_lane = obstacles[0].get("name")
 
     # Left direction.
@@ -380,6 +386,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
         obstacles.append({"name": sign_on_my_lane, "position": position, "zRot": z_rot})
         if sign_on_my_lane.startswith("trafficlight"):
             obstacles[-1]["mode"] = mode
+            obstacles[-1]["sign"] = "yield"
 
     # Right direction.
     if number_of_ways == 4 or direction == "right" or layout == "right":
@@ -438,7 +445,7 @@ class FuelConsumptionTestGenerator:
             u = linspace(False, (count - degree), samples)
 
             # Calculate result.
-            splined_list.append({"control_points": array(splev(u, (kv, point_list.T, degree))).T,
+            splined_list.append({"control_points": around(array(splev(u, (kv, point_list.T, degree))).T, 3),
                                  "width": lane.get("width")})
         return splined_list
 
@@ -704,7 +711,7 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Traffic lights + traffic signs on them
+#       TODO Traffic lights
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
 #       TODO BNG AI can avoid crashes
 #       TODO Add other participants, add traffic for 3-way-lanes

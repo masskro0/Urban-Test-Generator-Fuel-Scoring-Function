@@ -2,11 +2,21 @@
 
 
 from shapely import affinity
-from shapely.geometry import LineString
+from shapely.geometry import LineString, MultiLineString
 from math import degrees, atan2
 
 MIN_DEGREES = 90
 MAX_DEGREES = 270
+
+
+def multilinestrings_to_linestring(linestring):
+    if isinstance(linestring, MultiLineString):
+        temp_list = list()
+        for line in linestring:
+            for coord in list(line.coords):
+                temp_list.append(coord)
+        linestring = LineString(temp_list)
+    return  linestring
 
 
 def convert_points_to_lines(lanes):

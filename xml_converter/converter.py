@@ -2,12 +2,12 @@ from beamngpy import BeamNGpy, Scenario, Road, StaticObject, Vehicle
 from beamngpy.beamngcommon import ENV
 from os.path import join
 from math import radians, sin, cos
-from shapely.geometry import LineString, MultiLineString
+from shapely.geometry import LineString
 from numpy import asarray, clip, concatenate, arange, linspace, array, around, dot
 from scipy.interpolate import splev
 from re import findall
 
-from utils.utility_functions import get_angle
+from utils.utility_functions import get_angle, multilinestrings_to_linestring
 
 NUM_NODES = 100
 
@@ -40,12 +40,7 @@ def _get_nodes(divider_line, road_segments, fac, width=0.2):
 
 def _get_offset_nodes(road_segments, line, offset, direction):
     outer_line = line.parallel_offset(offset, direction)
-    if isinstance(outer_line, MultiLineString):
-        temp_list = list()
-        for line in outer_line:
-            for coord in list(line.coords):
-                temp_list.append(coord)
-        outer_line = LineString(temp_list)
+    outer_line = multilinestrings_to_linestring(outer_line)
     fac = len(road_segments) / len(list(outer_line.coords))
     nodes = _get_nodes(outer_line, road_segments, fac)
     if direction == "right":
@@ -238,14 +233,20 @@ class Converter:
 
     def _add_obstacles(self):
 
-        def calc_coords_after_rot(coords_1, coords_2, ref_coords, my_rot_matrix):
-            coords_1 = dot(my_rot_matrix, coords_1)
-            coords_1 = (coords_1[0] + ref_coords[0], coords_1[1] + ref_coords[1],
-                        coords_1[2] + ref_coords[2])
-            coords_2 = dot(my_rot_matrix, coords_2)
-            coords_2 = (coords_2[0] + ref_coords[0], coords_2[1] + ref_coords[1],
-                        coords_2[2] + ref_coords[2])
-            return coords_1, coords_2
+        def calc_coords_after_rot(coords, ref_coords, my_rot_matrix):
+            coords = dot(my_rot_matrix, coords)
+            coords = (coords[0] + ref_coords[0], coords[1] + ref_coords[1], coords[2] + ref_coords[2])
+            return coords
+
+        def add_sign_to_traffic_light(my_sign):
+            sign_name = my_sign + "_traffic_light_" + str(id_number)
+            my_shape = '/levels/urban/art/objects/' + my_sign + '_without_pole.dae'
+            sign_coords = (0, 0.12, 0.66)
+            my_rot = (float(x_rot), float(y_rot), -float(z_rot) + 90)
+            my_rot_matrix = _calc_rot_matrix(radians(rot[0]), radians(rot[1]), radians(rot[2]))
+            sign_coords = calc_coords_after_rot(sign_coords, pole_coords, my_rot_matrix)
+            my_sign = StaticObject(name=sign_name, pos=sign_coords, rot=my_rot, scale=(1.7, 1.7, 1.7), shape=my_shape)
+            self.scenario.add_object(my_sign)
 
         obstacles = self.dbe_root.find("obstacles")
         if obstacles is None:
@@ -262,6 +263,7 @@ class Converter:
             assert obstacle_attr.get("y") is not None, "y Value for a {} object is None.".format(obstacle.tag)
             pos = (float(obstacle_attr.get("x")), float(obstacle_attr.get("y")), float(z))
             rot = (float(x_rot), float(y_rot), float(z_rot))
+            sign = obstacle_attr.get("sign")
             if obstacle.tag == "stopsign":
                 rot = (rot[0], rot[1], 90 - rot[2])
                 name_sign = "stopsign_" + str(id_number)
@@ -321,6 +323,7 @@ class Converter:
                 pole = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(1, 1, 1.1),
                                     shape='/levels/urban/art/objects/pole_traffic1.dae')
                 self.scenario.add_object(pole)
+                add_sign_to_traffic_light(sign)
             elif obstacle.tag == "trafficlightdouble":
                 rot = (rot[0], rot[1], -(rot[2] + 90))
                 name_light1 = "trafficlightdouble" + str(id_number)
@@ -333,14 +336,15 @@ class Converter:
                 traffic_light1_coords = (5.7, 0.17, 5.9)  # x y z coordinates when pole is placed at (0,0,0)
                 traffic_light2_coords = (2.1, 0.17, 5.5)
                 rot_matrix = _calc_rot_matrix(rad_x, rad_y, rad_z)
-                traffic_light1_coords, traffic_light2_coords \
-                    = calc_coords_after_rot(traffic_light1_coords, traffic_light2_coords, pole_coords, rot_matrix)
+                traffic_light1_coords = calc_coords_after_rot(traffic_light1_coords, pole_coords, rot_matrix)
+                traffic_light2_coords = calc_coords_after_rot(traffic_light2_coords, pole_coords, rot_matrix)
                 mode = obstacle_attr.get("mode")
                 if mode is not None and mode == "blinking":
                     rot_matrix = _calc_rot_matrix(rad_x, rad_y, radians(-float(z_rot)))
                     light_pos_1 = (-0.25, 2.09, 5.48)
                     light_pos_2 = (-0.25, 5.72, 5.89)
-                    light_pos_1, light_pos_2 = calc_coords_after_rot(light_pos_1, light_pos_2, pole_coords, rot_matrix)
+                    light_pos_1 = calc_coords_after_rot(light_pos_1, pole_coords, rot_matrix)
+                    light_pos_2 = calc_coords_after_rot(light_pos_2, pole_coords, rot_matrix)
                     self._add_blinking_traffic_lights(light_pos_1)
                     self._add_blinking_traffic_lights(light_pos_2)
                 if mode is not None and mode == "off":
@@ -356,6 +360,7 @@ class Converter:
                 traffic_lights2 = StaticObject(name=name_light2, pos=traffic_light2_coords, rot=rot, scale=(1, 1, 1),
                                                shape=shape)
                 self.scenario.add_object(traffic_lights2)
+                add_sign_to_traffic_light(sign)
             else:
                 raise NotImplementedError("Error. Object type \"{}\" is not supported.".format(obstacle.tag))
             id_number += 1
@@ -398,7 +403,6 @@ class Converter:
                             "position": (pos[0], pos[1], pos[2])})
         self.light_index += 1
         self.blinking = True
-
 
     def _add_lights_to_prefab(self):
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
