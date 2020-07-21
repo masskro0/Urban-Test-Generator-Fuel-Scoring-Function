@@ -28,7 +28,7 @@ def _add_ego_car(individual):
     :param individual: Individual of the population.
     :return: Void.
     """
-    samples = 65
+    samples = 57
     lanes = individual.get("lanes")
     ego_lanes = individual.get("ego_lanes")
     directions = individual.get("directions")
@@ -190,7 +190,7 @@ def _add_other_participants(individual):
 
     # Drive from one opposite lane to another at an intersection.
     # Get lanes where a car can spawn, be teleported to or drive to.
-    spawn_lanes = [0]
+    spawn_lanes = list()
     for idx, lane in enumerate(lanes):
         if idx not in ego_lanes:
             spawn_lanes.append(idx)
@@ -214,12 +214,16 @@ def _add_other_participants(individual):
                 else lanes[end_index].get("control_points")[0]
             middle_point = lanes[spawn_index].get("control_points")[0]
             orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point, middle_point)
-            tolerance = lanes[spawn_lanes[i] - 1].get("width") / 2 + 2
-            trigger = lanes[spawn_lanes[i] - 1].get("control_points")[0] if spawn_index != spawn_lanes[i] + 2 \
-                else lanes[spawn_lanes[i] - 2].get("control_points")[0]
-            trigger_points.append({"position": trigger,
+            temp_lane = lanes[spawn_lanes[i] - 1] if spawn_index != spawn_lanes[i] + 2 else lanes[spawn_lanes[i] - 2]
+            temp_points = temp_lane.get("control_points")
+            temp_line = LineString(temp_points)
+            temp_width_per_lane = temp_lane.get("width") / (temp_lane.get("left_lanes") + temp_lane.get("right_lanes"))
+            temp_offset = temp_lane.get("left_lanes") + temp_lane.get("right_lanes") - 1
+            temp_offset = temp_offset * temp_width_per_lane / 2
+            temp_line = temp_line.parallel_offset(temp_offset, "right")
+            trigger_points.append({"position": temp_line.coords[-1],
                                    "action": "spawn_and_start",
-                                   "tolerance": tolerance,
+                                   "tolerance": 2,
                                    "vid": "ego"})
 
             # Reversed because car spawns from the opposite direction.
@@ -598,6 +602,7 @@ class FuelConsumptionTestGenerator:
                     layout = "straight"
                 else:
                     layout = "left"
+        number_of_ways = 4
         line = LineString([(penultimate_point[0], penultimate_point[1]),
                            (last_point[0], last_point[1])])
         fac = get_resize_factor_intersection(line.length, self.intersection_length)
@@ -686,11 +691,14 @@ class FuelConsumptionTestGenerator:
         return elite
 
     def genetic_algorithm(self):
+        """
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
         # plot_all(temp_list)
+        """
+        temp_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0), (69, 4), (94, -11), (116, -24), (139, -9), (164, 7), (187, -9)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(187, -9), (203.41810403570975, -20.421289763972)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(203.41810403570975, -20.421289763972), (226.75633814376346, 23.797787891692373)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(203.41810403570975, -20.421289763972), (163.05747038638617, -49.93432504374416)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(203.41810403570975, -20.421289763972), (228.0452600892744, -37.55322440992999)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(228.0452600892744, -37.55322440992999), (225, -56), (215, -76)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(215, -76), (206.05572809000085, -93.88854381999832)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(206.05572809000085, -93.88854381999832), (192.63932022500205, -120.72135954999578)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(206.05572809000085, -93.88854381999832), (169.2302368117555, -60.067201562248044)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(206.05572809000085, -93.88854381999832), (249.10834648419518, -119.31435844615905)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(249.10834648419518, -119.31435844615905)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}], 'type': 'urban', 'file_name': 'urban', 'score': 0, 'obstacles': [{'name': 'trafficlightdouble', 'position': (193.53190699907663, -21.096573521266844), 'zRot': 325, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (202.16602273061554, -11.653097680912136), 'zRot': 242, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightdouble', 'position': (211.14532039164706, -18.24410640271481), 'zRot': 505, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (201.5634623995885, -28.21938596763386), 'zRot': 396, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightdouble', 'position': (203.7928272967711, -84.55072394595918), 'zRot': 243, 'mode': 'blinking', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (213.95243225521324, -92.51302089139372), 'zRot': 509, 'mode': 'blinking', 'sign': 'priority'}, {'name': 'trafficlightdouble', 'position': (209.01628209221056, -101.83105727607759), 'zRot': 423, 'mode': 'blinking', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (198.0455985592489, -93.5921911574903), 'zRot': 317, 'mode': 'blinking', 'sign': 'priority'}], 'success_point': (249.10834648419518, -119.31435844615905), 'ego_lanes': [0, 1, 4, 5, 6, 9, 10], 'directions': ['straight', 'left'], 'fitness': 0}]
         temp_list = self._spline_population(temp_list)
         _preparation(temp_list)
         temp_list = _merge_lanes(temp_list)
@@ -748,6 +756,5 @@ class FuelConsumptionTestGenerator:
 #       TODO Parked cars on the road and adjust waypoints
 #       TODO Improve speed of car
 #       TODO Improve traffic sign positioning
-#       TODO Place trigger on right lane instead of middle of road
 #       TODO ai_set_line via Lua
 #       TODO Test generator should calc speed of waypoints, not converter
