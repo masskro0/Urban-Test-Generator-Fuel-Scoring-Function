@@ -2,7 +2,6 @@ from time import sleep
 from beamngpy import BeamNGpy
 from beamngpy.sensors import Electrics
 from termcolor import colored
-from scipy.spatial.distance import euclidean
 
 from verifier import MisbehaviourObserver
 
@@ -23,20 +22,6 @@ def run_test_case(scenario, lines):
     bng.load_scenario(scenario)
     sleep(1)
     bng.start_scenario()
-    i = 0
-    for line in lines[0]:
-        ego.ai_set_line(line)
-        while True:
-            ego.update_vehicle()
-            pos = ego.state.get("pos")
-            sleep(1)
-            if euclidean((pos[0], pos[1]), (line[-1].get("pos")[0], line[-1].get("pos")[1])) < 1.5:
-                for idx, vehicle in enumerate(vehicles.keys()):
-                    if idx < len(lines) and idx != 0 and i < len(lines[idx]):
-                        vehicle.ai_set_line(lines[idx][i])
-                i += 1
-                sleep(7)
-                break
     observer = MisbehaviourObserver()
     for _ in range(2000):
         # vehicle.update_vehicle()

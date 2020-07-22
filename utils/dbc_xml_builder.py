@@ -60,6 +60,28 @@ class DBCBuilder:
         aifreq = ElementTree.SubElement(self.root, "aiFrequency")
         aifreq.text = str(frequency)
 
+    def add_trigger_points(self, triggers):
+        """
+        :param triggers:
+        :return:
+        """
+        trigger_root = ElementTree.SubElement(self.root, "triggerPoints")
+        for trigger in triggers:
+            spawn_point = trigger.get("spawnPoint")
+            trigger_point = trigger.get("triggerPoint")
+            trigger = ElementTree.SubElement(trigger_root, 'triggerPoint')
+            trigger.set("x", str(trigger_point.get("position")[0]))
+            trigger.set("y", str(trigger_point.get("position")[1]))
+            trigger.set("tolerance", str(trigger_point.get("tolerance")))
+            trigger.set("action", trigger_point.get("action"))
+            trigger.set("triggeredBy", trigger_point.get("triggeredBy"))
+            trigger.set("triggers", trigger_point.get("triggers"))
+            if trigger_point.get("action") == "spawn_and_start":
+                ElementTree.SubElement(trigger, 'spawnPoint x="{}" y="{}" orientation="{}"'
+                                       .format(str(spawn_point.get("position")[0]),
+                                               str(spawn_point.get("position")[1]),
+                                               str(spawn_point.get("orientation"))))
+
     def add_car(self, participant):
         """Adds a car to this test case. At least one car (the ego car) should be added.
         :param participant: Dict which contains init_state, waypoints, participant_id and model. See the lines below
@@ -90,22 +112,6 @@ class DBCBuilder:
                                .format(str(init_state.get("position")[0]), str(init_state.get("position")[1]),
                                        str(init_state.get("orientation")), init_state.get("movementMode"),
                                        str(init_state.get("speed"))))
-
-        if triggers is not None:
-            trigger_root = ElementTree.SubElement(participant, "triggerPoints")
-            for idx, trigger_point in enumerate(triggers.get("triggerPoints")):
-                trigger = ElementTree.SubElement(trigger_root, 'triggerPoint')
-                trigger.set("x", str(trigger_point.get("position")[0]))
-                trigger.set("y", str(trigger_point.get("position")[1]))
-                trigger.set("tolerance", str(trigger_point.get("tolerance")))
-                trigger.set("action", trigger_point.get("action"))
-                trigger.set("vid", trigger_point.get("vid"))
-                if trigger_point.get("action") == "spawn_and_start":
-                    spawn_point = triggers.get("spawnPoints")[idx]
-                    ElementTree.SubElement(trigger, 'spawnPoint x="{}" y="{}" orientation="{}"'
-                                           .format(str(spawn_point.get("position")[0]),
-                                                   str(spawn_point.get("position")[1]),
-                                                   str(spawn_point.get("orientation"))))
 
         if waypoints is not None:
             movement = ElementTree.SubElement(participant, "movement")

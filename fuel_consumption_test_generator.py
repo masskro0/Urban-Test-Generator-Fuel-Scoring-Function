@@ -191,12 +191,11 @@ def _add_other_participants(individual):
     # Drive from one opposite lane to another at an intersection.
     # Get lanes where a car can spawn, be teleported to or drive to.
     spawn_lanes = list()
+    triggers = list()
     for idx, lane in enumerate(lanes):
         if idx not in ego_lanes:
             spawn_lanes.append(idx)
     spawn_lanes.append(ego_lanes[-1])
-    spawn_points = list()
-    trigger_points = list()
     samples = 45
     i = 0
     waypoints = list()
@@ -221,10 +220,6 @@ def _add_other_participants(individual):
             temp_offset = temp_lane.get("left_lanes") + temp_lane.get("right_lanes") - 1
             temp_offset = temp_offset * temp_width_per_lane / 2
             temp_line = temp_line.parallel_offset(temp_offset, "right")
-            trigger_points.append({"position": temp_line.coords[-1],
-                                   "action": "spawn_and_start",
-                                   "tolerance": 2,
-                                   "vid": "ego"})
 
             # Reversed because car spawns from the opposite direction.
             left_lanes = lanes[spawn_index].get("right_lanes")
@@ -274,23 +269,27 @@ def _add_other_participants(individual):
                                     "movementMode": "_BEAMNG",
                                     "lane": spawn_index}
                         waypoints.append(waypoint)
-            spawn_points.append({"position": list(lines[0].coords)[0], "orientation": orientation})
+            trigger_point = {"position": temp_line.coords[-1],
+                                   "action": "spawn_and_start",
+                                   "tolerance": 2,
+                                   "triggeredBy": "ego",
+                                   "triggers": "other_0"}
+            spawn_point = {"position": list(lines[0].coords)[0], "orientation": orientation}
+            triggers.append({"triggerPoint": trigger_point, "spawnPoint": spawn_point})
 
         i += 1
     if len(waypoints) != 0:
         init_state = {"position": waypoints[0].get("position"),
-                      "orientation": spawn_points[0].get("orientation"),
+                      "orientation": triggers[0].get("spawnPoint").get("orientation"),
                       "movementMode": "_BEAMNG",
                       "speed": 50}
-        triggers = {"triggerPoints": trigger_points,
-                    "spawnPoints": spawn_points}
         other = {"id": "other_{}".format(0),
                  "init_state": init_state,
                  "waypoints": waypoints,
                  "model": "ETK800",
-                 "color": choice(colors),
-                 "triggerPoints": triggers}
+                 "color": choice(colors)}
         individual["participants"].append(other)
+        individual.setdefault("triggers", []).extend(triggers)
 
 
 def _merge_lanes(population):
@@ -571,9 +570,6 @@ class FuelConsumptionTestGenerator:
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
-    def _repair(self):
-        pass
-
     def _create_intersection(self, last_point, penultimate_point):
         layout = None
         random_number = random()
@@ -602,7 +598,6 @@ class FuelConsumptionTestGenerator:
                     layout = "straight"
                 else:
                     layout = "left"
-        number_of_ways = 4
         line = LineString([(penultimate_point[0], penultimate_point[1]),
                            (last_point[0], last_point[1])])
         fac = get_resize_factor_intersection(line.length, self.intersection_length)
@@ -673,7 +668,8 @@ class FuelConsumptionTestGenerator:
                                  "success_point": urban.get("success_point"),
                                  "ego_lanes": urban.get("ego_lanes"),
                                  "directions": urban.get("directions"),
-                                 "fitness": 0})
+                                 "fitness": 0,
+                                 "triggers": urban.get("triggers")})
                 i += 1
         return startpop
 
@@ -721,11 +717,8 @@ class FuelConsumptionTestGenerator:
 # TODO Desired features:
 #       TODO Traffic lights
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
-#       TODO BNG AI can avoid crashes
 #       TODO Add other participants, add traffic for 3-way-lanes
 #       TODO Mutation
-#       TODO Repair function
-#       TODO Mutation validity checks
 #       TODO Crossover
 #       TODO Refactor
 #       TODO Comments
@@ -746,15 +739,13 @@ class FuelConsumptionTestGenerator:
 #       TODO Remove redundant XML information
 #       TODO Daytime
 #       TODO Add weather presets
-#       TODO Double test cases by placing spawn point on the other side
 #       TODO Improve performance
 #       TODO Make all objects collidable
 #       TODO Converter:
 #           TODO Add input checking
 #           TODO Implement Sensor deployment
-#       TODO Control traffic lights (not possible)
 #       TODO Parked cars on the road and adjust waypoints
 #       TODO Improve speed of car
 #       TODO Improve traffic sign positioning
-#       TODO ai_set_line via Lua
 #       TODO Test generator should calc speed of waypoints, not converter
+#       TODO Parallel offset instead of width lines

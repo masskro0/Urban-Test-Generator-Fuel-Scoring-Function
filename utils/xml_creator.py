@@ -23,10 +23,11 @@ def build_environment_xml(lanes, file_name="fuelTesting", obstacles=None):
     save_xml(file_name, dbe.root, "environment")
 
 
-def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, file_name="fuelTesting",
-                       name="Fuel Efficiency Test", fps="60", frequency="6"):
+def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, triggers=None,
+                       file_name="fuelTesting", name="Fuel Efficiency Test", fps="60", frequency="6"):
     """Creates a dbc xml file. Failure, success and preconditions are controlled
     manually for this test generation.
+    :param trigger_points:
     :param participants: List of dicts of car states. See the add_car method in dbc_xml_builder.py for more
         information.
     :param ego_car: The test subject as dict. Contains the same information as any other participant.
@@ -50,6 +51,8 @@ def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, 
         dbc.add_success_point(ego_car.get("id"), success_point)
     dbc.add_failure_conditions(ego_car.get("id"), "offroad")
     dbc.add_precond_partic_sc_speed(vc_pos, sc_speed)
+    if triggers is not None:
+        dbc.add_trigger_points(triggers)
     save_xml(file_name, dbc.root, "criteria")
 
 
@@ -66,6 +69,7 @@ def build_xml(individual, iterator: int = 0):
     participants = individual.get("participants")
     file_name = file_name + str(iterator)
     success_point = individual.get("success_point")
+    triggers = individual.get("triggers")
     success_points = [success_point]
     ego = None
     for participant in participants:
@@ -80,7 +84,7 @@ def build_xml(individual, iterator: int = 0):
     sc_speed = 10
     build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,
-                       file_name=file_name, vc_pos=vc_pos, sc_speed=sc_speed)
+                       file_name=file_name, vc_pos=vc_pos, sc_speed=sc_speed, triggers=triggers)
 
 
 def build_all_xml(population):

@@ -73,7 +73,6 @@ class Converter:
         self.lights = list()
         self.light_content = list()
         self.light_index = 0
-        self.blinking = False
 
     def _init_prefab(self):
         self.bng = BeamNGpy('localhost', 64255)
@@ -84,10 +83,8 @@ class Converter:
         self.scenario.make(self.bng)
         self._change_object_options()
         self._add_lights_to_prefab()
-        self._add_trigger_points()
         self._add_waypoints()
-        if self.blinking:
-            self._blinking_traffic_lights()
+        self._write_lua_file()
 
     def add_to_prefab(self):
         self._init_prefab()
@@ -289,7 +286,7 @@ class Converter:
                     original_content = materials.readlines()
                     materials.close()
                     for idx, line in enumerate(original_content):
-                        if "Golfcolor" in line:
+                        if "Player-Generated Color" in line:
                             original_content[idx + 1] = "   diffuseColor[2] = \"{} {} {} {}\";\n" \
                                 .format(color[0], color[1], color[2], color[3])
                     first_golf = False
@@ -513,76 +510,148 @@ class Converter:
                 i += 1
             if vid == "ego":
                 self.success_point = "wp_{}_{}".format(vid, index - 1)
-            self.lines.append(lines)
+            self.lines.append({"vid": vid, "lines": lines})
         original_content.append("};")
         prefab_file = open(prefab_path, "w")
         prefab_file.writelines(original_content)
         prefab_file.close()
 
-    def _add_trigger_points(self):
-        prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
-        prefab_file = open(prefab_path, "r")
-        original_content = prefab_file.readlines()
-        prefab_file.close()
-        participants = self.dbc_root.findall("participants/participant")
-        for participant in participants:
-            trigger_points = participant.findall("triggerPoints/triggerPoint")
-            vid = participant.get("id")
-            index = 0
-            for trigger_point in trigger_points:
-                attr = trigger_point.attrib
-                spawn_point = trigger_point.find("spawnPoint")
-                z_spawn = 0 if attr.get("z") is None else spawn_point.get("z")
-                z_rot_spawn = -90 if spawn_point.get("orientation") is None \
-                    else -float(spawn_point.get("orientation")) - 90
-                z = 0 if attr.get("z") is None else attr.get("z")
-                original_content.extend([
-                    "    new BeamNGTrigger(trigger_{}_{}){{\n".format(vid, index),
-                    "        TriggerType = \"Sphere\";\n",
-                    "        TriggerMode = \"Contains\";\n",
-                    "        TriggerTestType = \"Race corners\";\n",
-                    "        luaFunction = \""
-                    + "local function teleportPlayer(data)\\n    local egoName = data.subjectName\\n    "
-                      "local vehicleName = \\\"{}\\\"\\n\\n    if "
-                      "data.event == \\'enter\\' and egoName == \\'{}\\' then\\n        "
-                      "TorqueScript.eval(vehicleName..\\\'.position = "
-                      "\\\"{} {} {}\\\";\\\')\\n        TorqueScript.eval(vehicleName..\\\'.rotation = \\\"0 0 "
-                      "01 {}\\\";\\\')\\n    end\\nend\\n\\nreturn teleportPlayer ".format(vid, attr.get("vid"),
-                                                                                           spawn_point.get("x"),
-                                                                                           spawn_point.get("y"),
-                                                                                           z_spawn, z_rot_spawn)
-                    + "\";\n",
-                    "        tickPeriod = \"2000\";\n",
-                    "        debug = \"0\";\n",
-                    "        ticking = \"0\";\n",
-                    "        triggerColor = \"9 255 0 45\";\n",
-                    "        defaultOnLeave = \"0\";\n",
-                    "        position = \"" + attr.get("x") + " " + attr.get("y") + " " + str(z) + "\";\n",
-                    "        scale = \"" + attr.get("tolerance") + " " + attr.get("tolerance") + " "
-                    + attr.get("tolerance") + "\";\n",
-                    "        rotationMatrix = \"1 0 0 0 1 0 0 0 1\";\n",
-                    "        canSave = \"1\";\n",
-                    "        canSaveDynamicFields = \"1\";\n",
-                    "    };\n"
-                ])
-                index += 1
-        prefab_file = open(prefab_path, "w")
-        prefab_file.writelines(original_content)
-        prefab_file.close()
+    def _get_on_race_start_line_content(self):
+        ego_lines = None
+        for entry in self.lines:
+            if entry.get("vid") == "ego":
+                ego_lines = entry.get("lines")
+                break
+        assert ego_lines is not None, "Missing line of vehicle \"ego\"."
+        content = '  local vehicleName = \'ego\'\n'\
+                  '  local arg = {line = {\n                 '
+        i = 0
+        while i < len(ego_lines[0]):
+            pos = ego_lines[0][i].get("pos")
+            speed = ego_lines[0][i].get("speed")
+            content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
+                       + str(speed) + "}"
+            if i + 1 == len(ego_lines[0]):
+                content += "\n                }"
+            else:
+                content += ", \n                 "
+            i += 1
+        content += '}\n'\
+                   '    sh.setAiLine(vehicleName, arg)\n'
+        return content
 
-    def _blinking_traffic_lights(self):
+    def _get_ego_lines_content(self, idx):
+        ego_lines = None
+        for entry in self.lines:
+            if entry.get("vid") == "ego":
+                ego_lines = entry.get("lines")
+                break
+        assert ego_lines is not None, "Missing line of vehicle \"ego\"."
+        content = '    if ego_time_' + str(idx) + ' == 7 then\n' \
+                  '      print(ego_time_' + str(idx) + ')\n' \
+                  '      local egoName = \"ego\"\n'\
+                  '      local arg_ego = {line = {\n                 '
+        i = 0
+        while i < len(ego_lines[idx+1]):
+            pos = ego_lines[idx+1][i].get("pos")
+            speed = ego_lines[idx+1][i].get("speed")
+            content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
+                       + str(speed) + "}"
+            if i + 1 == len(ego_lines[idx+1]):
+                content += "\n                  }"
+            else:
+                content += ", \n                   "
+            i += 1
+        content += '}\n' \
+                   '      sh.setAiLine(egoName, arg_ego)\n' \
+                   '    end\n'
+        return content
+
+
+    def _write_lua_file(self):
+        """
+        :return:
+        """
+        triggers = self.dbc_root.find("triggerPoints")
+        trigger_content = ""
+        trigger_list = list()
+        trigger_points = list()
+        spawn_points = list()
+        for idx, trigger in enumerate(triggers):
+            spawn_point = trigger.find("spawnPoint").attrib
+            spawn_points.append(spawn_point)
+            trigger_point = trigger.attrib
+            trigger_points.append(trigger_point)
+            z = 0 if trigger_point.get("z") is None else trigger_point.get("z")
+            trigger_content += "local trigger_" + str(idx) + " = Point3F(" + str(trigger_point.get("x")) + ", " \
+                               + str(trigger_point.get("y")) + ", " + str(z) + ")\n" \
+                               "local triggered_" + str(idx) + " = 0\n" \
+                               "local ego_time_" + str(idx) + " = 0\n"
+            trigger_list.append("trigger_" + str(idx))
+
         content = "local M = {}\n" \
-                  "local socket = require(\"socket\")\n" \
                   "local time = 0\n" \
-                  "local function onRaceTick(raceTickTime)\n"
+                  "local sh = require(\'ge/extensions/scenario/scenariohelper\')\n" \
+                  "local ego = nil\n" \
+                  "local function onRaceStart()\n" \
+                  "    ego = scenetree.findObject(\"ego\")\n" \
+                  "    " + self._get_on_race_start_line_content() + "" \
+                  "end\n\n"
+        content += trigger_content
+        content += "local function onRaceTick(raceTickTime)\n" \
+                   "  time = time + raceTickTime\n" \
+                   "  local pos = ego:getPosition()\n"
+        for idx, trigger_point in enumerate(trigger_list):
+            spawn_point = spawn_points[idx]
+            z = 0 if spawn_point.get("z") is None else spawn_point.get("z")
+            z_rot_spawn = -90 if spawn_point.get("orientation") is None \
+                else -float(spawn_point.get("orientation")) - 90
+            vehicle_name = trigger_points[idx].get("triggers")
+
+            lines = None
+            for entry in self.lines:
+                if entry.get("vid") == vehicle_name:
+                    lines = entry.get("lines")
+                    break
+            assert lines is not None, "Missing line of vehicle \"" + vehicle_name + "\"."
+            lines = lines[idx]
+            line_content = '    local arg = {line = {\n                 '
+            i = 0
+            while i < len(lines):
+                pos = lines[i].get("pos")
+                speed = lines[i].get("speed")
+                line_content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
+                                + str(speed) + "}"
+                if i + 1 == len(lines):
+                    line_content += "\n                }"
+                else:
+                    line_content += ", \n                 "
+                i += 1
+            line_content += '}\n' \
+                            '    sh.setAiLine(vehicleName, arg)\n'
+
+            content += "  if triggered_" + str(idx) + " == 1 then\n" \
+                       "    ego_time_" + str(idx) + " = ego_time_" + str(idx) + " + raceTickTime\n" \
+                       "  end\n" \
+                       "  if math.sqrt((" + trigger_point + ".x - pos.x) ^ 2 + (" \
+                       + trigger_point + ".y - pos.y) ^ 2) <= " + str(float(trigger_points[idx].get("tolerance"))*2) \
+                       + " and triggered_" + str(idx) + " == 0 then\n" \
+                       "    triggered_" + str(idx) + " = 1\n" \
+                       "    local vehicleName = \"" + vehicle_name + "\"\n" \
+                       "" \
+                       "    TorqueScript.eval(vehicleName..\'.position = \"" + spawn_point.get("x") + " " \
+                       + spawn_point.get("y") + " " + str(z) + "\";\')\n" \
+                       "    TorqueScript.eval(vehicleName..\'.rotation = \"0 0 01 " + str(z_rot_spawn) + "\";\')\n"
+            content += line_content
+            content += "  end\n\n"
+            content += self._get_ego_lines_content(idx)
         for idx, light in enumerate(self.lights):
             pos = light.get("position")
             content += "  local light_" + str(idx) + " = scenetree.findObject(\"" + light.get("id") + "\")\n" \
                        "  local p1_" + str(idx) + " = Point3F(" + str(pos[0]) + ", " + str(pos[1]) + ", -33)\n" \
                        "  local p2_" + str(idx) + " = Point3F(" + str(pos[0]) + ", " + str(pos[1]) \
                        + ", " + str(pos[2]) + ")\n"
-        content += "  time = time + raceTickTime\n" \
-                   "  if time == math.floor(time) then\n" \
+        content += "  if time == math.floor(time) then\n" \
                    "    if time % 2 == 0 then\n"
         for idx, light in enumerate(self.lights):
             content += "      light_" + str(idx) + ":setPosition(p1_" + str(idx) + ")\n"
@@ -591,8 +660,9 @@ class Converter:
             content += "      light_" + str(idx) + ":setPosition(p2_" + str(idx) + ")\n"
         content += "    end\n" \
                    "  end\n" \
-                   "end\n" \
+                   "end\n\n" \
                    "M.onRaceTick = onRaceTick\n" \
+                   "M.onRaceStart = onRaceStart\n" \
                    "return M"
         with open("urban_{}.lua".format(self.index), "w") as lua_file:
             print(content, file=lua_file)
