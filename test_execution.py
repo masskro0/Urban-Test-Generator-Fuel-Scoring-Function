@@ -6,7 +6,7 @@ from termcolor import colored
 from verifier import MisbehaviourObserver
 
 
-def run_test_case(scenario, lines):
+def run_test_case(scenario):
     print(colored("Starting test case {}.".format(scenario.name), "grey", attrs=['bold']))
     vehicles = scenario.vehicles
     ego = None

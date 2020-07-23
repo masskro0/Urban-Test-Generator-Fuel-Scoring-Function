@@ -72,6 +72,7 @@ class Converter:
         self.lines = list()
         self.lights = list()
         self.light_content = list()
+        self.traffic_lights = list()
         self.light_index = 0
 
     def _init_prefab(self):
@@ -261,6 +262,8 @@ class Converter:
             pos = (float(obstacle_attr.get("x")), float(obstacle_attr.get("y")), float(z))
             rot = (float(x_rot), float(y_rot), float(z_rot))
             sign = obstacle_attr.get("sign")
+            mode = obstacle_attr.get("mode")
+            oid = obstacle_attr.get("oid")
             if obstacle.tag == "stopsign":
                 rot = (rot[0], rot[1], 90 - rot[2])
                 name_sign = "stopsign_" + str(id_number)
@@ -307,9 +310,10 @@ class Converter:
                 traffic_light_coords = (
                     traffic_light_coords[0] + pole_coords[0], traffic_light_coords[1] + pole_coords[1],
                     traffic_light_coords[2] + pole_coords[2])
-                mode = obstacle_attr.get("mode")
                 if mode is not None and mode == "blinking":
                     self._add_blinking_traffic_lights(traffic_light_coords)
+                if mode is not None and mode == "manual":
+                    self._add_traffic_lights(traffic_light_coords, oid, 0)
                 if mode is not None and mode == "off":
                     shape = '/levels/urban/art/objects/trafficlight1a_off.dae'
                 else:
@@ -335,15 +339,18 @@ class Converter:
                 rot_matrix = _calc_rot_matrix(rad_x, rad_y, rad_z)
                 traffic_light1_coords = calc_coords_after_rot(traffic_light1_coords, pole_coords, rot_matrix)
                 traffic_light2_coords = calc_coords_after_rot(traffic_light2_coords, pole_coords, rot_matrix)
-                mode = obstacle_attr.get("mode")
-                if mode is not None and mode == "blinking":
+                if mode is not None and (mode == "blinking" or mode == "manual"):
                     rot_matrix = _calc_rot_matrix(rad_x, rad_y, radians(-float(z_rot)))
                     light_pos_1 = (-0.25, 2.09, 5.48)
                     light_pos_2 = (-0.25, 5.72, 5.89)
                     light_pos_1 = calc_coords_after_rot(light_pos_1, pole_coords, rot_matrix)
                     light_pos_2 = calc_coords_after_rot(light_pos_2, pole_coords, rot_matrix)
-                    self._add_blinking_traffic_lights(light_pos_1)
-                    self._add_blinking_traffic_lights(light_pos_2)
+                    if mode == "blinking":
+                        self._add_blinking_traffic_lights(light_pos_1)
+                        self._add_blinking_traffic_lights(light_pos_2)
+                    else:
+                        self._add_traffic_lights(light_pos_1, oid, 0)
+                        self._add_traffic_lights(light_pos_2, oid, 1)
                 if mode is not None and mode == "off":
                     shape = '/levels/urban/art/objects/trafficlight2a_off.dae'
                 else:
@@ -388,8 +395,7 @@ class Converter:
                 "       representedInLightmap = \"0\";\n" \
                 "       shadowDarkenColor = \"0 0 0 -1\";\n" \
                 "       includeLightmappedGeometryInShadow = \"0\";\n" \
-                "       position = \"" + str(
-            pos[0]) + " " + str(pos[1]) + " " + str(pos[2]) + "\";\n" \
+                "       position = \"" + str(pos[0]) + " " + str(pos[1]) + " " + str(pos[2]) + "\";\n" \
                 "       rotationMatrix = \"1 0 0 0 0.999999762 -0.000690533896 0 0.000690533896 0.999999762\";\n" \
                 "       mode = \"Ignore\";\n" \
                 "       canSave = \"1\";\n" \
@@ -399,7 +405,107 @@ class Converter:
         self.lights.append({"id": "traffic_blinking_{}".format(self.light_index),
                             "position": (pos[0], pos[1], pos[2])})
         self.light_index += 1
-        self.blinking = True
+
+    def _add_traffic_lights(self, pos, oid, index):
+        green = "   new PointLight(" + oid + "_green_" + str(index) + "){\n" \
+                "       radius = \"0.300000012\";\n" \
+                "       isEnabled = \"1\";\n" \
+                "       color = \"0 0.852744999 0 2\";\n" \
+                "       brightness = \"10\";\n" \
+                "       castShadows = \"0\";\n" \
+                "       priority = \"1\";\n" \
+                "       animate = \"0\";\n" \
+                "       animationPeriod = \"1\";\n" \
+                "       animationPhase = \"1\";\n" \
+                "       flareType = \"BNG_Sunflare_2\";\n" \
+                "       flareScale = \"0.400000006\";\n" \
+                "       attenuationRatio = \"0 1 1\";\n" \
+                "       shadowType = \"DualParaboloidSinglePass\";\n" \
+                "       texSize = \"512\";\n" \
+                "       overDarkFactor = \"2000 1000 500 100\";\n" \
+                "       shadowDistance = \"400\";\n" \
+                "       shadowSoftness = \"0.150000006\";\n" \
+                "       numSplits = \"1\";\n" \
+                "       logWeight = \"0.910000026\";\n" \
+                "       fadeStartDistance = \"0\";\n" \
+                "       lastSplitTerrainOnly = \"0\";\n" \
+                "       representedInLightmap = \"0\";\n" \
+                "       shadowDarkenColor = \"0 0 0 -1\";\n" \
+                "       includeLightmappedGeometryInShadow = \"0\";\n" \
+                "       position = \"" + str(pos[0]) + " " + str(pos[1]) + " " + str(-33) + "\";\n" \
+                "       rotationMatrix = \"1 0 0 0 0.999999762 -0.000690533896 0 0.000690533896 0.999999762\";\n" \
+                "       mode = \"Ignore\";\n" \
+                "       canSave = \"1\";\n" \
+                "       canSaveDynamicFields = \"1\";\n" \
+                "   };\n"
+        yellow = "   new PointLight(" + oid + "_yellow_" + str(index) + "){\n" \
+                 "       radius = \"0.300000012\";\n" \
+                 "       isEnabled = \"1\";\n" \
+                 "       color = \"1 0.662744999 0 2\";\n" \
+                 "       brightness = \"10\";\n" \
+                 "       castShadows = \"0\";\n" \
+                 "       priority = \"1\";\n" \
+                 "       animate = \"0\";\n" \
+                 "       animationPeriod = \"1\";\n" \
+                 "       animationPhase = \"1\";\n" \
+                 "       flareType = \"BNG_Sunflare_2\";\n" \
+                 "       flareScale = \"0.400000006\";\n" \
+                 "       attenuationRatio = \"0 1 1\";\n" \
+                 "       shadowType = \"DualParaboloidSinglePass\";\n" \
+                 "       texSize = \"512\";\n" \
+                 "       overDarkFactor = \"2000 1000 500 100\";\n" \
+                 "       shadowDistance = \"400\";\n" \
+                 "       shadowSoftness = \"0.150000006\";\n" \
+                 "       numSplits = \"1\";\n" \
+                 "       logWeight = \"0.910000026\";\n" \
+                 "       fadeStartDistance = \"0\";\n" \
+                 "       lastSplitTerrainOnly = \"0\";\n" \
+                 "       representedInLightmap = \"0\";\n" \
+                 "       shadowDarkenColor = \"0 0 0 -1\";\n" \
+                 "       includeLightmappedGeometryInShadow = \"0\";\n" \
+                 "       position = \"" + str(pos[0]) + " " + str(pos[1]) + " " + str(-33) + "\";\n" \
+                 "       rotationMatrix = \"1 0 0 0 0.999999762 -0.000690533896 0 0.000690533896 0.999999762\";\n" \
+                 "       mode = \"Ignore\";\n" \
+                 "       canSave = \"1\";\n" \
+                 "       canSaveDynamicFields = \"1\";\n" \
+                 "   };\n"
+        red = "   new PointLight(" + oid + "_red_" + str(index) + "){\n" \
+              "       radius = \"0.300000012\";\n" \
+              "       isEnabled = \"1\";\n" \
+              "       color = \"0.88 0 0 2\";\n" \
+              "       brightness = \"10\";\n" \
+              "       castShadows = \"0\";\n" \
+              "       priority = \"1\";\n" \
+              "       animate = \"0\";\n" \
+              "       animationPeriod = \"1\";\n" \
+              "       animationPhase = \"1\";\n" \
+              "       flareType = \"BNG_Sunflare_2\";\n" \
+              "       flareScale = \"0.400000006\";\n" \
+              "       attenuationRatio = \"0 1 1\";\n" \
+              "       shadowType = \"DualParaboloidSinglePass\";\n" \
+              "       texSize = \"512\";\n" \
+              "       overDarkFactor = \"2000 1000 500 100\";\n" \
+              "       shadowDistance = \"400\";\n" \
+              "       shadowSoftness = \"0.150000006\";\n" \
+              "       numSplits = \"1\";\n" \
+              "       logWeight = \"0.910000026\";\n" \
+              "       fadeStartDistance = \"0\";\n" \
+              "       lastSplitTerrainOnly = \"0\";\n" \
+              "       representedInLightmap = \"0\";\n" \
+              "       shadowDarkenColor = \"0 0 0 -1\";\n" \
+              "       includeLightmappedGeometryInShadow = \"0\";\n" \
+              "       position = \"" + str(pos[0]) + " " + str(pos[1]) + " " + str(-33) + "\";\n" \
+              "       rotationMatrix = \"1 0 0 0 0.999999762 -0.000690533896 0 0.000690533896 0.999999762\";\n" \
+              "       mode = \"Ignore\";\n" \
+              "       canSave = \"1\";\n" \
+              "       canSaveDynamicFields = \"1\";\n" \
+              "   };\n"
+        self.light_content.append(green)
+        self.light_content.append(yellow)
+        self.light_content.append(red)
+        self.traffic_lights.append([{"id": oid + "_green_" + str(index), "position": (pos[0], pos[1], pos[2] - 0.5)},
+                            {"id": oid + "_yellow_" + str(index), "position": (pos[0], pos[1], pos[2])},
+                            {"id": oid + "_red_" + str(index), "position": (pos[0], pos[1], pos[2] + 0.5)}])
 
     def _add_lights_to_prefab(self):
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
@@ -523,7 +629,7 @@ class Converter:
                 ego_lines = entry.get("lines")
                 break
         assert ego_lines is not None, "Missing line of vehicle \"ego\"."
-        content = '  local vehicleName = \'ego\'\n'\
+        content = 'local vehicleName = \'ego\'\n'\
                   '  local arg = {line = {\n                 '
         i = 0
         while i < len(ego_lines[0]):
@@ -537,7 +643,7 @@ class Converter:
                 content += ", \n                 "
             i += 1
         content += '}\n'\
-                   '    sh.setAiLine(vehicleName, arg)\n'
+                   '  sh.setAiLine(vehicleName, arg)\n'
         return content
 
     def _get_ego_lines_content(self, idx):
@@ -567,7 +673,6 @@ class Converter:
                    '    end\n'
         return content
 
-
     def _write_lua_file(self):
         """
         :return:
@@ -577,7 +682,14 @@ class Converter:
         trigger_list = list()
         trigger_points = list()
         spawn_points = list()
-        for idx, trigger in enumerate(triggers):
+        teleport_triggers = list()
+        traffic_triggers = list()
+        for trigger in triggers:
+            if trigger.attrib.get("action") == "spawn_and_start":
+                teleport_triggers.append(trigger)
+            elif trigger.attrib.get("action") == "switchLights":
+                traffic_triggers.append(trigger.attrib)
+        for idx, trigger in enumerate(teleport_triggers):
             spawn_point = trigger.find("spawnPoint").attrib
             spawn_points.append(spawn_point)
             trigger_point = trigger.attrib
@@ -589,14 +701,44 @@ class Converter:
                                "local ego_time_" + str(idx) + " = 0\n"
             trigger_list.append("trigger_" + str(idx))
 
+        for idx, trigger in enumerate(traffic_triggers):
+            z = 0 if trigger.get("z") is None else trigger.get("z")
+            trigger_content += "local trigger_traffic_" + str(idx) + " = Point3F(" + str(trigger.get("x")) + ", " \
+                               + str(trigger.get("y")) + ", " + str(z) + ")\n" \
+                               "local triggered_traffic_" + str(idx) + " = 0\n" \
+                               "local traffic_time_" + str(idx) + " = 0\n"
+
         content = "local M = {}\n" \
                   "local time = 0\n" \
                   "local sh = require(\'ge/extensions/scenario/scenariohelper\')\n" \
                   "local ego = nil\n" \
-                  "local function onRaceStart()\n" \
-                  "    ego = scenetree.findObject(\"ego\")\n" \
-                  "    " + self._get_on_race_start_line_content() + "" \
-                  "end\n\n"
+
+        for idx, trigger in enumerate(self.traffic_lights):
+            for idx_1, light in enumerate(trigger):
+                pos = light.get("position")
+                content += "local " + light.get("id") + " = nil\n" \
+                           "local p1_traffic_" + str(idx) + "_" + str(idx_1) + " = Point3F(" + str(pos[0]) + ", " \
+                           + str(pos[1]) + ", -33)\n"\
+                           "local p2_traffic_" + str(idx) + "_" + str(idx_1) + " = Point3F(" + str(pos[0]) + ", " \
+                           + str(pos[1]) + ", " + str(pos[2]) + ")\n"
+
+        content += "\nlocal function onRaceStart()\n" \
+                   "  ego = scenetree.findObject(\"ego\")\n" \
+                   "  " + self._get_on_race_start_line_content() + ""
+
+        for idx, trigger in enumerate(self.traffic_lights):
+            for idx_1, light in enumerate(trigger):
+                content += "  " + light.get("id") + " = scenetree.findObject(\"" + light.get("id") + "\")\n"
+
+        for idx, trigger in enumerate(self.traffic_lights):
+            oid = trigger[0].get("id")
+            oid = oid[:22]
+            i = int(oid[-1])
+            init_state = traffic_triggers[i].get("initState")
+            i = 0 if init_state == "green" else 2
+            content += "  " + trigger[i].get("id") + ":setPosition(p2_traffic_" + str(idx) + "_" + str(i) + ")\n"
+
+        content += "end\n\n"
         content += trigger_content
         content += "local function onRaceTick(raceTickTime)\n" \
                    "  time = time + raceTickTime\n" \
@@ -634,7 +776,7 @@ class Converter:
                        "    ego_time_" + str(idx) + " = ego_time_" + str(idx) + " + raceTickTime\n" \
                        "  end\n" \
                        "  if math.sqrt((" + trigger_point + ".x - pos.x) ^ 2 + (" \
-                       + trigger_point + ".y - pos.y) ^ 2) <= " + str(float(trigger_points[idx].get("tolerance"))*2) \
+                       + trigger_point + ".y - pos.y) ^ 2) <= " + str(float(trigger_points[idx].get("tolerance"))*4) \
                        + " and triggered_" + str(idx) + " == 0 then\n" \
                        "    triggered_" + str(idx) + " = 1\n" \
                        "    local vehicleName = \"" + vehicle_name + "\"\n" \
@@ -659,8 +801,51 @@ class Converter:
         for idx, light in enumerate(self.lights):
             content += "      light_" + str(idx) + ":setPosition(p2_" + str(idx) + ")\n"
         content += "    end\n" \
-                   "  end\n" \
-                   "end\n\n" \
+                   "  end\n"
+
+        for idx, trigger in enumerate(traffic_triggers):
+            print(trigger)
+            init_state = trigger.get("initState")
+            content += "  print(math.sqrt((trigger_traffic_" + str(idx) + ".x - pos.x) ^ 2 + (" \
+                       + "trigger_traffic_" + str(idx) + ".y - pos.y) ^ 2))\n" \
+                       "  print(triggered_traffic_" + str(idx) + ")\n" \
+                       "  if math.sqrt((trigger_traffic_" + str(idx) + ".x - pos.x) ^ 2 + (" \
+                       + "trigger_traffic_" + str(idx) + ".y - pos.y) ^ 2) <= " \
+                       + str(float(trigger.get("tolerance"))*5) \
+                       + " and triggered_traffic_" + str(idx) + " == 0 then\n" \
+                       "      print(triggered_traffic_" + str(idx) + ")\n" \
+                         "    triggered_traffic_" + str(idx) + " = 1\n"
+            for idx_1, traffic_light in enumerate(self.traffic_lights):
+                oid = traffic_light[0].get("id")
+                oid = oid[:22]
+                temp_idx = int(oid[-1])
+                old = 0 if init_state == "green" else 2
+                new = 0 if old == 2 else 2
+                if idx == temp_idx:
+                    content += "    " + traffic_light[old].get("id") + ":setPosition(p1_traffic_" + str(idx_1) + "_" \
+                               + str(old) + ")\n"
+                    content += "    " + traffic_light[new].get("id") + ":setPosition(p2_traffic_" + str(idx_1) + "_" \
+                               + str(new) + ")\n"
+            content += "  end\n" \
+                       "  if triggered_traffic_" + str(idx) + " == 1 then\n" \
+                       "    traffic_time_" + str(idx) + " = traffic_time_" + str(idx) \
+                       + " + raceTickTime\n" \
+                       "  end\n" \
+                       "  if traffic_time_" + str(idx) + " == 7 then\n"
+            for idx_1, traffic_light in enumerate(self.traffic_lights):
+                oid = traffic_light[0].get("id")
+                oid = oid[:22]
+                temp_idx = int(oid[-1])
+                old = 0 if init_state == "green" else 2
+                new = 0 if old == 2 else 2
+                if idx == temp_idx:
+                    content += "    " + traffic_light[new].get("id") + ":setPosition(p1_traffic_" + str(idx_1) + "_" \
+                               + str(new) + ")\n"
+                    content += "    " + traffic_light[old].get("id") + ":setPosition(p2_traffic_" + str(idx_1) + "_" \
+                               + str(old) + ")\n"
+            content += "  end\n"
+
+        content += "end\n\n" \
                    "M.onRaceTick = onRaceTick\n" \
                    "M.onRaceStart = onRaceStart\n" \
                    "return M"

@@ -66,9 +66,8 @@ class DBCBuilder:
         :return:
         """
         trigger_root = ElementTree.SubElement(self.root, "triggerPoints")
-        for trigger in triggers:
-            spawn_point = trigger.get("spawnPoint")
-            trigger_point = trigger.get("triggerPoint")
+        for trigger_dict in triggers:
+            trigger_point = trigger_dict.get("triggerPoint")
             trigger = ElementTree.SubElement(trigger_root, 'triggerPoint')
             trigger.set("x", str(trigger_point.get("position")[0]))
             trigger.set("y", str(trigger_point.get("position")[1]))
@@ -77,10 +76,14 @@ class DBCBuilder:
             trigger.set("triggeredBy", trigger_point.get("triggeredBy"))
             trigger.set("triggers", trigger_point.get("triggers"))
             if trigger_point.get("action") == "spawn_and_start":
+                spawn_point = trigger_dict.get("spawnPoint")
                 ElementTree.SubElement(trigger, 'spawnPoint x="{}" y="{}" orientation="{}"'
                                        .format(str(spawn_point.get("position")[0]),
                                                str(spawn_point.get("position")[1]),
                                                str(spawn_point.get("orientation"))))
+            elif trigger_point.get("action") == "switchLights":
+                trigger.set("initState", trigger_point.get("initState"))
+                trigger.set("switchTo", trigger_point.get("switchTo"))
 
     def add_car(self, participant):
         """Adds a car to this test case. At least one car (the ego car) should be added.
