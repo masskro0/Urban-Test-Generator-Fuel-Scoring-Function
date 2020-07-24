@@ -745,13 +745,9 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
-#       TODO Add other participants, add traffic for 3-way-lanes
+#       TODO Add other participants + crashes, add traffic for 3-way-lanes
 #       TODO Mutation
 #       TODO Crossover
-#       TODO Refactor
-#       TODO Comments
-#       TODO Fix lane markings
 
 # TODO Verifier:
 #       TODO Throttle misbehavior
@@ -779,3 +775,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Test generator should calc speed of waypoints, not converter
 #       TODO Parallel offset instead of width lines
 #       TODO Manual traffic lights for all directions
+#       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
+#       TODO Fix lane markings
+#       TODO Comments
+#       TODO Refactor
