@@ -745,7 +745,6 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Traffic lights
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
 #       TODO Add other participants, add traffic for 3-way-lanes
 #       TODO Mutation
