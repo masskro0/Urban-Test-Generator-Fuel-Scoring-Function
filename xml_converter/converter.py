@@ -709,6 +709,8 @@ class Converter:
                                "local traffic_time_" + str(idx) + " = 0\n"
 
         content = "local M = {}\n" \
+                  "local points_1 = {}\n" \
+                  "local points_2 = {}\n" \
                   "local time = 0\n" \
                   "local sh = require(\'ge/extensions/scenario/scenariohelper\')\n" \
                   "local ego = nil\n" \
@@ -717,9 +719,9 @@ class Converter:
             for idx_1, light in enumerate(trigger):
                 pos = light.get("position")
                 content += "local " + light.get("id") + " = nil\n" \
-                           "local p1_traffic_" + str(idx) + "_" + str(idx_1) + " = Point3F(" + str(pos[0]) + ", " \
+                           "points_1[" + str(3 * idx + idx_1 + 1) + "] = Point3F(" + str(pos[0]) + ", " \
                            + str(pos[1]) + ", -33)\n"\
-                           "local p2_traffic_" + str(idx) + "_" + str(idx_1) + " = Point3F(" + str(pos[0]) + ", " \
+                           "points_2[" + str(3 * idx + idx_1 + 1) + "] = Point3F(" + str(pos[0]) + ", " \
                            + str(pos[1]) + ", " + str(pos[2]) + ")\n"
 
         content += "\nlocal function onRaceStart()\n" \
@@ -736,7 +738,7 @@ class Converter:
             i = int(oid[-1])
             init_state = traffic_triggers[i].get("initState")
             i = 0 if init_state == "green" else 2
-            content += "  " + trigger[i].get("id") + ":setPosition(p2_traffic_" + str(idx) + "_" + str(i) + ")\n"
+            content += "  " + trigger[i].get("id") + ":setPosition(points_2[" + str(3 * idx + i + 1) + "])\n"
 
         content += "end\n\n"
         content += trigger_content
@@ -804,17 +806,14 @@ class Converter:
                    "  end\n"
 
         for idx, trigger in enumerate(traffic_triggers):
-            print(trigger)
             init_state = trigger.get("initState")
-            content += "  print(math.sqrt((trigger_traffic_" + str(idx) + ".x - pos.x) ^ 2 + (" \
-                       + "trigger_traffic_" + str(idx) + ".y - pos.y) ^ 2))\n" \
-                       "  print(triggered_traffic_" + str(idx) + ")\n" \
-                       "  if math.sqrt((trigger_traffic_" + str(idx) + ".x - pos.x) ^ 2 + (" \
+            content += "  if math.sqrt((trigger_traffic_" + str(idx) + ".x - pos.x) ^ 2 + (" \
                        + "trigger_traffic_" + str(idx) + ".y - pos.y) ^ 2) <= " \
                        + str(float(trigger.get("tolerance"))*5) \
                        + " and triggered_traffic_" + str(idx) + " == 0 then\n" \
                        "      print(triggered_traffic_" + str(idx) + ")\n" \
                          "    triggered_traffic_" + str(idx) + " = 1\n"
+
             for idx_1, traffic_light in enumerate(self.traffic_lights):
                 oid = traffic_light[0].get("id")
                 oid = oid[:22]
@@ -822,16 +821,18 @@ class Converter:
                 old = 0 if init_state == "green" else 2
                 new = 0 if old == 2 else 2
                 if idx == temp_idx:
-                    content += "    " + traffic_light[old].get("id") + ":setPosition(p1_traffic_" + str(idx_1) + "_" \
-                               + str(old) + ")\n"
-                    content += "    " + traffic_light[new].get("id") + ":setPosition(p2_traffic_" + str(idx_1) + "_" \
-                               + str(new) + ")\n"
+                    content += "    " + traffic_light[old].get("id") + ":setPosition(points_1[" \
+                               + str(3 * idx_1 + old + 1) + "])\n"
+                    content += "    " + traffic_light[new].get("id") + ":setPosition(points_2[" \
+                               + str(3 * idx_1 + new + 1) + "])\n"
+
             content += "  end\n" \
                        "  if triggered_traffic_" + str(idx) + " == 1 then\n" \
                        "    traffic_time_" + str(idx) + " = traffic_time_" + str(idx) \
                        + " + raceTickTime\n" \
                        "  end\n" \
                        "  if traffic_time_" + str(idx) + " == 7 then\n"
+
             for idx_1, traffic_light in enumerate(self.traffic_lights):
                 oid = traffic_light[0].get("id")
                 oid = oid[:22]
@@ -839,11 +840,33 @@ class Converter:
                 old = 0 if init_state == "green" else 2
                 new = 0 if old == 2 else 2
                 if idx == temp_idx:
-                    content += "    " + traffic_light[new].get("id") + ":setPosition(p1_traffic_" + str(idx_1) + "_" \
-                               + str(new) + ")\n"
-                    content += "    " + traffic_light[old].get("id") + ":setPosition(p2_traffic_" + str(idx_1) + "_" \
-                               + str(old) + ")\n"
+                    content += "    " + traffic_light[new].get("id") + ":setPosition(points_1[" \
+                               + str(3 * idx_1 + new + 1) + "])\n"
+                    content += "    " + traffic_light[old].get("id") + ":setPosition(points_2[" \
+                               + str(3 * idx_1 + old + 1) + "])\n"
             content += "  end\n"
+
+            if init_state != "red":
+                content += "  if traffic_time_" + str(idx) + " == 6 then\n"
+                for idx_1, traffic_light in enumerate(self.traffic_lights):
+                    oid = traffic_light[0].get("id")
+                    oid = oid[:22]
+                    temp_idx = int(oid[-1])
+                    if idx == temp_idx:
+                        content += "    " + traffic_light[1].get("id") + ":setPosition(points_2[" \
+                                   + str(3 * idx_1 + 2) + "])\n"
+                content += "  end\n"
+                content += "  if traffic_time_" + str(idx) + " == 7 then\n"
+                for idx_1, traffic_light in enumerate(self.traffic_lights):
+                    oid = traffic_light[0].get("id")
+                    oid = oid[:22]
+                    temp_idx = int(oid[-1])
+                    if idx == temp_idx:
+                        content += "    " + traffic_light[1].get("id") + ":setPosition(points_1[" \
+                                   + str(3 * idx_1 + 2) + "])\n"
+                content += "  end\n"
+
+
 
         content += "end\n\n" \
                    "M.onRaceTick = onRaceTick\n" \
