@@ -1,4 +1,4 @@
-"""This class builds an environment XML file for DriveBuild in the required format."""
+"""This class builds an environment XML file."""
 
 import xml.etree.ElementTree as ElementTree
 from os import path, remove, getcwd, mkdir
@@ -29,10 +29,10 @@ def indent(elem, level=0):
 
 def save_xml(name, root, xml_type):
     """Creates and saves the XML file, and moves it to the scenario folder.
-    :param xml_type: environment or criteria.
+    :param xml_type: Environment or criteria.
     :param root: Root of the XML file.
     :param name: Desired name of this file.
-    :return: Void, but it creates a XML file.
+    :return: Void.
     """
     # Wrap it in an ElementTree instance, and save as XML.
     tree = ElementTree.ElementTree(root)
@@ -67,16 +67,14 @@ class DBEBuilder:
         self.author = ElementTree.SubElement(self.root, "author")
         self.author.text = "Michael Heine"
 
-        # Change the light value of the environment as you like.
         self.timeOfDay = ElementTree.SubElement(self.root, "timeOfDay")
-        self.timeOfDay.text = "0"
 
         self.lanes = ElementTree.SubElement(self.root, "lanes")
 
     def add_obstacles(self, obstacle_list):
         """Adds obstacles to the XML files.
-        :param obstacle_list: List of obstacles. Each obstacle is a dict and must contain x and y position. Check
-                generator.py in simnode in DriveBuild to see which object needs which properties.
+        :param obstacle_list: List of obstacles. Each obstacle is a dict and must contain x and y position as well as
+                              obstacle specific attributes.
         :return: Void.
         """
         obstacles = ElementTree.SubElement(self.root, "obstacles")
@@ -134,10 +132,21 @@ class DBEBuilder:
                 full_string += ' oid="' + oid + '"'
             ElementTree.SubElement(obstacles, full_string)
 
+    def set_tod(self, tod):
+        """Sets the time of day.
+        :param tod: Time of day as int or string type.
+        :return: Void.
+        """
+        self.timeOfDay.text = str(tod)
+
     def add_lanes(self, lanes):
         """Adds new lanes to the environment file.
-        :param lanes: List of lanes.
-        :return: Void
+        :param lanes: List of lanes as dict type. Must contain:
+                 control_points: List of points with x and y coordinates,
+                 width: Width for whole lane as int,
+                 left_lanes: Number of left lanes as int,
+                 right_lanes: Number of right lanes as int.
+        :return: Void.
         """
         for lane in lanes:
             self.add_lane(control_points=lane.get("control_points"),
@@ -148,12 +157,12 @@ class DBEBuilder:
 
     def add_lane(self, control_points, width, markings=True, left_lanes=0, right_lanes=0):
         """Adds a lane and road segments.
-        :param control_points: List of dicts containing x-coordinate and y-coordinate.
+        :param control_points: List of tuples containing x-coordinate and y-coordinate.
         :param width: Width of the whole lane as a Integer.
         :param markings: {@code True} Enables road markings, {@code False} makes them invisible.
-        :param left_lanes: number of left lanes
-        :param right_lanes: number of right lanes
-        :return: Void
+        :param left_lanes: Number of left lanes.
+        :param right_lanes: Number of right lanes.
+        :return: Void.
         """
         lane = ElementTree.SubElement(self.lanes, "lane")
         if markings:

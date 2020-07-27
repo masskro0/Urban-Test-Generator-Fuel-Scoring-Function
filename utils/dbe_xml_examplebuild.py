@@ -32,4 +32,6 @@ scenario = os.getcwd() + "\\scenario"
 if not os.path.exists(scenario):
     os.mkdir(scenario)
 
+dbe.set_tod(0)
+
 save_xml("exampleXML", dbe.root, "environment")

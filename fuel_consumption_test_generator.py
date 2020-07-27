@@ -101,16 +101,13 @@ def _add_ego_car(individual):
                 if len(waypoints) == 0 or euclidean(deleted_points[iterator], waypoints[-1].get("position")) >= 1.5:
                     waypoint = {"position": deleted_points[iterator],
                                 "tolerance": 2,
-                                "movementMode": "_BEAMNG",
                                 "lane": same_lane + 1}
                     waypoints.append(waypoint)
                 iterator += 1
             del waypoints[-1]
 
     init_state = {"position": waypoints[0].get("position"),
-                  "orientation": 0,
-                  "movementMode": "_BEAMNG",
-                  "speed": 50}
+                  "orientation": 0}
     model = "ETK800"
     ego = {"id": "ego",
            "init_state": init_state,
@@ -268,11 +265,10 @@ def _add_other_participants(individual):
                     if len(waypoints) == 0 or euclidean(point, waypoints[-1].get("position")) >= 1.5:
                         waypoint = {"position": point,
                                     "tolerance": 2,
-                                    "movementMode": "_BEAMNG",
                                     "lane": spawn_index}
                         waypoints.append(waypoint)
             trigger_point = {"position": temp_line.coords[-1],
-                             "action": "spawn_and_start",
+                             "action": "spawnAndStart",
                              "tolerance": 2,
                              "triggeredBy": "ego",
                              "triggers": "other_0"}
@@ -282,9 +278,7 @@ def _add_other_participants(individual):
         i += 1
     if len(waypoints) != 0:
         init_state = {"position": waypoints[0].get("position"),
-                      "orientation": triggers[0].get("spawnPoint").get("orientation"),
-                      "movementMode": "_BEAMNG",
-                      "speed": 50}
+                      "orientation": triggers[0].get("spawnPoint").get("orientation")}
         other = {"id": "other_{}".format(0),
                  "init_state": init_state,
                  "waypoints": waypoints,
@@ -594,7 +588,8 @@ class FuelConsumptionTestGenerator:
                 tries += 1
         if number_of_pieces >= self.MIN_NODES and one_intersection:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
-            return {"lanes": lanes, "success_point": last_point, "ego_lanes": ego_lanes, "obstacles": obstacles,
+            return {"lanes": lanes, "success_point": {"position": last_point, "tolerance": 3}, "ego_lanes": ego_lanes,
+                    "obstacles": obstacles,
                     "directions": directions, "triggers": triggers}
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
@@ -779,3 +774,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Fix lane markings
 #       TODO Comments
 #       TODO Refactor
+#       TODO Remove simulation_data directory

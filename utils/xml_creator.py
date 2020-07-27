@@ -20,11 +20,12 @@ def build_environment_xml(lanes, file_name="fuelTesting", obstacles=None):
     dbe.add_lanes(lanes)
     if len(obstacles) > 0:
         dbe.add_obstacles(obstacles)
+    dbe.set_tod(0)
     save_xml(file_name, dbe.root, "environment")
 
 
 def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, triggers=None,
-                       file_name="fuelTesting", name="Fuel Efficiency Test", fps="60", frequency="6"):
+                       file_name="fuelTesting", name="Fuel Efficiency Test"):
     """Creates a dbc xml file. Failure, success and preconditions are controlled
     manually for this test generation.
     :param trigger_points:
@@ -36,15 +37,11 @@ def build_criteria_xml(participants, ego_car, success_points, vc_pos, sc_speed, 
     :param sc_speed: Speed condition that has to be met at vc_pos.
     :param file_name: Name of this dbc file. Should be the same as the environment file (laziness).
     :param name: Self defined description name of this file.
-    :param fps: Frames per second.
-    :param frequency: Frequency of the AI to compute the next step.
     :return: Void.
     """
     dbc = DBCBuilder()
     dbc.define_name(name)
     dbc.environment_name(file_name)
-    dbc.steps_per_second(fps)
-    dbc.ai_freq(frequency)
     for participant in participants:
         dbc.add_car(participant)
     for success_point in success_points:

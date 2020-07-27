@@ -5,18 +5,22 @@ from shapely import affinity
 from shapely.geometry import LineString, MultiLineString
 from math import degrees, atan2
 
-MIN_DEGREES = 90
-MAX_DEGREES = 270
+MIN_DEGREES = 90    # Minimum degree between three points.
+MAX_DEGREES = 270   # Maximum degree between three points.
 
 
 def multilinestrings_to_linestring(linestring):
+    """Fixes Shapely's TopologyException sometimes. Converts MultiLineStrings to LineStrings.
+    :param linestring: MultiLineString object.
+    :return: Converted LineString object.
+    """
     if isinstance(linestring, MultiLineString):
         temp_list = list()
         for line in linestring:
             for coord in list(line.coords):
                 temp_list.append(coord)
         linestring = LineString(temp_list)
-    return  linestring
+    return linestring
 
 
 def convert_points_to_lines(lanes):
@@ -52,6 +56,11 @@ def get_resize_factor(length, width):
 
 
 def get_resize_factor_intersection(linestring_length, intersection_length):
+    """Returns the resize factor to resize lines for an intersection.
+    :param linestring_length: Length of the current LineString as int.
+    :param intersection_length: Desired length as int.
+    :return: Resize factor as float.
+    """
     if linestring_length == 0:
         return 0
     return (linestring_length + intersection_length) / linestring_length

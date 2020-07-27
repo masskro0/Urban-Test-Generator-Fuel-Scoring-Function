@@ -1,6 +1,4 @@
-"""This class builds a criteria XML file for DriveBuild in the required format. Note that not
-    every criteria or items can be added to the XML files, I chose only the ones that I need.
-"""
+"""This class builds a criteria XML file."""
 
 import xml.etree.ElementTree as ElementTree
 
@@ -16,19 +14,14 @@ class DBCBuilder:
         self.author = ElementTree.SubElement(self.root, "author")
         self.author.text = "Michael Heine"
 
-        self.version = ElementTree.SubElement(self.root, "version")
-        self.version.text = "1"
-
         self.participants = ElementTree.SubElement(self.root, "participants")
-
-        self.preconditions = ElementTree.SubElement(self.root, "precondition")
 
         self.success = ElementTree.SubElement(self.root, "success")
 
         self.failure = ElementTree.SubElement(self.root, "failure")
 
     def define_name(self, file_name):
-        """Defines the name of the test (not the file name). Required tag.
+        """Defines the name of the test (not the file name).
         :param file_name: Name of this test.
         return: Void
         """
@@ -36,7 +29,7 @@ class DBCBuilder:
         name.text = file_name
 
     def environment_name(self, dbe_file_name):
-        """Add the corresponding environment XML file to this criteria XML file. Required tag.
+        """Adds the corresponding environment XML file to this criteria XML file.
         :param dbe_file_name: File name of the environment file as a String.
         :return: Void.
         """
@@ -44,26 +37,24 @@ class DBCBuilder:
             dbe_file_name += ".dbe.xml"
         self.environment.text = dbe_file_name
 
-    def steps_per_second(self, fps="60"):
-        """Sets the steps per second. Required tag.
-        :param fps: FPS as an integer.
-        :return: Void
-        """
-        steps = ElementTree.SubElement(self.root, "stepsPerSecond")
-        steps.text = str(fps)
-
-    def ai_freq(self, frequency="6"):
-        """Sets the AI frequency. Required tag.
-        :param frequency: Frequency as an integer.
-        :return: Void
-        """
-        aifreq = ElementTree.SubElement(self.root, "aiFrequency")
-        aifreq.text = str(frequency)
-
     def add_trigger_points(self, triggers):
-        """
-        :param triggers:
-        :return:
+        """Adds trigger points to the criteria XML file.
+        :param triggers: List of dict types. Must contain:
+                 position: Tuple with x and y coordinate,
+                 tolerance: As int type,
+                 action: String type telling which task should be performed when entered,
+                 triggeredBy: As string type defines which vid triggers this point,
+                 triggers: as string type defines who should be triggered (can be object id or vehicle id).
+               Supported actions:
+                 spawnAndStart: Spawns another vehicle and gives him a polyline that he should drive along. Needs
+                  following elements:
+                    spawnPoint: Element containing,
+                      position: x and y coordinate,
+                      orientation: Float type.
+                  switchLights: Switches the lights of a traffic light when entered. This action needs the attributes:
+                    initState: String type to tell the initial color,
+                    switchTo: String type to define to which color should be switched to.
+        :return: Void.
         """
         trigger_root = ElementTree.SubElement(self.root, "triggerPoints")
         for trigger_dict in triggers:
@@ -75,7 +66,7 @@ class DBCBuilder:
             trigger.set("action", trigger_point.get("action"))
             trigger.set("triggeredBy", trigger_point.get("triggeredBy"))
             trigger.set("triggers", trigger_point.get("triggers"))
-            if trigger_point.get("action") == "spawn_and_start":
+            if trigger_point.get("action") == "spawnAndStart":
                 spawn_point = trigger_dict.get("spawnPoint")
                 ElementTree.SubElement(trigger, 'spawnPoint x="{}" y="{}" orientation="{}"'
                                        .format(str(spawn_point.get("position")[0]),
@@ -89,14 +80,17 @@ class DBCBuilder:
         """Adds a car to this test case. At least one car (the ego car) should be added.
         :param participant: Dict which contains init_state, waypoints, participant_id and model. See the lines below
                             for more information:
-                init_state: Dict with initial states. Contains: x-coordinate (int), y-coordinate (int),
-                     orientation (int), movementMode (MANUAL, _BEAMNG, AUTONOMOUS, TRAINING),
-                     speed (int)
-                waypoints: Array with waypoints. One waypoint contains: x-coordinate (int),
-                     y-coordinate (int), tolerance (int), movementMode (see above),
-                     speedLimit (int) (optional)
+                init_state: Dict with initial states. Contains:
+                  x-coordinate: Int,
+                  y-coordinate Int,
+                  orientation Int.
+                waypoints: Array with waypoints. One waypoint contains:
+                  x-coordinate: Int,
+                  y-coordinate: Int,
+                  tolerance: Int.
                 participant_id: unique ID of this participant as String.
-                model: BeamNG model car as String. See beamngpy documentation for more models.
+                model: BeamNG model car as String.
+                color: Color of the car as string type.
         :return: Void
         """
         participant_id = participant.get("id")
@@ -104,74 +98,50 @@ class DBCBuilder:
         waypoints = participant.get("waypoints")
         model = participant.get("model")
         color = participant.get("color")
-        triggers = participant.get("triggerPoints")
         participant = ElementTree.SubElement(self.participants, "participant")
         participant.set("id", participant_id)
         participant.set("model", model)
         participant.set("color", color)
         ElementTree.SubElement(participant, 'initialState x="{}" y="{}"'
-                                            ' orientation="{}" movementMode="{}"'
-                                            ' speed="{}"'
+                                            ' orientation="{}"'
                                .format(str(init_state.get("position")[0]), str(init_state.get("position")[1]),
-                                       str(init_state.get("orientation")), init_state.get("movementMode"),
-                                       str(init_state.get("speed"))))
+                                       str(init_state.get("orientation"))))
 
         if waypoints is not None:
             movement = ElementTree.SubElement(participant, "movement")
             for waypoint in waypoints:
                 position = waypoint.get("position")
-                waypoint_tag = ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}"'
-                                                                ' movementMode="{}" lane="{}"'
-                                                      .format('{0:.10f}'.format(round(position[0], 2)),
-                                                              '{0:.10f}'.format(round(position[1], 2)),
-                                                              str(waypoint.get("tolerance")),
-                                                              waypoint.get("movementMode"),
-                                                              waypoint.get("lane")))
-                if waypoint.get("speedLimit"):
-                    waypoint_tag.set("speedLimit", str(waypoint.get("speedLimit")))
-
-    def add_precond_partic_sc_speed(self, vc_pos, sc_speed):
-        """Adds a precondition for a position, which must be satisfied in order to continue the test.
-        This method requires a lower speed bound, which must be reached.
-        :param vc_pos: Position of the precondition. Dict contains: participant id (string),
-                xPos (int), yPos (int), tolerance (int) defines a circle which must be entered.
-        :param sc_speed: Lower speed bound as integer.
-        :return: Void
-        """
-        vc_position = ElementTree.SubElement(self.preconditions, 'vcPosition')
-        vc_position.set("participant", vc_pos.get("id"))
-        vc_position.set("x", str(vc_pos.get("position")[0]))
-        vc_position.set("y", str(vc_pos.get("position")[1]))
-        vc_position.set("tolerance", str(vc_pos.get("tolerance")))
-
-        not_tag = ElementTree.SubElement(vc_position, "not")
-        ElementTree.SubElement(not_tag, 'scSpeed participant="{}" limit="{}"'
-                               .format(vc_pos.get("id"), str(sc_speed)))
+                ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}" lane="{}"'
+                                                  .format('{0:.10f}'.format(round(position[0], 2)),
+                                                          '{0:.10f}'.format(round(position[1], 2)),
+                                                          str(waypoint.get("tolerance")), waypoint.get("lane")))
 
     def add_success_point(self, participant_id, success_point):
         """Point when reached a test was successfully finished.
         :param participant_id: ID of the participant as a string.
-        :param success_point: Dict of a success state. Contains: x (int), y (int),
-               tolerance (int) which defines a circle.
+        :param success_point: Dict of a success state. Contains:
+                 x: Int,
+                 y: Int,
+                 tolerance: Int type which defines a circle.
         :return: Void.
         """
-        tolerance = 3
+        position = success_point.get("position")
         ElementTree.SubElement(self.success, 'scPosition participant="{}" x="{}" y="{}" tolerance="{}"'
-                               .format(participant_id, str(success_point[0]), str(success_point[1]),
-                                       str(tolerance)))
+                               .format(participant_id, str(position[0]), str(position[1]),
+                                       str(success_point.get("tolerance"))))
 
     def add_failure_damage(self, participant_id):
         """Adds damage observation as a test failure condition.
-        :param participant_id: participant id (string)
-        :return: Void
+        :param participant_id: Participant id (string).
+        :return: Void.
         """
         ElementTree.SubElement(self.failure, 'scDamage participant="{}"'.format(participant_id))
 
     def add_failure_lane(self, participant_id, lane="offroad"):
         """Adds lane following observation as a test failure condition.
         :param participant_id: participant id (string)
-        :param lane: on which lane should the test fail? (markings, leftLanes, rightLanes, offroad)
-        :return: Void
+        :param lane: on which lane should the test fail? (markings, leftLanes, rightLanes, offroad).
+        :return: Void.
         """
         ElementTree.SubElement(self.failure, 'scLane participant="{}" onLane="{}"'
                                .format(participant_id, lane))

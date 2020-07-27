@@ -685,7 +685,7 @@ class Converter:
         teleport_triggers = list()
         traffic_triggers = list()
         for trigger in triggers:
-            if trigger.attrib.get("action") == "spawn_and_start":
+            if trigger.attrib.get("action") == "spawnAndStart":
                 teleport_triggers.append(trigger)
             elif trigger.attrib.get("action") == "switchLights":
                 traffic_triggers.append(trigger.attrib)

@@ -31,7 +31,7 @@ def plot_all(population):
 
 
 def plot_lines(lines):
-    """Plots LineStrings of the package shapely. Can be also used to plot other geometries. Show function
+    """Plots LineStrings of the package Shapely. Can be also used to plot other geometries. Show function
     must be called manually.
     :param lines: List of lines, e.g. LineStrings.
     :return: Void.
