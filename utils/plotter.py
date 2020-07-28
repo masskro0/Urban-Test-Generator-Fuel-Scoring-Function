@@ -36,11 +36,11 @@ def plot_lines(lines):
     :param lines: List of lines, e.g. LineStrings.
     :return: Void.
     """
-    iterator = 0
-    while iterator < len(lines):
-        x, y = lines[iterator].xy
+    i = 0
+    while i < len(lines):
+        x, y = lines[i].xy
         plt.plot(x, y, '-og', markersize=3)
-        iterator += 1
+        i += 1
     # plt.show()
 
 

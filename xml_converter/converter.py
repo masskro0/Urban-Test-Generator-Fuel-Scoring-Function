@@ -1,3 +1,5 @@
+"""This module creates BNG files from XML files."""
+
 from beamngpy import BeamNGpy, Scenario, Road, StaticObject, Vehicle
 from beamngpy.beamngcommon import ENV
 from os.path import join
@@ -13,6 +15,12 @@ NUM_NODES = 100
 
 
 def _calc_rot_matrix(rad_x, rad_y, rad_z):
+    """Calculates the rotation matrix which is required for BNG.
+    :param rad_x: Radians in x direction.
+    :param rad_y: Radians in y direction.
+    :param rad_z: Radians in z direction.
+    :return: Rotation matrix.
+    """
     rot_matrix_x = [[1, 0, 0], [0, cos(rad_x), sin(rad_x)], [0, -sin(rad_x), cos(rad_x)]]
     rot_matrix_y = [[cos(rad_y), 0, -sin(rad_y)], [0, 1, 0], [sin(rad_y), 0, cos(rad_y)]]
     rot_matrix_z = [[cos(rad_z), sin(rad_z), 0], [-sin(rad_z), cos(rad_z), 0], [0, 0, 1]]
@@ -22,10 +30,11 @@ def _calc_rot_matrix(rad_x, rad_y, rad_z):
 
 
 def _get_nodes(divider_line, road_segments, fac, width=0.2):
+
     nodes = list()
-    it = 0
-    while it < len(list(divider_line.coords)):
-        index = int(round(fac * it))
+    i = 0
+    while i < len(list(divider_line.coords)):
+        index = int(round(fac * i))
         if index >= len(road_segments):
             index = len(road_segments) - 1
         z = road_segments[index].attrib.get("z")
@@ -33,8 +42,8 @@ def _get_nodes(divider_line, road_segments, fac, width=0.2):
             z = 0.01
         else:
             z = (int(z))
-        nodes.append((list(divider_line.coords)[it][0], list(divider_line.coords)[it][1], z, width))
-        it += 1
+        nodes.append((list(divider_line.coords)[i][0], list(divider_line.coords)[i][1], z, width))
+        i += 1
     return nodes
 
 
@@ -658,6 +667,9 @@ class Converter:
                   '      local egoName = \"ego\"\n'\
                   '      local arg_ego = {line = {\n                 '
         i = 0
+        #print(ego_lines)
+        #print(len(ego_lines))
+        #print(idx)
         while i < len(ego_lines[idx+1]):
             pos = ego_lines[idx+1][i].get("pos")
             speed = ego_lines[idx+1][i].get("speed")
@@ -759,6 +771,9 @@ class Converter:
                     lines = entry.get("lines")
                     break
             assert lines is not None, "Missing line of vehicle \"" + vehicle_name + "\"."
+            #print(len(lines))
+            #print(idx)
+            #print(lines[idx])
             lines = lines[idx]
             line_content = '    local arg = {line = {\n                 '
             i = 0

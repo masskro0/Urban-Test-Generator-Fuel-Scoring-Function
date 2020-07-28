@@ -1,10 +1,10 @@
 from copy import deepcopy
-from random import randint, random, choice, uniform
+from random import randint, random, choice, uniform, sample
 
 from numpy import asarray, clip, concatenate, arange, linspace, array, around
 from scipy.interpolate import splev
 from shapely import affinity
-from shapely.geometry import LineString, shape, Point
+from shapely.geometry import LineString, shape, Point, MultiPoint
 from termcolor import colored
 from os import path
 from glob import glob
@@ -76,6 +76,8 @@ def _add_ego_car(individual):
             opposite_dir = True
         if idx + 1 < len(ego_lanes) and ego_lanes[idx + 1] - ego_lanes[idx] != 1:
             intersec_point = lines[idx].intersection(lines[idx + 1])
+            if isinstance(intersec_point, MultiPoint):
+                intersec_point = Point((intersec_point[0]))
             lane_change = True
             index = len(control_points) // 2
             deleted_points = control_points[index:]
@@ -184,6 +186,7 @@ def _add_parked_cars(individual):
 def _add_other_participants(individual):
     colors = ["White", "Red", "Green", "Yellow", "Black", "Blue", "Orange", "Gray", "Purple"]
     ego_lanes = individual.get("ego_lanes")
+    print(ego_lanes)
     lanes = individual.get("lanes")
 
     # Drive from one opposite lane to another at an intersection.
@@ -193,99 +196,105 @@ def _add_other_participants(individual):
     for idx, lane in enumerate(lanes):
         if idx not in ego_lanes:
             spawn_lanes.append(idx)
-    spawn_lanes.append(ego_lanes[-1])
     samples = 45
+    print(spawn_lanes)
     i = 0
     waypoints = list()
-    while i < len(spawn_lanes) - 1:
+    while i < len(spawn_lanes):
         lines = list()
-        if spawn_lanes[i + 1] - spawn_lanes[i] == 1:
+        if len(spawn_lanes) > 1 and i < len(spawn_lanes) - 1 and spawn_lanes[i + 1] - spawn_lanes[i] == 1:
             spawn_indices = [spawn_lanes[i], spawn_lanes[i] + 1, spawn_lanes[i] + 2]
             spawn_index = choice(spawn_indices)
             end_indices = [spawn_lanes[i] - 1, spawn_lanes[i], spawn_lanes[i] + 1]
             end_index = choice(end_indices)
             while end_index == spawn_index:
                 end_index = choice(end_indices)
-            spawn_point = lanes[spawn_index].get("control_points")[-1]
-            end_point = lanes[end_index].get("control_points")[-1] if end_index != spawn_lanes[i] - 1 \
-                else lanes[end_index].get("control_points")[0]
-            middle_point = lanes[spawn_index].get("control_points")[0]
-            orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point, middle_point)
-            temp_lane = lanes[spawn_lanes[i] - 1] if spawn_index != spawn_lanes[i] + 2 else lanes[spawn_lanes[i] - 2]
-            temp_points = temp_lane.get("control_points")
-            temp_line = LineString(temp_points)
-            temp_width_per_lane = temp_lane.get("width") / (temp_lane.get("left_lanes") + temp_lane.get("right_lanes"))
-            temp_offset = temp_lane.get("left_lanes") + temp_lane.get("right_lanes") - 1
-            temp_offset = temp_offset * temp_width_per_lane / 2
-            temp_line = temp_line.parallel_offset(temp_offset, "right")
+        else:
+            spawn_indices = [spawn_lanes[i] - 1, spawn_lanes[i], spawn_lanes[i] + 1]
+            spawn_index = choice(spawn_indices)
+            end_index = spawn_lanes[i] - 1 if spawn_index == spawn_lanes[i] else spawn_lanes[i]
+        spawn_point = lanes[spawn_index].get("control_points")[-1]
+        end_point = lanes[end_index].get("control_points")[-1] if end_index != spawn_lanes[i] - 1 \
+            else lanes[end_index].get("control_points")[0]
+        middle_point = lanes[spawn_index].get("control_points")[0]
+        orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point, middle_point)
+        temp_lane = lanes[spawn_lanes[i] - 1] if spawn_index != spawn_lanes[i] + 2 else lanes[spawn_lanes[i] - 2]
+        temp_points = temp_lane.get("control_points")
+        temp_line = LineString(temp_points)
+        temp_width_per_lane = temp_lane.get("width") / (temp_lane.get("left_lanes") + temp_lane.get("right_lanes"))
+        temp_offset = temp_lane.get("left_lanes") + temp_lane.get("right_lanes") - 1
+        temp_offset = temp_offset * temp_width_per_lane / 2
+        temp_line = temp_line.parallel_offset(temp_offset, "right")
 
-            # Reversed because car spawns from the opposite direction.
-            left_lanes = lanes[spawn_index].get("right_lanes")
-            right_lanes = lanes[spawn_index].get("left_lanes")
-            width = lanes[spawn_index].get("width")
-            points = lanes[spawn_index].get("control_points")
-            points = points[::-1]
-            line = LineString(points)
-            width_per_lane = width / (left_lanes + right_lanes)
-            angle = get_angle(spawn_point, middle_point, end_point)
-            left = True if (240 <= angle <= 300) and right_lanes > 1 else False
-            if left:
-                offset = right_lanes - left_lanes - 1
-                offset = offset / 2 * width_per_lane
-                line = line.parallel_offset(offset, "left")
-                if offset < 0:
-                    line.coords = line.coords[::-1]
-            else:
-                offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
-                line = line.parallel_offset(offset, "right")
-                line = multilinestrings_to_linestring(line)
+        # Reversed because car spawns from the opposite direction.
+        left_lanes = lanes[spawn_index].get("right_lanes")
+        right_lanes = lanes[spawn_index].get("left_lanes")
+        width = lanes[spawn_index].get("width")
+        points = lanes[spawn_index].get("control_points")
+        points = points[::-1]
+        line = LineString(points)
+        width_per_lane = width / (left_lanes + right_lanes)
+        angle = get_angle(spawn_point, middle_point, end_point)
+        left = True if (240 <= angle <= 300) and right_lanes > 1 else False
+        if left:
+            offset = right_lanes - left_lanes - 1
+            offset = offset / 2 * width_per_lane
+            line = line.parallel_offset(offset, "left")
+            if offset < 0:
                 line.coords = line.coords[::-1]
-            line.coords = b_spline(list(line.coords), samples).tolist()
-            line.coords = line.coords[:-4]
-            lines.append(line)
-
-            left_lanes = lanes[end_index].get("left_lanes")
-            right_lanes = lanes[end_index].get("right_lanes")
-            width = lanes[end_index].get("width")
-            points = lanes[end_index].get("control_points")
-            line = LineString(points)
-            width_per_lane = width / (left_lanes + right_lanes)
+        else:
             offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
-            if end_index != spawn_lanes[i] - 1:
-                line = line.parallel_offset(offset, "right")
-            else:
-                line = line.parallel_offset(offset, "left")
+            line = line.parallel_offset(offset, "right")
             line = multilinestrings_to_linestring(line)
             line.coords = line.coords[::-1]
-            line.coords = b_spline(list(line.coords), samples).tolist()
-            line.coords = line.coords[samples // 10:]
-            lines.append(line)
-            for line in lines:
-                for point in list(line.coords):
-                    if len(waypoints) == 0 or euclidean(point, waypoints[-1].get("position")) >= 1.5:
-                        waypoint = {"position": point,
-                                    "tolerance": 2,
-                                    "lane": spawn_index}
-                        waypoints.append(waypoint)
-            trigger_point = {"position": temp_line.coords[-1],
-                             "action": "spawnAndStart",
-                             "tolerance": 2,
-                             "triggeredBy": "ego",
-                             "triggers": "other_0"}
-            spawn_point = {"position": list(lines[0].coords)[0], "orientation": orientation}
-            triggers.append({"triggerPoint": trigger_point, "spawnPoint": spawn_point})
+        line.coords = b_spline(list(line.coords), samples).tolist()
+        line.coords = line.coords[:-4]
+        lines.append(line)
 
-        i += 1
-    if len(waypoints) != 0:
-        init_state = {"position": waypoints[0].get("position"),
-                      "orientation": triggers[0].get("spawnPoint").get("orientation")}
-        other = {"id": "other_{}".format(0),
-                 "init_state": init_state,
-                 "waypoints": waypoints,
-                 "model": "ETK800",
-                 "color": choice(colors)}
-        individual["participants"].append(other)
-        individual.setdefault("triggers", []).extend(triggers)
+        left_lanes = lanes[end_index].get("left_lanes")
+        right_lanes = lanes[end_index].get("right_lanes")
+        width = lanes[end_index].get("width")
+        points = lanes[end_index].get("control_points")
+        line = LineString(points)
+        width_per_lane = width / (left_lanes + right_lanes)
+        offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
+        if end_index != spawn_lanes[i] - 1:
+            line = line.parallel_offset(offset, "right")
+        else:
+            line = line.parallel_offset(offset, "left")
+        line = multilinestrings_to_linestring(line)
+        line.coords = line.coords[::-1]
+        line.coords = b_spline(list(line.coords), samples).tolist()
+        line.coords = line.coords[samples // 10:]
+        lines.append(line)
+        for line in lines:
+            for point in list(line.coords):
+                if len(waypoints) == 0 or euclidean(point, waypoints[-1].get("position")) >= 1.5:
+                    waypoint = {"position": point,
+                                "tolerance": 2,
+                                "lane": spawn_index}
+                    waypoints.append(waypoint)
+        trigger_point = {"position": temp_line.coords[-1],
+                         "action": "spawnAndStart",
+                         "tolerance": 2,
+                         "triggeredBy": "ego",
+                         "triggers": "other_0"}
+        spawn_point = {"position": list(lines[0].coords)[0], "orientation": orientation}
+        triggers.append({"triggerPoint": trigger_point, "spawnPoint": spawn_point})
+
+        if i < len(spawn_lanes) - 1 and spawn_lanes[i + 1] - spawn_lanes[i] == 1:
+            i += 2
+        else:
+            i += 1
+    init_state = {"position": waypoints[0].get("position"),
+                  "orientation": triggers[0].get("spawnPoint").get("orientation")}
+    other = {"id": "other_{}".format(0),
+             "init_state": init_state,
+             "waypoints": waypoints,
+             "model": "ETK800",
+             "color": choice(colors)}
+    individual["participants"].append(other)
+    individual.setdefault("triggers", []).extend(triggers)
 
 
 def _merge_lanes(population):
@@ -369,7 +378,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
         return my_position, my_z_rot
 
     modes = ["off", "blinking", "manual"]
-    mode = "manual"
+    mode = choice(modes)
     oid = None
     if mode == "manual":
         oid = "traffic_light_manual_" + str(OID_INDEX)
@@ -431,7 +440,7 @@ class FuelConsumptionTestGenerator:
         self.files_name = "urban"
         self.SPLINE_DEGREE = 3  # Sharpness of curves
         self.MAX_TRIES = 20  # Maximum number of invalid generated points/segments
-        self.POPULATION_SIZE = 1  # Minimum number of generated roads for each generation
+        self.POPULATION_SIZE = 3  # Minimum number of generated roads for each generation
         self.NUMBER_ELITES = 2  # Number of best kept test cases.
         self.MIN_SEGMENT_LENGTH = 15  # Minimum length of a road segment
         self.MAX_SEGMENT_LENGTH = 30  # Maximum length of a road segment
@@ -453,7 +462,7 @@ class FuelConsumptionTestGenerator:
         :param lanes: List of lanes.
         :return: List of arrays with samples, representing a bspline of the given control points of the lanes.
         """
-        splined_list = []
+        splined_list = list()
         for lane in lanes:
             samples = lane.get("samples")
             # Calculate splines for each lane.
@@ -590,7 +599,7 @@ class FuelConsumptionTestGenerator:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
             return {"lanes": lanes, "success_point": {"position": last_point, "tolerance": 3}, "ego_lanes": ego_lanes,
                     "obstacles": obstacles,
-                    "directions": directions, "triggers": triggers}
+                    "directions": directions, "triggers": triggers, "tod": 0}
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
@@ -667,7 +676,6 @@ class FuelConsumptionTestGenerator:
         :param population: List of individuals.
         :return: List of individuals with bsplined control points.
         """
-        print(population)
         for individual in population:
             splined_list = self._bspline(individual.get("lanes"))
             iterator = 0
@@ -685,17 +693,58 @@ class FuelConsumptionTestGenerator:
             urban = self._create_urban_environment()
             if urban is not None:
                 startpop.append({"lanes": urban.get("lanes"),
-                                 "type": "urban",
                                  "file_name": self.files_name,
-                                 "score": 0,
                                  "obstacles": urban.get("obstacles"),
                                  "success_point": urban.get("success_point"),
                                  "ego_lanes": urban.get("ego_lanes"),
                                  "directions": urban.get("directions"),
                                  "fitness": 0,
-                                 "triggers": urban.get("triggers")})
+                                 "triggers": urban.get("triggers"),
+                                 "tod": urban.get("tod")})
                 i += 1
         return startpop
+
+    def _mutation(self, individual):
+        probability = 0.25
+        print(colored("Mutating individual...", "grey", attrs=['bold']))
+        for lane in individual.get("lanes"):
+            control_point = lane.get("control_point")
+            i = 2
+            # Was mit intersection lanes? Letzter punkt von normal? Lanes haben nur 2 Punkte?
+            # Wenn intersection mutaten, was mit traffic signs, methoden neu aufrufen? Neue methode dafür?
+            # Trigger Points?
+            # TODO Control Points Mutation
+            # TODO Number of lanes for each lanes
+            # TODO Width of each lane
+            # TODO Traffic light mode
+            # TODO Traffic lights or traffic sign
+            # TODO Position of parked cars
+            # TODO Traffic
+        """
+        iterator = 2
+        while iterator < len(individual.get("control_points")):
+            if random() <= probability:
+                valid = False
+                tries = 0
+                while not valid and tries < self.MAX_TRIES / 10:
+                    new_point = self._generate_random_point(individual.get("control_points")[iterator - 1],
+                                                            individual.get("control_points")[iterator - 2])
+                    new_point = {"x": new_point.get("x"),
+                                 "y": new_point.get("y")}
+                    temp_list = deepcopy(individual.get("control_points"))
+                    temp_list[iterator] = new_point
+                    spline_list = self._bspline(temp_list, 60)
+                    control_points_lines = convert_points_to_lines(spline_list)
+                    linestring_list = self._get_width_lines(spline_list)
+                    if not (intersection_check_all_np(spline_list)
+                            or intersection_check_width(linestring_list, control_points_lines)):
+                        valid = True
+                        individual.get("control_points")[iterator] = new_point
+                    tries += 1
+            iterator += 1
+        """
+        individual["fitness"] = 0
+        return individual
 
     def _choose_elite(self, population):
         """Chooses the test cases with the best fitness values.
@@ -711,20 +760,35 @@ class FuelConsumptionTestGenerator:
         return elite
 
     def genetic_algorithm(self):
-        """
+
         if len(self.population_list) == 0:
-            self.population_list = self._create_start_population()
+        #    self.population_list = self._create_start_population()
+            self.population_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0), (48, 23), (64, 21), (86, 1), (94, -15)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(94, -15), (102.94427190999915, -32.88854381999832)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(102.94427190999915, -32.88854381999832), (62.78522159423895, -62.67529721368382)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(102.94427190999915, -32.88854381999832), (116.36067977499789, -59.72135954999579)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(116.36067977499789, -59.72135954999579), (144, -49)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(144, -49), (162.64630002512104, -41.76705486173358)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(162.64630002512104, -41.76705486173358), (190.61575006280253, -30.91763715433393)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(162.64630002512104, -41.76705486173358), (133.82369001500592, -0.9105112951908012)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(162.64630002512104, -41.76705486173358), (193.56767592627136, -81.05914709897344)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(193.56767592627136, -81.05914709897344), (204, -107), (213, -130), (197, -153)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}], 'file_name': 'urban', 'obstacles': [{'name': 'trafficlightdouble', 'position': (94.67082039324993, -30.205262246998572), 'zRot': 297, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_0'}, {'name': 'trafficlightdouble', 'position': (111.21772342674838, -35.571825392998065), 'zRot': 477, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightdouble', 'position': (100.5657809230732, -42.37202317227784), 'zRot': 397, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightdouble', 'position': (161.0660215128338, -49.030161622865705), 'zRot': 381, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_1'}, {'name': 'trafficlightsingle', 'position': (154.55661658789683, -37.585736662229934), 'zRot': 305, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightdouble', 'position': (164.2265785374082, -34.50394810060144), 'zRot': 201, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (171.18491685070404, -45.82573971102538), 'zRot': 488, 'mode': 'off', 'sign': 'priority'}], 'success_point': {'position': (197, -153), 'tolerance': 3}, 'ego_lanes': [0, 1, 3, 4, 5, 8, 9], 'directions': ['straight', 'right'], 'fitness': 0, 'triggers': [{'triggerPoint': {'position': (94, -15), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_0', 'initState': 'green', 'switchTo': 'red'}}, {'triggerPoint': {'position': (144, -49), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_1', 'initState': 'green', 'switchTo': 'red'}}]}, {'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0), (59, -11), (68, -39), (47, -58), (50, -82), (57, -98), (45, -111), (23, -118), (6, -120)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(6, -120), (-13.86301208645752, -122.33682495134792)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-13.86301208645752, -122.33682495134792), (-19.705074464827334, -72.67929473520411)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-13.86301208645752, -122.33682495134792), (-43.657530216143826, -125.84206237836986)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-43.657530216143826, -125.84206237836986), (-55, -139)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}], 'file_name': 'urban', 'obstacles': [{'name': 'trafficlightdouble', 'position': (-8.704471006356922, -113.97683368790068), 'zRot': 187, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_2'}, {'name': 'trafficlightdouble', 'position': (-19.021553166558093, -130.69681621479518), 'zRot': 367, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (-20.90853931477156, -115.51329609341192), 'zRot': 277, 'mode': 'off', 'sign': 'priority'}], 'success_point': {'position': (-55, -139), 'tolerance': 3}, 'ego_lanes': [0, 1, 3, 4], 'directions': ['straight'], 'fitness': 0, 'triggers': [{'triggerPoint': {'position': (6, -120), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_2', 'initState': 'green', 'switchTo': 'red'}}]}, {'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0), (68, -16)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(68, -16), (84.41810403570976, -27.421289763972)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(84.41810403570976, -27.421289763972), (105.41010619173856, 17.958615981647245)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(84.41810403570976, -27.421289763972), (45.11204707132464, -58.32491230102278)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(45.11204707132464, -58.32491230102278), (52, -83), (36, -96)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(36, -96), (20.477719997674683, -108.61185250188933)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(20.477719997674683, -108.61185250188933), (41.68283794971241, -153.89256553337955)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(20.477719997674683, -108.61185250188933), (-2.8057000058132786, -127.52963125472331)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-2.8057000058132786, -127.52963125472331), (1, -157), (7, -176), (19, -200), (16, -217), (-3, -236)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}], 'file_name': 'urban', 'obstacles': [{'name': 'trafficlightdouble', 'position': (72.46108439874645, -31.528671095340435), 'zRot': 325, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_3'}, {'name': 'trafficlightsingle', 'position': (84.55194473663923, -14.746287331357841), 'zRot': 245, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightsingle', 'position': (79.69225727275725, -37.751651440752305), 'zRot': 398, 'mode': 'off', 'sign': 'priority'}, {'name': 'stopsign', 'position': (22.693525468006627, -100.11146391561593), 'zRot': 219}, {'name': 'prioritysign', 'position': (27.3498361840575, -111.02515296408941), 'zRot': 475}, {'name': 'stopsign', 'position': (18.26191452734274, -117.11224108816273), 'zRot': 399}], 'success_point': {'position': (-3, -236), 'tolerance': 3}, 'ego_lanes': [0, 1, 3, 4, 5, 7, 8], 'directions': ['right', 'straight'], 'fitness': 0, 'triggers': [{'triggerPoint': {'position': (68, -16), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_3', 'initState': 'green', 'switchTo': 'red'}}]}]
+
+        while len(self.population_list) < self.POPULATION_SIZE:
+            selected_indices = sample(range(0, len(self.population_list)), 2)
+            parent1 = self.population_list[selected_indices[0]]
+            parent2 = self.population_list[selected_indices[1]]
+            child1 = self._mutation(parent1)
+            child2 = self._mutation(parent2)
+            self.population_list.append(child1)
+            self.population_list.append(child2)
+
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
-        # plot_all(temp_list)
-        """
-        temp_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0), (70, -6)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(70, -6), (89.44774603961034, -10.667459049506483)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(89.44774603961034, -10.667459049506483), (109.38178483543177, 35.18702925084078)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(89.44774603961034, -10.667459049506483), (93.37441275199473, -60.51303346218481)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(89.44774603961034, -10.667459049506483), (118.61936509902588, -17.66864762376621)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(118.61936509902588, -17.66864762376621), (143, -32), (158, -33)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(158, -33), (177.95570315713218, -34.33038021047548)], 'width': 20, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(177.95570315713218, -34.33038021047548), (157.76720085565654, -80.07340563319215)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(177.95570315713218, -34.33038021047548), (176.04858631723727, 15.633235605025561)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(176.04858631723727, 15.633235605025561), (196, 32)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(196, 32), (211.46284550671288, 44.68465249171331)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(211.46284550671288, 44.68465249171331), (234.65711376678217, 63.71163122928327)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(211.46284550671288, 44.68465249171331), (229.6766939222502, -1.879880426547885)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(211.46284550671288, 44.68465249171331), (176.50269714543572, 80.43081349618319)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(176.50269714543572, 80.43081349618319), (156, 79), (142, 94), (123, 94)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}], 'type': 'urban', 'file_name': 'urban', 'score': 0, 'obstacles': [{'name': 'trafficlightdouble', 'position': (79.6771984293101, -18.812175090895295), 'zRot': 347, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_0'}, {'name': 'trafficlightsingle', 'position': (86.41283067811278, 1.6649895617201644), 'zRot': 247, 'mode': 'blinking', 'sign': 'priority'}, {'name': 'trafficlightdouble', 'position': (100.63797911080214, -2.8634675187316496), 'zRot': 527, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (98.11348451068366, -22.62383712779423), 'zRot': 455, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightdouble', 'position': (166.9401550143952, -43.81865187158659), 'zRot': 356, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_1'}, {'name': 'trafficlightsingle', 'position': (169.84021492329623, -23.592109831756655), 'zRot': 272, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightsingle', 'position': (180.92205160733246, -46.67950070029152), 'zRot': 426, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightsingle', 'position': (211.24369769880727, 34.545521649363444), 'zRot': 399, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_2'}, {'name': 'trafficlightsingle', 'position': (202.57987102797057, 47.76050431031787), 'zRot': 314, 'mode': 'off', 'sign': 'priority'}, {'name': 'trafficlightsingle', 'position': (209.74913762627935, 53.238201772598984), 'zRot': 219, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (218.14277123100845, 39.13680675504271), 'zRot': 471, 'mode': 'off', 'sign': 'priority'}], 'success_point': (123, 94), 'ego_lanes': [0, 1, 4, 5, 6, 8, 9, 10, 13, 14], 'directions': ['straight', 'left', 'left'], 'fitness': 0, 'triggers': [{'triggerPoint': {'position': (70, -6), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_0', 'initState': 'green', 'switchTo': 'red'}}, {'triggerPoint': {'position': (158, -33), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_1', 'initState': 'green', 'switchTo': 'red'}}, {'triggerPoint': {'position': (196, 32), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_2', 'initState': 'green', 'switchTo': 'red'}}]}]
-
+        #print(temp_list)
         temp_list = self._spline_population(temp_list)
         _preparation(temp_list)
+        i = 0
+        while i < len(self.population_list):
+            self.population_list[i]["obstacles"] = list()
+            self.population_list[i]["obstacles"] = temp_list[i].get("obstacles")
+            self.population_list[i]["participants"] = list()
+            self.population_list[i]["participants"] = temp_list[i].get("participants")
+            i += 1
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
-        self.population_list = []
+        self.population_list.pop()
 
     def get_test(self):
         """Returns the two first test files starting with "files_name".
@@ -740,7 +804,7 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Add other participants + crashes, add traffic for 3-way-lanes
+#       TODO Add other participants + crashes
 #       TODO Mutation
 #       TODO Crossover
 

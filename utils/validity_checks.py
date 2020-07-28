@@ -34,13 +34,13 @@ def intersection_check_width(width_lines, control_points_lines, intersection_lan
     """
     i = 0
     while i < len(width_lines):
-        intersection_list = []
+        intersection_list = list()
         for piece in intersection_lanes:
             if i in piece:
                 intersection_list = piece
                 break
         for width_line in width_lines[i]:
-            intersections = []
+            intersections = list()
             j = 0
             while j < len(control_points_lines):
                 for control_line in control_points_lines[j]:

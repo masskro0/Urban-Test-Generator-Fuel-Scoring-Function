@@ -4,6 +4,7 @@
 from shapely import affinity
 from shapely.geometry import LineString, MultiLineString
 from math import degrees, atan2
+from random import randint
 
 MIN_DEGREES = 90    # Minimum degree between three points.
 MAX_DEGREES = 270   # Maximum degree between three points.
@@ -28,31 +29,28 @@ def convert_points_to_lines(lanes):
     :param lanes: Lanes of an individual.
     :return: List of LineStrings.
     """
-    lanes_lines = []
+    lanes_lines = list()
     for lane in lanes:
         control_points = lane.get("control_points")
-        lines = []
-        iterator = 0
-        while iterator < (len(control_points) - 1):
-            p1 = (control_points[iterator][0], control_points[iterator][1])
-            p2 = (control_points[iterator + 1][0], control_points[iterator + 1][1])
+        lines = list()
+        i = 0
+        while i < (len(control_points) - 1):
+            p1 = (control_points[i][0], control_points[i][1])
+            p2 = (control_points[i + 1][0], control_points[i + 1][1])
             line = LineString([p1, p2])
             lines.append(line)
-            iterator += 1
+            i += 1
         lanes_lines.append(lines)
     return lanes_lines
 
 
 def get_resize_factor(length, width):
-    """Returns the resize factor for the width lines so all lines have
-    one specific length.
+    """Returns the resize factor for the width lines so all lines have one specific length.
     :param length: Length of a LineString.
     :param width: Width of the lane.
     :return: Resize factor.
     """
-    if length == 0:
-        return 0
-    return width / length
+    return width / length if length != 0 else 0
 
 
 def get_resize_factor_intersection(linestring_length, intersection_length):
@@ -61,9 +59,7 @@ def get_resize_factor_intersection(linestring_length, intersection_length):
     :param intersection_length: Desired length as int.
     :return: Resize factor as float.
     """
-    if linestring_length == 0:
-        return 0
-    return (linestring_length + intersection_length) / linestring_length
+    return (linestring_length + intersection_length) / linestring_length if linestring_length != 0 else 0
 
 
 def get_width_lines(splined_lanes):
@@ -72,17 +68,17 @@ def get_width_lines(splined_lanes):
     :param splined_lanes: List of splined lanes.
     :return: List of LineStrings which represent the width of the road.
     """
-    complete_width_list = []
+    complete_width_list = list()
     for spline_list in splined_lanes:
-        linestring_list = []
-        iterator = 0
+        linestring_list = list()
+        i = 0
 
-        # Triple width to have more space between road pieces.
+        # Triple width to have more space between road segments.
         width = spline_list.get("width") * 3
         control_points = spline_list.get("control_points")
-        while iterator < (len(control_points) - 1):
-            p1 = (control_points[iterator][0], control_points[iterator][1])
-            p2 = (control_points[iterator + 1][0], control_points[iterator + 1][1])
+        while i < (len(control_points) - 1):
+            p1 = (control_points[i][0], control_points[i][1])
+            p2 = (control_points[i + 1][0], control_points[i + 1][1])
             line = LineString([p1, p2])
 
             # Rotate counter-clockwise and resize to the half of the road length.
@@ -100,7 +96,8 @@ def get_width_lines(splined_lanes):
             line = LineString([line_rot1.coords[1], line_rot2.coords[1]])
             linestring_list.append(line)
 
-            if iterator == len(control_points) - 2:
+            # Append last line.
+            if i == len(control_points) - 2:
                 line = LineString([p1, p2])
                 line_rot1 = affinity.rotate(line, -90, line.coords[1])
                 line_rot1 = affinity.scale(line_rot1, xfact=get_resize_factor(line_rot1.length, width),
@@ -115,7 +112,7 @@ def get_width_lines(splined_lanes):
                 line = affinity.scale(line, xfact=get_resize_factor(line.length, width) * 2,
                                       yfact=get_resize_factor(line.length, width) * 2)
                 linestring_list.append(line)
-            iterator += 1
+            i += 1
         complete_width_list.append(linestring_list)
     return complete_width_list
 
@@ -137,9 +134,7 @@ def calc_width(left_lanes, right_lanes):
     :param right_lanes: Number of right lanes.
     :return: Total width.
     """
-    from random import randint
-    multiplier = randint(4, 5)
-    return (left_lanes + right_lanes) * multiplier
+    return (left_lanes + right_lanes) * randint(4, 5)
 
 
 def calc_min_max_angles(num_lanes):
@@ -162,9 +157,9 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     :return: New lanes, lanes for the ego car, latest added point, number of left/right lanes of the lane which
     should receive new points, lane indices for this intersection as list type, current lane index.
     """
-    lanes = []
-    ego_lanes = []
-    intersection_lanes = []
+    lanes = list()
+    ego_lanes = list()
+    intersection_lanes = list()
     new_left_lanes = intersection.get("new_left_lanes")
     new_right_lanes = intersection.get("new_right_lanes")
     new_width = intersection.get("new_width")
@@ -248,7 +243,11 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
 
 
 def get_intersection_lines(last_point, intersection):
-    """Creates and returns two LineStrings of a given intersection."""
+    """Creates and returns two LineStrings of a given intersection.
+    :param last_point: Last point which was added as a tuple (x, y).
+    :param intersection: Intersection which was created using the function _create_intersection().
+    :return: Two LineStrings representing the new intersection.
+    """
     number_of_ways = intersection.get("number_of_ways")
     layout = intersection.get("layout")
     if number_of_ways == 4 or layout == "straight":
