@@ -186,7 +186,6 @@ def _add_parked_cars(individual):
 def _add_other_participants(individual):
     colors = ["White", "Red", "Green", "Yellow", "Black", "Blue", "Orange", "Gray", "Purple"]
     ego_lanes = individual.get("ego_lanes")
-    print(ego_lanes)
     lanes = individual.get("lanes")
 
     # Drive from one opposite lane to another at an intersection.
@@ -197,11 +196,11 @@ def _add_other_participants(individual):
         if idx not in ego_lanes:
             spawn_lanes.append(idx)
     samples = 45
-    print(spawn_lanes)
     i = 0
     waypoints = list()
     while i < len(spawn_lanes):
         lines = list()
+        three_way = False
         if len(spawn_lanes) > 1 and i < len(spawn_lanes) - 1 and spawn_lanes[i + 1] - spawn_lanes[i] == 1:
             spawn_indices = [spawn_lanes[i], spawn_lanes[i] + 1, spawn_lanes[i] + 2]
             spawn_index = choice(spawn_indices)
@@ -213,7 +212,9 @@ def _add_other_participants(individual):
             spawn_indices = [spawn_lanes[i] - 1, spawn_lanes[i], spawn_lanes[i] + 1]
             spawn_index = choice(spawn_indices)
             end_index = spawn_lanes[i] - 1 if spawn_index == spawn_lanes[i] else spawn_lanes[i]
-        spawn_point = lanes[spawn_index].get("control_points")[-1]
+            three_way = True
+        spawn_point = lanes[spawn_index].get("control_points")[-1] if three_way and spawn_index == spawn_lanes[i] + 1 \
+            else lanes[spawn_index].get("control_points")[-1]
         end_point = lanes[end_index].get("control_points")[-1] if end_index != spawn_lanes[i] - 1 \
             else lanes[end_index].get("control_points")[0]
         middle_point = lanes[spawn_index].get("control_points")[0]
@@ -296,6 +297,58 @@ def _add_other_participants(individual):
     individual["participants"].append(other)
     individual.setdefault("triggers", []).extend(triggers)
 
+    spawn_lanes.append(ego_lanes[-1])
+    end_index = choice(spawn_lanes)
+    temp_val = 0
+    temp_index = 0
+    i = 1
+    while i < len(spawn_lanes):
+        if spawn_lanes[i - 1] - spawn_lanes[i] != 1:
+            temp_val += 1
+        if end_index == spawn_lanes[i]:
+            temp_index = temp_val
+            break
+        i += 1
+    waypoints = list()
+    ego_waypoints = None
+    for participant in individual.get("participants"):
+        if participant.get("id") == "ego":
+            ego_waypoints = participant.get("waypoints")
+    for waypoint in ego_waypoints[3:]:
+        if waypoint.get("lane") > temp_index:
+            break
+        waypoints.append(waypoint)
+    left_lanes = lanes[end_index].get("left_lanes")
+    right_lanes = lanes[end_index].get("right_lanes")
+    width = lanes[end_index].get("width")
+    points = lanes[end_index].get("control_points")
+    line = LineString(points)
+    width_per_lane = width / (left_lanes + right_lanes)
+    offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
+    angle = get_angle(waypoints[-2].get("position"), points[0], points[-1])
+    left = True if (240 <= angle <= 300) and right_lanes > 1 else False
+    if not left:
+        line = line.parallel_offset(offset, "right")
+    else:
+        line = line.parallel_offset(offset, "left")
+    line = multilinestrings_to_linestring(line)
+    line.coords = line.coords[::-1]
+    line.coords = b_spline(list(line.coords), samples).tolist()
+    line.coords = line.coords[samples // 10:]
+    for point in list(line.coords):
+        if len(waypoints) == 0 or euclidean(point, waypoints[-1].get("position")) >= 1.5:
+            waypoint = {"position": point,
+                        "tolerance": 2,
+                        "lane": temp_index}
+            waypoints.append(waypoint)
+    init_state = {"position": ego_waypoints[2].get("position"),
+                  "orientation": 0}
+    other = {"id": "other_{}".format(1),
+             "init_state": init_state,
+             "waypoints": waypoints,
+             "model": "ETK800",
+             "color": choice(colors)}
+    individual.get("participants").append(other)
 
 def _merge_lanes(population):
     """Merge lanes for each individual which will be driven by the ego car.
@@ -839,3 +892,4 @@ class FuelConsumptionTestGenerator:
 #       TODO Comments
 #       TODO Refactor
 #       TODO Remove simulation_data directory
+#       TODO Fix BNG errors and warnings

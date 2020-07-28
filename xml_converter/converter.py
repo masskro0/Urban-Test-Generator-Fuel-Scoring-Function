@@ -567,6 +567,7 @@ class Converter:
             while i < len(waypoints):
                 attr = waypoints[i].attrib
                 z = 0 if attr.get("z") is None else attr.get("z")
+                """
                 original_content.extend([
                     "    new BeamNGWaypoint(wp_{}_{}){{\n".format(vid, index),
                     "        drawDebug = \"0\";\n",
@@ -580,6 +581,7 @@ class Converter:
                     "        canSaveDynamicFields = \"1\";\n",
                     "    };\n"
                 ])
+                """
                 if 1 < i < len(waypoints) - 1:
                     attr_prev = waypoints[i - 1].attrib
                     attr_next = waypoints[i + 1].attrib
@@ -596,7 +598,7 @@ class Converter:
                         line = list()
                     else:
                         if 170 <= angle <= 190:
-                            speed = 13.33
+                            speed = 13.8
                         elif 150 <= angle < 170 or 190 > angle >= 210:
                             speed = 10
                         elif 130 <= angle < 150 or 210 > angle >= 230:
@@ -614,7 +616,7 @@ class Converter:
                                 (speed + float(line[-1].get("speed"))) / 2
                         line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
                 else:
-                    speed = 0 if i == len(waypoints) - 1 else 13.33
+                    speed = 0 if i == len(waypoints) - 1 else 13.8
                     line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
                     if i == len(waypoints) - 1:
                         line[-1]["speed"] = 0
@@ -632,57 +634,79 @@ class Converter:
         prefab_file.close()
 
     def _get_on_race_start_line_content(self):
-        ego_lines = None
-        for entry in self.lines:
-            if entry.get("vid") == "ego":
-                ego_lines = entry.get("lines")
-                break
-        assert ego_lines is not None, "Missing line of vehicle \"ego\"."
-        content = 'local vehicleName = \'ego\'\n'\
-                  '  local arg = {line = {\n                 '
-        i = 0
-        while i < len(ego_lines[0]):
-            pos = ego_lines[0][i].get("pos")
-            speed = ego_lines[0][i].get("speed")
-            content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
-                       + str(speed) + "}"
-            if i + 1 == len(ego_lines[0]):
-                content += "\n                }"
-            else:
-                content += ", \n                 "
-            i += 1
-        content += '}\n'\
-                   '  sh.setAiLine(vehicleName, arg)\n'
+        participants = self.dbc_root.findall("participants/participant")
+        triggers = self.dbc_root.find("triggerPoints")
+        content = ""
+        for participant in participants:
+            vid = participant.get("id")
+            break_flag = False
+            for trigger in triggers:
+                if trigger.get("triggers") == vid:
+                    break_flag = True
+                    break
+            if break_flag:
+                continue
+            lines = None
+            for entry in self.lines:
+                if entry.get("vid") == vid:
+                    lines = entry.get("lines")
+                    break
+            assert lines is not None, "Missing line of vehicle \"{}\".".format(vid)
+            content += '  vehicleName = \'' + vid + '\'\n'\
+                       '  arg = {line = {\n                 '
+            i = 0
+            while i < len(lines[0]):
+                pos = lines[0][i].get("pos")
+                speed = lines[0][i].get("speed")
+                content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
+                           + str(speed) + "}"
+                if i + 1 == len(lines[0]):
+                    content += "\n                }"
+                else:
+                    content += ", \n                 "
+                i += 1
+            content += '}\n'\
+                       '  sh.setAiLine(vehicleName, arg)\n'
         return content
 
-    def _get_ego_lines_content(self, idx):
-        ego_lines = None
-        for entry in self.lines:
-            if entry.get("vid") == "ego":
-                ego_lines = entry.get("lines")
-                break
-        assert ego_lines is not None, "Missing line of vehicle \"ego\"."
-        content = '    if ego_time_' + str(idx) + ' == 7 then\n' \
-                  '      print(ego_time_' + str(idx) + ')\n' \
-                  '      local egoName = \"ego\"\n'\
-                  '      local arg_ego = {line = {\n                 '
-        i = 0
-        #print(ego_lines)
-        #print(len(ego_lines))
-        #print(idx)
-        while i < len(ego_lines[idx+1]):
-            pos = ego_lines[idx+1][i].get("pos")
-            speed = ego_lines[idx+1][i].get("speed")
-            content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
-                       + str(speed) + "}"
-            if i + 1 == len(ego_lines[idx+1]):
-                content += "\n                  }"
-            else:
-                content += ", \n                   "
-            i += 1
-        content += '}\n' \
-                   '      sh.setAiLine(egoName, arg_ego)\n' \
-                   '    end\n'
+    def _get_vehicle_lines_content(self, idx):
+        participants = self.dbc_root.findall("participants/participant")
+        triggers = self.dbc_root.find("triggerPoints")
+        content = ""
+        for participant in participants:
+            vid = participant.get("id")
+            break_flag = False
+            for trigger in triggers:
+                if trigger.get("triggers") == vid:
+                    break_flag = True
+                    break
+            if break_flag:
+                continue
+            lines = None
+            for entry in self.lines:
+                if entry.get("vid") == vid:
+                    lines = entry.get("lines")
+                    break
+            assert lines is not None, "Missing line of vehicle \"" + vid + "\"."
+            if idx >= len(lines) - 1:
+                continue
+            content += '    if ego_time_' + str(idx) + ' == 7 then\n' \
+                       '      local vehicleName = \"' + vid + '\"\n'\
+                       '      local arg = {line = {\n                 '
+            i = 0
+            while i < len(lines[idx+1]):
+                pos = lines[idx+1][i].get("pos")
+                speed = lines[idx+1][i].get("speed")
+                content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
+                           + str(speed) + "}"
+                if i + 1 == len(lines[idx+1]):
+                    content += "\n                  }"
+                else:
+                    content += ", \n                   "
+                i += 1
+            content += '}\n' \
+                       '      sh.setAiLine(vehicleName, arg)\n' \
+                       '    end\n'
         return content
 
     def _write_lua_file(self):
@@ -739,7 +763,9 @@ class Converter:
 
         content += "\nlocal function onRaceStart()\n" \
                    "  ego = scenetree.findObject(\"ego\")\n" \
-                   "  " + self._get_on_race_start_line_content() + ""
+                   "  local vehicleName = nil\n" \
+                   "  local arg = nil\n" \
+                   + self._get_on_race_start_line_content()
 
         for idx, trigger in enumerate(self.traffic_lights):
             for idx_1, light in enumerate(trigger):
@@ -771,9 +797,6 @@ class Converter:
                     lines = entry.get("lines")
                     break
             assert lines is not None, "Missing line of vehicle \"" + vehicle_name + "\"."
-            #print(len(lines))
-            #print(idx)
-            #print(lines[idx])
             lines = lines[idx]
             line_content = '    local arg = {line = {\n                 '
             i = 0
@@ -804,7 +827,7 @@ class Converter:
                        "    TorqueScript.eval(vehicleName..\'.rotation = \"0 0 01 " + str(z_rot_spawn) + "\";\')\n"
             content += line_content
             content += "  end\n\n"
-            content += self._get_ego_lines_content(idx)
+            content += self._get_vehicle_lines_content(idx)
         for idx, light in enumerate(self.lights):
             pos = light.get("position")
             content += "  local light_" + str(idx) + " = scenetree.findObject(\"" + light.get("id") + "\")\n" \
@@ -846,7 +869,7 @@ class Converter:
                        "    traffic_time_" + str(idx) + " = traffic_time_" + str(idx) \
                        + " + raceTickTime\n" \
                        "  end\n" \
-                       "  if traffic_time_" + str(idx) + " == 7 then\n"
+                       "  if traffic_time_" + str(idx) + " == 8 then\n"
 
             for idx_1, traffic_light in enumerate(self.traffic_lights):
                 oid = traffic_light[0].get("id")
