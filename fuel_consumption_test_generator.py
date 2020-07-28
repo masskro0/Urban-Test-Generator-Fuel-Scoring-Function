@@ -214,7 +214,7 @@ def _add_other_participants(individual):
             end_index = spawn_lanes[i] - 1 if spawn_index == spawn_lanes[i] else spawn_lanes[i]
             three_way = True
         spawn_point = lanes[spawn_index].get("control_points")[-1] if three_way and spawn_index == spawn_lanes[i] + 1 \
-            else lanes[spawn_index].get("control_points")[-1]
+            else lanes[spawn_index].get("control_points")[0]
         end_point = lanes[end_index].get("control_points")[-1] if end_index != spawn_lanes[i] - 1 \
             else lanes[end_index].get("control_points")[0]
         middle_point = lanes[spawn_index].get("control_points")[0]
@@ -249,9 +249,11 @@ def _add_other_participants(individual):
             line = multilinestrings_to_linestring(line)
             line.coords = line.coords[::-1]
         line.coords = b_spline(list(line.coords), samples).tolist()
-        line.coords = line.coords[:-4]
+        if left:
+            line.coords = line.coords[:-4]
+        else:
+            line.coords = line.coords[:-9]
         lines.append(line)
-
         left_lanes = lanes[end_index].get("left_lanes")
         right_lanes = lanes[end_index].get("right_lanes")
         width = lanes[end_index].get("width")
@@ -295,7 +297,6 @@ def _add_other_participants(individual):
              "model": "ETK800",
              "color": choice(colors)}
     individual["participants"].append(other)
-    individual.setdefault("triggers", []).extend(triggers)
 
     spawn_lanes.append(ego_lanes[-1])
     end_index = choice(spawn_lanes)
@@ -349,6 +350,53 @@ def _add_other_participants(individual):
              "model": "ETK800",
              "color": choice(colors)}
     individual.get("participants").append(other)
+
+    spawn_lanes = [0]
+    i = 1
+    while i < len(ego_lanes):
+        if i == len(ego_lanes) - 1 or (ego_lanes[i+1] - ego_lanes[i] == 1 and ego_lanes[i] - ego_lanes[i-1] == 1):
+            spawn_lanes.append(ego_lanes[i])
+        i += 1
+    waypoints = list()
+    for idx in spawn_lanes:
+        left_lanes = lanes[idx].get("left_lanes")
+        right_lanes = lanes[idx].get("right_lanes")
+        width = lanes[idx].get("width")
+        points = lanes[idx].get("control_points")
+        points = points[::-1]
+        line = LineString(points)
+        width_per_lane = width / (left_lanes + right_lanes)
+        offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
+        line = line.parallel_offset(offset, "right")
+        line = multilinestrings_to_linestring(line)
+        line.coords = line.coords[::-1]
+        line.coords = b_spline(list(line.coords), samples).tolist()
+        line.coords = line.coords[samples // 10:]
+        for point in list(line.coords):
+            if len(waypoints) == 0 or euclidean(point, waypoints[-1].get("position")) >= 1.5:
+                waypoint = {"position": point,
+                            "tolerance": 2,
+                            "lane": idx}
+                waypoints.append(waypoint)
+        trigger_point = {"position": line.coords[-1],
+                         "action": "spawnAndStart",
+                         "tolerance": 2,
+                         "triggeredBy": "ego",
+                         "triggers": "other_2"}
+        orientation = get_angle((waypoints[-1].get("position")[0] + 1, waypoints[-1].get("position")[1]),
+                                waypoints[-1].get("position"), waypoints[-2].get("position")) + 180
+        spawn_point = {"position": line.coords[0], "orientation": orientation}
+        triggers.append({"triggerPoint": trigger_point, "spawnPoint": spawn_point})
+    init_state = {"position": triggers[-len(spawn_lanes)].get("spawnPoint").get("position"),
+                  "orientation": triggers[-len(spawn_lanes)].get("spawnPoint").get("orientation")}
+    other = {"id": "other_{}".format(2),
+             "init_state": init_state,
+             "waypoints": waypoints,
+             "model": "ETK800",
+             "color": choice(colors)}
+    individual.get("participants").append(other)
+    individual.setdefault("triggers", []).extend(triggers)
+
 
 def _merge_lanes(population):
     """Merge lanes for each individual which will be driven by the ego car.
@@ -857,7 +905,6 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
-#       TODO Add other participants + crashes
 #       TODO Mutation
 #       TODO Crossover
 

@@ -639,13 +639,6 @@ class Converter:
         content = ""
         for participant in participants:
             vid = participant.get("id")
-            break_flag = False
-            for trigger in triggers:
-                if trigger.get("triggers") == vid:
-                    break_flag = True
-                    break
-            if break_flag:
-                continue
             lines = None
             for entry in self.lines:
                 if entry.get("vid") == vid:
@@ -784,6 +777,8 @@ class Converter:
         content += "local function onRaceTick(raceTickTime)\n" \
                    "  time = time + raceTickTime\n" \
                    "  local pos = ego:getPosition()\n"
+        line_index = 0
+        prev_vehicle = ""
         for idx, trigger_point in enumerate(trigger_list):
             spawn_point = spawn_points[idx]
             z = 0 if spawn_point.get("z") is None else spawn_point.get("z")
@@ -797,7 +792,13 @@ class Converter:
                     lines = entry.get("lines")
                     break
             assert lines is not None, "Missing line of vehicle \"" + vehicle_name + "\"."
-            lines = lines[idx]
+            if vehicle_name != prev_vehicle:
+                prev_vehicle = vehicle_name
+                line_index = 0
+
+            lines = lines[line_index]
+            if vehicle_name == prev_vehicle:
+                line_index += 1
             line_content = '    local arg = {line = {\n                 '
             i = 0
             while i < len(lines):
@@ -821,7 +822,7 @@ class Converter:
                        + " and triggered_" + str(idx) + " == 0 then\n" \
                        "    triggered_" + str(idx) + " = 1\n" \
                        "    local vehicleName = \"" + vehicle_name + "\"\n" \
-                       "" \
+                       "    print(vehicleName)\n" \
                        "    TorqueScript.eval(vehicleName..\'.position = \"" + spawn_point.get("x") + " " \
                        + spawn_point.get("y") + " " + str(z) + "\";\')\n" \
                        "    TorqueScript.eval(vehicleName..\'.rotation = \"0 0 01 " + str(z_rot_spawn) + "\";\')\n"
