@@ -916,27 +916,29 @@ class FuelConsumptionTestGenerator:
 #       TODO Brake misbehavior
 #       TODO Safety distance misbehavior
 #       TODO Engine idling misbehavior
-#       TODO Varying speed
 #       TODO Calculation
 
 # TODO May-have/Improvements:
 #       TODO Remove redundant XML information
+#       TODO Make all objects collidable
+#       TODO Improve speed of car
+#       TODO Improve traffic sign positioning
+#       TODO Test generator should calc speed of waypoints, not converter
+#       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
+#       TODO Comments
+#       TODO Refactor
+#       TODO Fix traffic orientation
+
+# TODO Future Work:
+#       TODO Roundabouts
 #       TODO Daytime
 #       TODO Add weather presets
-#       TODO Improve performance
-#       TODO Make all objects collidable
 #       TODO Converter:
 #           TODO Add input checking
 #           TODO Implement Sensor deployment
 #       TODO Parked cars on the road and adjust waypoints
-#       TODO Improve speed of car
-#       TODO Improve traffic sign positioning
-#       TODO Test generator should calc speed of waypoints, not converter
-#       TODO Parallel offset instead of width lines
 #       TODO Manual traffic lights for all directions
-#       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
 #       TODO Fix lane markings
-#       TODO Comments
-#       TODO Refactor
-#       TODO Remove simulation_data directory
 #       TODO Fix BNG errors and warnings
+#       TODO Parallel offset instead of width lines
+#       TODO Improve performance

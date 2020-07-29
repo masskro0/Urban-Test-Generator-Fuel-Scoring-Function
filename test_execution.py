@@ -24,7 +24,7 @@ def run_test_case(scenario):
     bng.start_scenario()
     observer = MisbehaviourObserver()
     for _ in range(2000):
-        # vehicle.update_vehicle()
-        # sensors = bng.poll_sensors(vehicle)
-        # observer.check_misbehavior(sensors, vehicle.state)
+        ego.update_vehicle()
+        sensors = bng.poll_sensors(ego)
+        observer.check_misbehavior(sensors, ego.state)
         sleep(1)

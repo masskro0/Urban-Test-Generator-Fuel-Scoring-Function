@@ -8,25 +8,24 @@ class MisbehaviourObserver:
         """
         self.engine_type = engine_type
         self.log = dict()
-        self.throttle_misbehavior = list()
-        self.rpm_misbehavior = list()
-        self.accelerate_and_stop_misbehavior = list()
-        self.left_turn_misbehavior = list()
-        self.right_turn_misbehavior = list()
-        self.brake_misbehavior = list()
-        self.safety_distance_misbehavior = list()
-        self.varying_speed = list()
-        self.engine_idle_misbehavior = list()
+        self.throttle_misbehavior = 0
+        self.rpm_infractions = 0
+        self.accelerate_and_stop_misbehavior = 0
+        self.left_turn_misbehavior = 0
+        self.right_turn_misbehavior = 0
+        self.brake_misbehavior = 0
+        self.safety_distance_misbehavior = 0
+        self.engine_idle_misbehavior = 0
+        self.score = 0
         self.log = {
             "throttle_misbehavior": self.throttle_misbehavior,
-            "rpm_misbehavior": self.rpm_misbehavior,
+            "rpm_misbehavior": self.rpm_infractions,
             "fuel_consumption": None,
             "accelerate_and_stop_misbehavior": self.accelerate_and_stop_misbehavior,
             "left_turn_misbehavior": self.left_turn_misbehavior,
             "right_turn_misbehavior": self.right_turn_misbehavior,
             "brake_misbehavior": self.brake_misbehavior,
             "safety_distance_misbehavior": self.safety_distance_misbehavior,
-            "varying_speed": self.varying_speed,
             "engine_idle_misbehavior": self.engine_idle_misbehavior
         }
 
@@ -42,14 +41,24 @@ class MisbehaviourObserver:
     def _check_throttle_misbehavior(self):
         pass
 
-    def _check_rpm_misbehavior(self, rpm, vehicle_pos):
+    def _check_rpm_infraction(self, rpm):
         """Checks whether the rpm is above the allowed limit and logs the global position of the car.
         :param rpm: Current rpm of the vehicle.
-        :param vehicle_pos: Current position of the car in the simulation.
         :return: None.
         """
-        if rpm > self.engine_type.get_rpm_shifting_sweetspots()['upper_limit']:
-            self.rpm_misbehavior.append(vehicle_pos)
+        upper_limit = self.engine_type.get_rpm_shifting_sweetspots()['upper_limit']
+        if rpm > upper_limit:
+            self.rpm_infractions += 1
+            increase = 180
+            if rpm >= upper_limit + increase * 9:
+                self.score += 9
+            else:
+                i = 1
+                while i < 10:
+                    if rpm < upper_limit + increase * i:
+                        self.score += i
+                        break
+                    i += 1
 
     def _check_accelerate_and_stop_misbehavior(self):
         pass
@@ -66,9 +75,6 @@ class MisbehaviourObserver:
     def _check_safety_distance_misbehavior(self):
         pass
 
-    def _check_varying_speed(self):
-        pass
-
     def _check_engine_idle_misbehavior(self):
         pass
 
@@ -78,12 +84,13 @@ class MisbehaviourObserver:
         :param vehicle_state: Vehicle state information in the simulation.
         :return: None.
         """
+        #print(sensors)
+        #print(vehicle_state)
         self._check_accelerate_and_stop_misbehavior()
         self._check_brake_misbehavior()
         self._check_engine_idle_misbehavior()
         self._check_left_turn_misbehavior()
         self._check_right_turn_misbehavior()
-        self._check_rpm_misbehavior(sensors['electrics']['rpm_tacho'], vehicle_state['pos'])
+        self._check_rpm_infraction(sensors['electrics']['values']['rpmTacho'])
         self._check_safety_distance_misbehavior()
         self._check_throttle_misbehavior()
-        self._check_varying_speed()
