@@ -700,7 +700,7 @@ class FuelConsumptionTestGenerator:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
             return {"lanes": lanes, "success_point": {"position": last_point, "tolerance": 3}, "ego_lanes": ego_lanes,
                     "obstacles": obstacles,
-                    "directions": directions, "triggers": triggers, "tod": 0}
+                    "directions": directions, "triggers": triggers, "tod": random()}
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
@@ -821,6 +821,7 @@ class FuelConsumptionTestGenerator:
             # TODO Traffic lights or traffic sign
             # TODO Position of parked cars
             # TODO Traffic
+            # TODO Tod
         """
         iterator = 2
         while iterator < len(individual.get("control_points")):
@@ -925,13 +926,10 @@ class FuelConsumptionTestGenerator:
 #       TODO Improve traffic sign positioning
 #       TODO Test generator should calc speed of waypoints, not converter
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
-#       TODO Comments
-#       TODO Refactor
 #       TODO Fix traffic orientation
 
 # TODO Future Work:
 #       TODO Roundabouts
-#       TODO Daytime
 #       TODO Add weather presets
 #       TODO Converter:
 #           TODO Add input checking
@@ -942,3 +940,5 @@ class FuelConsumptionTestGenerator:
 #       TODO Fix BNG errors and warnings
 #       TODO Parallel offset instead of width lines
 #       TODO Improve performance
+#       TODO Comments
+#       TODO Refactor
