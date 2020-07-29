@@ -15,8 +15,9 @@ class MisbehaviourObserver:
         self.right_turn_misbehavior = 0
         self.brake_misbehavior = 0
         self.safety_distance_misbehavior = 0
-        self.engine_idle_misbehavior = 0
+        self.engine_idle_infraction = 0
         self.score = 0
+        self.second_passed = False
         self.log = {
             "throttle_misbehavior": self.throttle_misbehavior,
             "rpm_misbehavior": self.rpm_infractions,
@@ -26,7 +27,7 @@ class MisbehaviourObserver:
             "right_turn_misbehavior": self.right_turn_misbehavior,
             "brake_misbehavior": self.brake_misbehavior,
             "safety_distance_misbehavior": self.safety_distance_misbehavior,
-            "engine_idle_misbehavior": self.engine_idle_misbehavior
+            "engine_idle_misbehavior": self.engine_idle_infraction
         }
 
     def get_results(self):
@@ -75,8 +76,22 @@ class MisbehaviourObserver:
     def _check_safety_distance_misbehavior(self):
         pass
 
-    def _check_engine_idle_misbehavior(self):
-        pass
+    def _check_engine_idle_infraction(self, wheelspeed, running):
+        """Checks if the engine is in idle mode when the speed is 0 after one second.
+        :param wheelspeed: Wheel speed of the car.
+        :param running: {@code True} is the engine of the car is running, else {@code False}.
+        :return: Void.
+        """
+        velocity = wheelspeed * 3.6
+        if velocity < 0.1:
+            if running and self.second_passed:
+                self.second_passed = False
+                self.engine_idle_infraction += 1
+                self.score += 3
+            else:
+                self.second_passed = True
+        else:
+            self.second_passed = False
 
     def check_misbehavior(self, sensors, vehicle_state):
         """Checks for faulty behaviors of a car at the current state and logs it.
@@ -84,13 +99,13 @@ class MisbehaviourObserver:
         :param vehicle_state: Vehicle state information in the simulation.
         :return: None.
         """
-        #print(sensors)
-        #print(vehicle_state)
+        electrics = sensors['electrics']['values']
+        print(electrics['running'])
         self._check_accelerate_and_stop_misbehavior()
         self._check_brake_misbehavior()
-        self._check_engine_idle_misbehavior()
+        self._check_engine_idle_infraction(electrics['wheelspeed'], electrics['running'])
         self._check_left_turn_misbehavior()
         self._check_right_turn_misbehavior()
-        self._check_rpm_infraction(sensors['electrics']['values']['rpmTacho'])
+        self._check_rpm_infraction(electrics['rpmTacho'])
         self._check_safety_distance_misbehavior()
         self._check_throttle_misbehavior()
