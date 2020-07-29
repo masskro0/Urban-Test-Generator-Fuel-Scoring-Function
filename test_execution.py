@@ -26,5 +26,5 @@ def run_test_case(scenario):
     for _ in range(2000):
         ego.update_vehicle()
         sensors = bng.poll_sensors(ego)
-        observer.check_misbehavior(sensors, ego.state)
+        observer.check_infraction(sensors, ego.state)
         sleep(1)
