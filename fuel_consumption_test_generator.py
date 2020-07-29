@@ -906,18 +906,16 @@ class FuelConsumptionTestGenerator:
             iterator += 2
 
 # TODO Desired features:
+#       TODO onTestFinished
 #       TODO Mutation
 #       TODO Crossover
 
 # TODO Verifier:
-#       TODO Throttle misbehavior
 #       TODO Accelerate and stop misbehaviour
 #       TODO Left turn misbehavior
 #       TODO Right turn misbehavior
 #       TODO Brake misbehavior
 #       TODO Safety distance misbehavior
-#       TODO Engine idling misbehavior
-#       TODO Calculation
 
 # TODO May-have/Improvements:
 #       TODO Remove redundant XML information

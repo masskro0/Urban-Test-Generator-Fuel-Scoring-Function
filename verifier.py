@@ -8,7 +8,7 @@ class MisbehaviourObserver:
         """
         self.engine_type = engine_type
         self.log = dict()
-        self.throttle_misbehavior = 0
+        self.throttle_infractions = 0
         self.rpm_infractions = 0
         self.accelerate_and_stop_misbehavior = 0
         self.left_turn_misbehavior = 0
@@ -19,7 +19,7 @@ class MisbehaviourObserver:
         self.score = 0
         self.second_passed = False
         self.log = {
-            "throttle_misbehavior": self.throttle_misbehavior,
+            "throttle_misbehavior": self.throttle_infractions,
             "rpm_misbehavior": self.rpm_infractions,
             "fuel_consumption": None,
             "accelerate_and_stop_misbehavior": self.accelerate_and_stop_misbehavior,
@@ -36,11 +36,23 @@ class MisbehaviourObserver:
         """
         return self.log
 
-    def calculate_fuel_consumption(self, fuel_state):
-        pass
+    def get_score(self):
+        return self.score
 
-    def _check_throttle_misbehavior(self):
-        pass
+    def _check_throttle_infractions(self, throttle):
+        upper_limit = 0.45
+        if throttle >= upper_limit:
+            self.throttle_infractions += 1
+            interval = 0.04
+            if throttle >= upper_limit + 9 * interval:
+                self.score += 9
+            else:
+                i = 1
+                while i < 10:
+                    if throttle <= upper_limit + interval * i:
+                        self.score += i
+                        break
+                    i += 1
 
     def _check_rpm_infraction(self, rpm):
         """Checks whether the rpm is above the allowed limit and logs the global position of the car.
@@ -56,7 +68,7 @@ class MisbehaviourObserver:
             else:
                 i = 1
                 while i < 10:
-                    if rpm < upper_limit + increase * i:
+                    if rpm <= upper_limit + increase * i:
                         self.score += i
                         break
                     i += 1
@@ -100,7 +112,7 @@ class MisbehaviourObserver:
         :return: None.
         """
         electrics = sensors['electrics']['values']
-        print(electrics['running'])
+        print(electrics['throttle'])
         self._check_accelerate_and_stop_misbehavior()
         self._check_brake_misbehavior()
         self._check_engine_idle_infraction(electrics['wheelspeed'], electrics['running'])
@@ -108,4 +120,4 @@ class MisbehaviourObserver:
         self._check_right_turn_misbehavior()
         self._check_rpm_infraction(electrics['rpmTacho'])
         self._check_safety_distance_misbehavior()
-        self._check_throttle_misbehavior()
+        self._check_throttle_infractions(electrics['throttle'])
