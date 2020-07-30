@@ -905,8 +905,17 @@ class FuelConsumptionTestGenerator:
             yield Path(matches[iterator + 1]), Path(matches[iterator])
             iterator += 2
 
+    def on_test_finished(self, score):
+        """This method is called after a test was finished. Also updates fitness value of an individual.
+        :return: Void.
+        """
+        i = 0
+        while i < self.POPULATION_SIZE:
+            self.population_list[i]["fitness"] = score
+            i += 1
+            yield
+
 # TODO Desired features:
-#       TODO onTestFinished
 #       TODO Mutation
 #       TODO Crossover
 
