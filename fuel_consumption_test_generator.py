@@ -821,7 +821,6 @@ class FuelConsumptionTestGenerator:
             # TODO Traffic lights or traffic sign
             # TODO Position of parked cars
             # TODO Traffic
-            # TODO Tod
         """
         iterator = 2
         while iterator < len(individual.get("control_points")):
@@ -845,6 +844,8 @@ class FuelConsumptionTestGenerator:
                     tries += 1
             iterator += 1
         """
+        if random() <= probability:
+            individual["tod"] = random()
         individual["fitness"] = 0
         return individual
 
@@ -899,11 +900,11 @@ class FuelConsumptionTestGenerator:
         destination_path = path.dirname(path.realpath(__file__)) + "\\scenario"
         xml_names = destination_path + "\\" + self.files_name + "*"
         matches = glob(xml_names)
-        iterator = 0
+        i = 0
         self.genetic_algorithm()
-        while iterator < self.POPULATION_SIZE * 2 - 1:
-            yield Path(matches[iterator + 1]), Path(matches[iterator])
-            iterator += 2
+        while i < self.POPULATION_SIZE * 2 - 1:
+            yield Path(matches[i + 1]), Path(matches[i])
+            i += 2
 
     def on_test_finished(self, score):
         """This method is called after a test was finished. Also updates fitness value of an individual.
