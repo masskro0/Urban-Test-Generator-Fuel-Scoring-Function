@@ -910,13 +910,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Mutation
 #       TODO Crossover
 
-# TODO Verifier:
-#       TODO Accelerate and stop misbehaviour
-#       TODO Left turn misbehavior
-#       TODO Right turn misbehavior
-#       TODO Brake misbehavior
-#       TODO Safety distance misbehavior
-
 # TODO May-have/Improvements:
 #       TODO Remove redundant XML information
 #       TODO Make all objects collidable
@@ -925,6 +918,8 @@ class FuelConsumptionTestGenerator:
 #       TODO Test generator should calc speed of waypoints, not converter
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
 #       TODO Fix traffic orientation
+#       TODO Find more/other ways to save fuel by looking at the driving style.
+#        (engine brake before intersection&smooth braking, constant dist to car in front of ego)
 
 # TODO Future Work:
 #       TODO Roundabouts
