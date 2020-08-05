@@ -56,3 +56,29 @@ def intersection_check_width(width_lines, control_points_lines, intersection_lan
                 j += 1
         i += 1
     return False
+
+
+def intersection_check_all(lines):
+    """Checks for intersections between all lines.
+    :param lines: List of LineStrings between two points.
+    :return: {@code True} if two LineStrings intersects with each other, else {@code False}.
+    """
+    i0 = 0
+    while i0 < len(lines):
+        lane0 = lines[i0]
+        j0 = 0
+        while j0 < len(lane0):
+            line0 = lane0[j0]
+            i1 = i0
+            while i1 < len(lines):
+                lane1 = lines[i1]
+                j1 = j0 + 1
+                while j1 < len(lane1):
+                    line1 = lane1[j1]
+                    if line0.coords[1] != line1.coords[0] and line0.intersects(line1):
+                        return True
+                    j1 += 1
+                i1 += 1
+            j0 += 1
+        i0 += 1
+    return False
