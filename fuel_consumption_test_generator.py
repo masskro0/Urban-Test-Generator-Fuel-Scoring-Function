@@ -15,9 +15,9 @@ from utils.utility_functions import convert_points_to_lines, get_angle, calc_wid
     calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines, \
     get_resize_factor_intersection, multilinestrings_to_linestring
 from utils.validity_checks import intersection_check_width, intersection_check_last, intersection_check_all
-from utils.plotter import plotter
 from utils.xml_creator import build_all_xml
 from xml_converter.converter import b_spline
+from utils.plotter import plotter
 
 MIN_DEGREES = 90
 MAX_DEGREES = 270
@@ -539,6 +539,43 @@ def _preparation(population):
         _add_other_participants(individual)
 
 
+def _get_connected_lanes(lanes, ego_lanes, directions):
+    connected_lanes = list()
+    i = 0
+    j = 0
+    while i < len(ego_lanes):
+        if i != 0 and (ego_lanes[i] - ego_lanes[i - 1] == 1 or (j != len(directions) and directions[j] == "straight")):
+            connected_lanes[-1].append(ego_lanes[i])
+        else:
+            connected_lanes.append([ego_lanes[i]])
+        if i != 0 and ego_lanes[i] - ego_lanes[i - 1] != 1:
+            if directions[j] == "straight":
+                connected_lanes.insert(-2, [ego_lanes[i] - 1])
+            else:
+                penultimate_point = lanes[ego_lanes[i - 1]].get("control_points")[0]
+                last_point = lanes[ego_lanes[i - 1]].get("control_points")[1]
+                next_point = lanes[ego_lanes[i] - 1].get("control_points")[1]
+                if 135 <= get_angle(penultimate_point, last_point, next_point) <= 225:
+                    connected_lanes[-2].append(ego_lanes[i] - 1)
+                else:
+                    connected_lanes[-1].append(ego_lanes[i] - 1)
+            if ego_lanes[i] - ego_lanes[i - 1] == 3:
+                if directions[j] == "straight":
+                    connected_lanes.insert(-2, [ego_lanes[i] - 2])
+                else:
+                    penultimate_point = lanes[ego_lanes[i - 1]].get("control_points")[0]
+                    last_point = lanes[ego_lanes[i - 1]].get("control_points")[1]
+                    next_point = lanes[ego_lanes[i] - 2].get("control_points")[1]
+                    if 135 <= get_angle(penultimate_point, last_point, next_point) <= 225:
+                        connected_lanes[-2].append(ego_lanes[i] - 2)
+                    else:
+                        connected_lanes[-1].append(ego_lanes[i] - 2)
+            j += 1
+        i += 1
+    print(connected_lanes)
+    return connected_lanes
+
+
 class FuelConsumptionTestGenerator:
 
     def __init__(self):
@@ -558,6 +595,7 @@ class FuelConsumptionTestGenerator:
         self.MAX_LEFT_LANES = 2
         self.MAX_RIGHT_LANES = 2
         self.MAX_WIDTH = 5
+        self.mutation_probability = 0.25
         print(colored("##################", attrs=["bold"]))
         print(colored("##################", "red", attrs=["bold"]))
         print(colored("##################", "yellow", attrs=["bold"]))
@@ -812,37 +850,34 @@ class FuelConsumptionTestGenerator:
         return startpop
 
     def _mutation(self, individual):
-        probability = 0.25
         child = deepcopy(individual)
         print(colored("Mutating individual...", "grey", attrs=['bold']))
-        plotter(child.get("lanes"))
-        child = self._mutate_road(child, probability)
-        plotter(child.get("lanes"))
-            # TODO Update everything
-            # TODO Number of lanes for each lanes
-            # TODO Width of each lane
-            # TODO Traffic light mode
-            # TODO Traffic lights or traffic sign
-            # TODO Parked cars
-            # TODO Traffic
-        if random() <= probability:
-            # Mutate time of day.
-            child["tod"] = random()
+        #self._mutate_points(child)
+        #self._mutate_num_lanes_and_width(child)
+        child = self._update(child) # TODO Update everything
+        child = self._mutate_traffic_signs(child)   # TODO Traffic lights or traffic sign
+        child = self._mutate_traffic_light_mode(child)  # TODO Traffic light mode
+        child = self._mutate_parked_cars(child) # TODO Parked cars
+        child = self._mutate_traffic(child) # TODO Traffic
+        child = self._mutate_tod(child)
         child["fitness"] = 0
         return child
 
-    def _mutate_road(self, individual, probability):
+    def _mutate_points(self, individual):
+        """Mutates the control points of each lane.
+        :param individual: Individual with lanes.
+        :return: Void.
+        """
         lanes = individual.get("lanes")
         i = 0
         penul_point = None
         while i < len(lanes):
-            print(lanes[i])
             control_points = lanes[i].get("control_points")
             if lanes[i].get("type") == "normal":
                 penul_point = control_points[-1]
                 j = 2 if i == 0 else 1
                 while j < len(control_points):
-                    if random() <= probability:
+                    if random() <= self.mutation_probability:
                         valid = False
                         tries = 0
                         while not valid and tries < self.MAX_TRIES:
@@ -880,7 +915,7 @@ class FuelConsumptionTestGenerator:
                 if lanes[i - 1].get("type") == "normal":
                     i += 1
                     continue
-                if random() <= probability:
+                if random() <= self.mutation_probability:
                     valid = False
                     tries = 0
                     while not valid and tries < self.MAX_TRIES:
@@ -907,6 +942,51 @@ class FuelConsumptionTestGenerator:
                                 lanes[i + 1]["control_points"][0] = new_point
                         tries += 1
             i += 1
+
+    def _mutate_num_lanes_and_width(self, individual):
+        """Mutates the width and number of lanes for each lane.
+        :param individual: Individual with lanes.
+        :return: Void.
+        """
+        lanes = individual.get("lanes")
+        temp_lanes = deepcopy(lanes)
+        connected_lanes = _get_connected_lanes(lanes, individual.get("ego_lanes"), individual.get("directions"))
+        for connection in connected_lanes:
+            if random() <= self.mutation_probability:
+                left_lanes = randint(1, 2)
+                right_lanes = randint(1, 2)
+                width_per_lane = randint(4, 5)
+                width = width_per_lane * (left_lanes + right_lanes)
+                for idx, lane in enumerate(connection):
+                    temp_lanes[lane]["width"] = width
+                    if idx != 0 and connection[idx] - connection[idx - 1] < 0:
+                        temp_lanes[lane]["right_lanes"] = left_lanes
+                        temp_lanes[lane]["left_lanes"] = right_lanes
+                    else:
+                        temp_lanes[lane]["left_lanes"] = left_lanes
+                        temp_lanes[lane]["right_lanes"] = right_lanes
+                temp_list = self._bspline(temp_lanes)
+                control_points_lines = convert_points_to_lines(temp_list)
+                width_lines = get_width_lines(temp_list)
+                if not intersection_check_width(width_lines, control_points_lines, individual["intersection_lanes"]):
+                    individual["lanes"] = temp_lanes
+
+    def _mutate_traffic_signs(self, individual):
+        return individual
+
+    def _mutate_traffic_light_mode(self, individual):
+        return individual
+
+    def _mutate_parked_cars(self, individual):
+        return individual
+
+    def _mutate_traffic(self, individual):
+        return individual
+
+    def _mutate_tod(self, individual):
+        if random() <= self.mutation_probability:
+            # Mutate time of day.
+            individual["tod"] = random()
         return individual
 
     def _update(self, individual):
