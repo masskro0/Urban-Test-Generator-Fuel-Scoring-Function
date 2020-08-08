@@ -375,7 +375,9 @@ def _add_other_1(individual, spawn_lanes=None, end_lane=None):
     individual.get("participants").append(other)
 
 
-def _add_other_2(individual, triggers):
+def _add_other_2(individual, triggers=None):
+    if triggers is None:
+        triggers = list()
     global COLORS
     global PARTICIPANTS_SAMPLES
     ego_lanes = individual.get("ego_lanes")
@@ -1356,15 +1358,7 @@ class FuelConsumptionTestGenerator:
                     obstacle["color"] = color
 
     def _mutate_traffic(self, individual):
-        global COLORS
-        # TODO Spawn point ändern
-        # TODO End point ändern
-        # TODO Triggers und waypoints updaten!
-        # TODO Beim ändern von spawn/end points participant löschen.
         probability = 1 / 3         # For now, this generator has three other participants.
-        probability_attr = 1 / 3    # Spawn points, end point and color can be mutated.
-        probability_point = 1 / 2   # Position and rotation can be mutated.
-        triggers = individual.get("triggers")
         for participant in individual.get("participants"):
             if participant.get("id") == "ego" or random() <= probability:
                 continue
@@ -1373,7 +1367,7 @@ class FuelConsumptionTestGenerator:
             elif participant.get("id") == "other_1":
                 self._mutate_other_1(individual)
             else:
-                self._mutate_other_2(participant)
+                self._mutate_other_2(individual)
             """
             num_triggers = 0
             for trigger in triggers:
@@ -1413,9 +1407,6 @@ class FuelConsumptionTestGenerator:
                         break
                     tries += 1
             """
-            if random() <= probability_attr:
-                # Mutate color.
-                participant["color"] = choice(COLORS)
 
     @staticmethod
     def _mutate_other_0(individual):
@@ -1438,8 +1429,11 @@ class FuelConsumptionTestGenerator:
                 num_triggers += 1
 
     def _mutate_other_1(self, individual):
+        """Mutates the participant 'other_1'.
+        :param individual: Individual of the population list.
+        :return: Void.
+        """
         global COLORS
-        # other_1 fährt von lane 0 bis end point, hat keine trigger points. -> Color und endpoint
         probability = 1 / 4     # Color, end point, rotation and init position can be mutated.
         other_1 = None
         for participant in individual.get("participants"):
@@ -1496,10 +1490,53 @@ class FuelConsumptionTestGenerator:
                             break
                         tries += 1
 
-    @staticmethod
-    def _mutate_other_2(participant):
-        # other_2 hat mehrere spawn points.
-        pass
+    def _mutate_other_2(self, individual):
+        """Mutates the participant 'other_2'.
+        :param individual: Individual of the population list.
+        :return: Void.
+        """
+        triggers = individual.get("triggers")
+        probability = 1 / 2         # Color and spawn point attributes can be changed.
+        probabililty_attr = 1 / 2   # Position and rotation of spawn points can be changed.
+        num_triggers = 0
+        for trigger in triggers:
+            if trigger.get("triggerPoint").get("triggers") == "other_2":
+                num_triggers += 1
+        probability_trigger = 0 if num_triggers == 0 else 1 / num_triggers
+        if random() <= probability:
+            # Mutate spawn points.
+            for trigger in individual["triggers"]:
+                if random() <= probability_trigger:
+                    if random() <= probabililty_attr:
+                        # Mutate position.
+                        old_position = trigger.get("spawnPoint").get("position")
+                        if trigger.get("spawnPoint").get("init_position") is None:
+                            trigger["spawnPoint"]["init_position"] = old_position
+                        tries = 0
+                        while tries < self.MAX_TRIES:
+                            new_position = (old_position[0] + round(uniform(-1, 1), 2),
+                                            old_position[1] + round(uniform(-1, 1), 2))
+                            if euclidean(new_position, trigger.get("spawnPoint").get("init_position")) <= 1.4:
+                                trigger["spawnPoint"]["position"] = new_position
+                                break
+                            tries += 1
+                    if random() <= probabililty_attr:
+                        # Mutate rotation.
+                        old_rotation = trigger.get("spawnPoint").get("orientation")
+                        if trigger.get("spawnPoint").get("init_zRot") is None:
+                            trigger["spawnPoint"]["init_zRot"] = old_rotation
+                        tries = 0
+                        while tries < self.MAX_TRIES:
+                            new_rotation = old_rotation + round(uniform(-2, 2), 2)
+                            if abs(new_rotation - trigger.get("spawnPoint").get("init_zRot")) < 10:
+                                trigger["spawnPoint"]["orientation"] = new_rotation
+                                break
+                            tries += 1
+        if random() <= probability:
+            # Mutate color.
+            for participant in individual.get("participants"):
+                if participant.get("id") == "other_2":
+                    participant["color"] = choice(COLORS)
 
     def _update(self, individual):
         """Updates obstacle positions, waypoints, trigger and spawn points, success point and initial state of vehicles
@@ -1558,7 +1595,17 @@ class FuelConsumptionTestGenerator:
         for participant in individual.get("participants"):
             if participant.get("id") == "other_1":
                 participant["color"] = color
-
+        # Update other_2.
+        color = other_2.get("color")
+        individual["participants"].remove(other_2)
+        for trigger in individual["triggers"]:
+            if trigger["triggerPoint"].get("triggers") == "other_2":
+                individual["triggers"].remove(trigger)
+        triggers = _add_other_2(individual)
+        individual["triggers"].extend(triggers)
+        for participant in individual.get("participants"):
+            if participant.get("id") == "other_2":
+                participant["color"] = color
 
     def _add_parked_cars_mutated(self, individual):
         car_positions = list()
