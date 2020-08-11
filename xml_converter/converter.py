@@ -83,6 +83,7 @@ class Converter:
         self.light_content = list()
         self.traffic_lights = list()
         self.light_index = 0
+        self.success_point = None
 
     def _init_prefab(self):
         self.bng = BeamNGpy('localhost', 64255)
@@ -95,6 +96,7 @@ class Converter:
         self._add_lights_to_prefab()
         self._add_waypoints()
         self._write_lua_file()
+        self._get_success_point()
 
     def add_to_prefab(self):
         self._init_prefab()
@@ -102,6 +104,10 @@ class Converter:
         self._add_obstacles()
         self._add_participants()
         self._finalize_prefab()
+
+    def _get_success_point(self):
+        success_points = self.dbc_root.findall("success/scPosition")
+        self.success_point = (float(success_points[0].get("x")), float(success_points[0].get("y")))
 
     def _add_lanes(self):
         lanes = self.dbe_root.findall("lanes/lane")
@@ -625,8 +631,6 @@ class Converter:
                         lines.append(line)
                 index += 1
                 i += 1
-            if vid == "ego":
-                self.success_point = "wp_{}_{}".format(vid, index - 1)
             self.lines.append({"vid": vid, "lines": lines})
         original_content.append("};")
         prefab_file = open(prefab_path, "w")
@@ -639,6 +643,8 @@ class Converter:
         content = ""
         for participant in participants:
             vid = participant.get("id")
+            if vid == "other_0":
+                continue
             lines = None
             for entry in self.lines:
                 if entry.get("vid") == vid:
@@ -768,6 +774,8 @@ class Converter:
             oid = trigger[0].get("id")
             oid = oid[:22]
             i = int(oid[-1])
+            if i >= len(traffic_triggers):
+                continue
             init_state = traffic_triggers[i].get("initState")
             i = 0 if init_state == "green" else 2
             content += "  " + trigger[i].get("id") + ":setPosition(points_2[" + str(3 * idx + i + 1) + "])\n"

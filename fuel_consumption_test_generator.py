@@ -58,6 +58,7 @@ def _add_ego_car(individual):
             offset = right_lanes - left_lanes - 1
             offset = offset / 2 * width_per_lane
             temp_points = temp_points.parallel_offset(offset, "left")
+            temp_points = multilinestrings_to_linestring(temp_points)
             if offset < 0:
                 temp_points.coords = temp_points.coords[::-1]
         else:
@@ -224,7 +225,7 @@ def _add_other_0(individual, lanes_start=None, lanes_end=None):
             while end_index == spawn_index:
                 end_index = choice(end_indices)
         else:
-            spawn_indices = [spawn_lanes[i] - 1, spawn_lanes[i], spawn_lanes[i] + 1]
+            spawn_indices = [spawn_lanes[i], spawn_lanes[i] + 1]
             spawn_index = choice(spawn_indices) if lanes_start is None else lanes_start[j]
             end_index = spawn_lanes[i] - 1 if spawn_index == spawn_lanes[i] else spawn_lanes[i]
             end_index = end_index if lanes_end is None else lanes_end[j]
@@ -232,7 +233,7 @@ def _add_other_0(individual, lanes_start=None, lanes_end=None):
         j += 1
         spawns.append(spawn_index)
         ends.append(end_index)
-        spawn_point = lanes[spawn_index].get("control_points")[-1] if three_way and spawn_index == spawn_lanes[i] + 1 \
+        spawn_point = lanes[spawn_index].get("control_points")[0] if three_way and spawn_index == spawn_lanes[i] + 1 \
             else lanes[spawn_index].get("control_points")[0]
         end_point = lanes[end_index].get("control_points")[-1] if end_index != spawn_lanes[i] - 1 \
             else lanes[end_index].get("control_points")[0]
@@ -261,6 +262,7 @@ def _add_other_0(individual, lanes_start=None, lanes_end=None):
             offset = right_lanes - left_lanes - 1
             offset = offset / 2 * width_per_lane
             line = line.parallel_offset(offset, "left")
+            line = multilinestrings_to_linestring(line)
             if offset < 0:
                 line.coords = line.coords[::-1]
         else:
@@ -443,10 +445,10 @@ def _add_other_participants(individual):
     triggers = list()
     sl, t = _add_other_0(individual)
     spawn_lanes.extend(sl)
-    triggers.extend(t)
-    _add_other_1(individual, spawn_lanes)
-    t = _add_other_2(individual, triggers)
-    triggers.extend(t)
+    triggers.extend(t)          # TODO Uncomment
+    #_add_other_1(individual, spawn_lanes)
+    #t = _add_other_2(individual, triggers)
+    #triggers.extend(t)
     individual.setdefault("triggers", []).extend(triggers)
 
 
@@ -534,6 +536,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 
     modes = ["off", "blinking", "manual"]
     mode = choice(modes)
+    mode = "manual"     # TODO Delete
     oid = None
     if mode == "manual":
         oid = "traffic_light_manual_" + str(OID_INDEX)
@@ -547,12 +550,12 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 
     # Bottom direction.
     position, z_rot = my_direction(last_point, right_point)
-    if current_right_lanes == 1:
-        if current_left_lanes == 1:
-            obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot,
-                              "intersection_id": INTERSECTION_ID, "facingEgo": True, "lane_id": lane_id})
-        else:
-            obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot, "mode": mode,
+    if current_right_lanes == 1:        # TODO Uncomment
+        #if current_left_lanes == 1:
+        #    obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot,
+        #                      "intersection_id": INTERSECTION_ID, "facingEgo": True, "lane_id": lane_id})
+        #else:
+        obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot, "mode": mode,
                               "sign": "yield", "oid": oid, "intersection_id": INTERSECTION_ID, "facingEgo": True,
                               "lane_id": lane_id})
     else:
@@ -1760,8 +1763,7 @@ class FuelConsumptionTestGenerator:
     def genetic_algorithm(self):
 
         if len(self.population_list) == 0:
-            #self.population_list = self._create_start_population()
-            self.population_list = [{'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(45, 0), (65.0, 0.0)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (69.3577871373829, 49.809734904587266)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (71.09346717025738, -49.62730758206611)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (95.0, 0.0)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(95.0, 0.0), (101, -16), (117, -39), (106, -56), (118, -81), (110, -104), (91, -111)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(91, -111), (72.2331376636578, -117.91410717654713)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(72.2331376636578, -117.91410717654713), (81.96613509823635, -166.9576466179301)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(72.2331376636578, -117.91410717654713), (44.082844159144486, -128.2852679413678)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(44.082844159144486, -128.2852679413678), (44, -154), (34, -167)], 'width': 10, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}], 'file_name': 'urban', 'obstacles': [{'name': 'stopsign', 'position': (57.4, -5.2), 'zRot': 360, 'intersection_id': 0, 'facingEgo': True, 'lane_id': 1}, {'name': 'prioritysign', 'position': (57.77379511270662, 5.751692179424881), 'zRot': 265, 'intersection_id': 0}, {'name': 'stopsign', 'position': (73.41, 5.2), 'zRot': 180, 'intersection_id': 0}, {'name': 'prioritysign', 'position': (73.39453921644794, -5.185615811407327), 'zRot': 457, 'intersection_id': 0}, {'name': 'stopsign', 'position': (78.20495080500122, -110.17228259800765), 'zRot': 200, 'intersection_id': 1, 'facingEgo': True, 'lane_id': 6}, {'name': 'prioritysign', 'position': (80.77860847595778, -121.41766659464311), 'zRot': 461, 'intersection_id': 1}, {'name': 'stopsign', 'position': (65.65140149638324, -125.8806402383244), 'zRot': 380, 'intersection_id': 1}], 'success_point': {'position': (34, -167), 'tolerance': 3}, 'ego_lanes': [0, 1, 4, 5, 6, 8, 9], 'directions': ['straight', 'straight'], 'fitness': 0, 'triggers': [], 'tod': 0.9621780035427762, 'intersection_lanes': [[1, 2, 3, 4], [6, 7, 8]]}, {'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0), (60, -19), (53, -46)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(53, -46), (47.98075682432548, -65.35993796331601)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(47.98075682432548, -65.35993796331601), (40.45189206081369, -94.39984490829002)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(47.98075682432548, -65.35993796331601), (91.48372769496474, -90.00728113511266)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(47.98075682432548, -65.35993796331601), (-0.419088083964553, -52.811830024129705)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-0.419088083964553, -52.811830024129705), (-9, -76), (-26, -86)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(-26, -86), (-43.23868430315539, -96.14040253126788)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-43.23868430315539, -96.14040253126788), (-18.64368036829653, -139.6729855173977)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-43.23868430315539, -96.14040253126788), (-69.09671075788847, -111.35100632816972)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-69.09671075788847, -111.35100632816972), (-87, -119)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(-87, -119), (-105.39175788375081, -126.85768680627385)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-105.39175788375081, -126.85768680627385), (-132.979394709377, -138.64421701568466)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-105.39175788375081, -126.85768680627385), (-79.5396220957177, -169.65566660902965)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-105.39175788375081, -126.85768680627385), (-137.6206900563201, -88.63078618621407)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-137.6206900563201, -88.63078618621407), (-155, -77), (-182, -77)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}], 'file_name': 'urban', 'obstacles': [{'name': 'trafficlightdouble', 'position': (42.05804987702955, -57.522748261869936), 'zRot': 255, 'mode': 'blinking', 'sign': 'yield', 'oid': None, 'intersection_id': 2, 'facingEgo': True, 'lane_id': 1}, {'name': 'trafficlightdouble', 'position': (57.64947894996543, -63.71196573746983), 'zRot': 510, 'mode': 'blinking', 'sign': 'priority', 'intersection_id': 2}, {'name': 'trafficlightdouble', 'position': (53.373933616587756, -75.23960111989193), 'zRot': 435, 'intersection_id': 2, 'mode': 'blinking', 'sign': 'yield'}, {'name': 'trafficlightdouble', 'position': (39.06801501380629, -69.45420632518766), 'zRot': 345, 'mode': 'blinking', 'sign': 'priority', 'intersection_id': 2}, {'name': 'trafficlightdouble', 'position': (-37.90077641069598, -85.80733235190593), 'zRot': 210, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_2', 'intersection_id': 3, 'facingEgo': True, 'lane_id': 6}, {'name': 'trafficlightsingle', 'position': (-33.53407604323862, -97.66374704960742), 'zRot': 479, 'mode': 'off', 'sign': 'priority', 'intersection_id': 3}, {'name': 'trafficlightdouble', 'position': (-46.89582047605714, -105.48478346383123), 'zRot': 390, 'intersection_id': 3, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightdouble', 'position': (-104.0573304275268, -119.54541606702496), 'zRot': 203, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_3', 'intersection_id': 4, 'facingEgo': True, 'lane_id': 10}, {'name': 'trafficlightsingle', 'position': (-98.02231575526648, -130.9346124512814), 'zRot': 481, 'mode': 'off', 'sign': 'priority', 'intersection_id': 4}, {'name': 'trafficlightdouble', 'position': (-106.7261853399748, -134.16995754552275), 'zRot': 383, 'intersection_id': 4, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (-114.06239864586908, -123.08928014373154), 'zRot': 310, 'mode': 'off', 'sign': 'priority', 'intersection_id': 4}], 'success_point': {'position': (-182, -77), 'tolerance': 3}, 'ego_lanes': [0, 1, 4, 5, 6, 8, 9, 10, 13, 14], 'directions': ['right', 'straight', 'right'], 'fitness': 0, 'triggers': [{'triggerPoint': {'position': (-26, -86), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_2', 'initState': 'green', 'switchTo': 'red'}}, {'triggerPoint': {'position': (-87, -119), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_3', 'initState': 'green', 'switchTo': 'red'}}], 'tod': 0.2883351637164827, 'intersection_lanes': [[1, 2, 3, 4], [6, 7, 8], [10, 11, 12, 13]]}, {'lanes': [{'control_points': [(1, 0), (30, 0), (45, 0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(45, 0), (65.0, 0.0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (64.12737967813584, -49.992384757819565)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(65.0, 0.0), (95.0, 0.0)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(95.0, 0.0), (98, 17), (111, 29), (117, 55), (117, 83), (103, 107), (85, 123)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(85, 123), (70.0518136263268, 136.28727677659842)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(70.0518136263268, 136.28727677659842), (47.62953406581704, 156.218191941496)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(70.0518136263268, 136.28727677659842), (33.702976218694744, 101.95417293914247)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(70.0518136263268, 136.28727677659842), (108.70706334931185, 168.00118017642708)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(108.70706334931185, 168.00118017642708), (98, 188), (92, 213)], 'width': 16, 'left_lanes': 2, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}], 'file_name': 'urban', 'obstacles': [{'name': 'trafficlightsingle', 'position': (57.11, -6.2), 'zRot': 360, 'mode': 'blinking', 'sign': 'yield', 'oid': None, 'intersection_id': 5, 'facingEgo': True, 'lane_id': 1}, {'name': 'trafficlightsingle', 'position': (73.80000000000001, 6.2), 'zRot': 180, 'intersection_id': 5, 'mode': 'blinking', 'sign': 'yield'}, {'name': 'trafficlightsingle', 'position': (72.59236757343677, -6.233454470021069), 'zRot': 449, 'mode': 'blinking', 'sign': 'priority', 'intersection_id': 5}, {'name': 'trafficlightsingle', 'position': (81.21893930225923, 134.65626355227096), 'zRot': 498, 'mode': 'manual', 'sign': 'yield', 'oid': 'traffic_light_manual_4', 'intersection_id': 6, 'facingEgo': True, 'lane_id': 5}, {'name': 'trafficlightdouble', 'position': (71.24788449193846, 126.13742877357714), 'zRot': 403, 'mode': 'off', 'sign': 'priority', 'intersection_id': 6}, {'name': 'trafficlightsingle', 'position': (59.27334079610989, 137.57282080473436), 'zRot': 318, 'intersection_id': 6, 'mode': 'off', 'sign': 'yield'}, {'name': 'trafficlightdouble', 'position': (69.5666739349591, 146.49583394594706), 'zRot': 219, 'mode': 'off', 'sign': 'priority', 'intersection_id': 6}], 'success_point': {'position': (92, 213), 'tolerance': 3}, 'ego_lanes': [0, 1, 3, 4, 5, 8, 9], 'directions': ['straight', 'right'], 'fitness': 0, 'triggers': [{'triggerPoint': {'position': (85, 123), 'action': 'switchLights', 'tolerance': 2, 'triggeredBy': 'ego', 'triggers': 'traffic_light_manual_4', 'initState': 'green', 'switchTo': 'red'}}], 'tod': 0.7187562641594675, 'intersection_lanes': [[1, 2, 3], [5, 6, 7, 8]]}]
+            self.population_list = self._create_start_population()
 
         while len(self.population_list) < self.POPULATION_SIZE:
             selected_indices = sample(range(0, len(self.population_list)), 2)
@@ -1820,8 +1822,12 @@ class FuelConsumptionTestGenerator:
             yield
 
 # TODO Desired features:
-#       TODO Mutation
 #       TODO Crossover
+#       TODO Car shouldn't stop at yield sign/traffic light mode off and blinking when driving straight or right
+#       TODO Buggy traffic
+#       TODO Init state green
+#       TODO Buggy traffic spawn
+#       TODO Right turns are buggy
 
 # TODO May-have/Improvements:
 #       TODO Green light/priority sign for ego -> Also change mutation and trigger points

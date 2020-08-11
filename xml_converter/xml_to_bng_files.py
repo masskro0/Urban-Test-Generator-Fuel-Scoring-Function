@@ -3,12 +3,13 @@
 from pathlib import Path
 from glob import glob
 from termcolor import colored
-from os import getcwd, path
-from os.path import exists, join
+from os import getcwd, path, chdir
+from os.path import exists, join, dirname, abspath
 from shutil import move
 from beamngpy.beamngcommon import ENV
 from json import dump
 import xml.etree.ElementTree as Etree
+from sys import path as syspath
 
 from test_execution import run_test_case
 from xml_converter.converter import Converter
@@ -31,11 +32,12 @@ def get_index():
     """Gets the unique index which reflects the number of executions.
     :return: Index (Integer).
     """
-    if exists("xml_converter\\index.txt"):
-        with open("xml_converter\\index.txt", "r") as text_file:
+    filepath = join(dirname(abspath(__file__)), "index.txt")
+    if exists(filepath):
+        with open(filepath, "r") as text_file:
             index = int(text_file.read())
     else:
-        with open("xml_converter\\index.txt", "w") as text_file:
+        with open(filepath, "w") as text_file:
             print("{}".format(0), file=text_file)
             index = 0
     return index
@@ -46,9 +48,10 @@ def update_index(index):
     :param index: Old index (Integer).
     :return: Void.
     """
-    assert exists("xml_converter\\index.txt"), "Missing index.txt file in the xml_converter directory."
+    filepath = join(dirname(abspath(__file__)), "index.txt")
+    assert exists(filepath), "Missing index.txt file in the xml_converter directory."
     index += 1
-    with open("xml_converter\\index.txt", "w") as text_file:
+    with open(filepath, "w") as text_file:
         print("{}".format(index), file=text_file)
 
 
@@ -88,7 +91,7 @@ def convert_test(dbc, dbe):
     """Converts the XML files into BeamNG files.
     :param dbc: Path to the criteria XML file.
     :param dbe: Path to the environment XML file.
-    :return: Void.
+    :return: Returns BNG scenario.
     """
     print(colored("Converting XML files to BNG files...", "grey", attrs=['bold']))
     index = get_index()
@@ -110,4 +113,4 @@ def convert_test(dbc, dbe):
     for match in matches:
         move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
     update_index(index)
-    run_test_case(converter.scenario)
+    return converter.scenario, converter.success_point

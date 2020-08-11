@@ -3,3 +3,4 @@ venv
 __pycache__
 scenario
 index.txt
+evaluation/traffic_lights/images

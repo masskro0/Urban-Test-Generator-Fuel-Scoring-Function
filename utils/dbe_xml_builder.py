@@ -2,6 +2,7 @@
 
 import xml.etree.ElementTree as ElementTree
 from os import path, remove, getcwd, mkdir
+from os.path import abspath, dirname
 from pathlib import Path
 from shutil import move
 
@@ -42,7 +43,7 @@ def save_xml(name, root, xml_type):
     current_path_of_file = Path(getcwd())
     current_path_of_file = path.realpath(current_path_of_file) + "\\" + full_name
 
-    destination_path = Path(getcwd())
+    destination_path = Path(dirname(abspath(__file__))).parent
     destination_path = path.realpath(destination_path) + "\\scenario"
 
     tree.write(full_name, encoding="utf-8", xml_declaration=True)
