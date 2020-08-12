@@ -274,3 +274,48 @@ def get_intersection_lines(last_point, intersection):
                                     (intersection.get("right_point")[0],
                                      intersection.get("right_point")[1])])
     return new_line, new_lane_line
+
+
+def calc_speed_waypoints(participants):
+    """
+    Calculates speed for each waypoint.
+    :param participants: List of participants.
+    :return: Void.
+    """
+    for participant in participants:
+        waypoints = participant["waypoints"]
+        if len(waypoints) == 0:
+            continue
+        i = 0
+        current_index = int(waypoints[0].get("lane"))
+        while i < len(waypoints):
+            if 1 < i < len(waypoints) - 1:
+                if int(waypoints[i].get("lane")) != current_index:
+                    current_index = int(waypoints[i].get("lane"))
+                    waypoints[i-1]["speed"] = 0
+                    waypoints[i-2]["speed"] = 0
+                    waypoints[i-3]["speed"] = 0
+                p1 = waypoints[i - 1].get("position")
+                p3 = waypoints[i + 1].get("position")
+                angle = get_angle(p1, waypoints[i].get("position"), p3)
+                if 170 <= angle <= 190:
+                    speed = 13.8
+                elif 150 <= angle < 170 or 190 > angle >= 210:
+                    speed = 10
+                elif 130 <= angle < 150 or 210 > angle >= 230:
+                    speed = 8.5
+                elif 110 <= angle < 130 or 230 > angle >= 250:
+                    speed = 6
+                elif 90 <= angle < 110 or 250 > angle >= 270:
+                    speed = 3
+                elif angle < 90 or angle > 270:
+                    speed = 2
+                else:
+                    speed = 1
+                waypoints[i-1]["speed"] = 0 if waypoints[i-1].get("speed") == 0 else \
+                        (speed + float(waypoints[i-1].get("speed"))) / 2
+                waypoints[i]["speed"] = speed
+            else:
+                speed = 0 if i == len(waypoints) - 1 else 13.8
+                waypoints[i]["speed"] = speed
+            i += 1

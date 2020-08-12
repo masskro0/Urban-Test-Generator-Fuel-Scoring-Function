@@ -174,3 +174,4 @@ class MisbehaviourObserver:
         self._check_rpm_infraction(electrics['rpmTacho'])
         self._check_throttle_infraction(electrics['throttle'])
         self.set_fuel_value(electrics['fuel'])
+

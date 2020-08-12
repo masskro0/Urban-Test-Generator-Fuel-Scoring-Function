@@ -13,7 +13,7 @@ from scipy.spatial.distance import euclidean
 
 from utils.utility_functions import convert_points_to_lines, get_angle, calc_width, \
     calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines, \
-    get_resize_factor_intersection, multilinestrings_to_linestring
+    get_resize_factor_intersection, multilinestrings_to_linestring, calc_speed_waypoints
 from utils.validity_checks import intersection_check_width, intersection_check_last, intersection_check_all
 from utils.xml_creator import build_all_xml
 from xml_converter.converter import b_spline
@@ -146,6 +146,7 @@ def _add_parked_cars(individual):
         right = True if random() >= 0.3 else False
         left = True if random() >= 0.3 else False
         line = LineString(control_points)
+        line = multilinestrings_to_linestring(line)
         prev_lane = LineString(individual.get("lanes")[idx - 1].get("control_points")) if idx != 0 else None
         prev_width = int(individual.get("lanes")[idx - 1].get("width")) / 2 + offset if idx != 0 else 0
         if left:
@@ -479,8 +480,8 @@ def _handle_manual_mode(last_point, oid):
                      "tolerance": 2,
                      "triggeredBy": "ego",
                      "triggers": oid,
-                     "initState": "green",
-                     "switchTo": "red"}
+                     "initState": "red",
+                     "switchTo": "green"}
     triggers.append({"triggerPoint": trigger_point})
     return triggers
 
@@ -594,6 +595,7 @@ def _preparation(population):
         _add_parked_cars(individual)
         _add_ego_car(individual)
         _add_other_participants(individual)
+        calc_speed_waypoints(individual["participants"])
 
 
 def _get_connected_lanes(lanes, ego_lanes, directions):
@@ -704,7 +706,7 @@ class FuelConsumptionTestGenerator:
         self.files_name = "urban"
         self.SPLINE_DEGREE = 3  # Sharpness of curves
         self.MAX_TRIES = 20  # Maximum number of invalid generated points/segments
-        self.POPULATION_SIZE = 3  # Minimum number of generated roads for each generation
+        self.POPULATION_SIZE = 1  # Minimum number of generated roads for each generation
         self.NUMBER_ELITES = 2  # Number of best kept test cases.
         self.MIN_SEGMENT_LENGTH = 15  # Minimum length of a road segment
         self.MAX_SEGMENT_LENGTH = 30  # Maximum length of a road segment
@@ -1835,7 +1837,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Make all objects collidable
 #       TODO Improve speed of car
 #       TODO Improve traffic sign positioning
-#       TODO Test generator should calc speed of waypoints, not converter
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
 #       TODO Fix traffic orientation
 #       TODO Find more/other ways to save fuel by looking at the driving style.

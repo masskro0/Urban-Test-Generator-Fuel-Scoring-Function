@@ -3,7 +3,7 @@ from beamngpy import BeamNGpy
 from beamngpy.sensors import Electrics
 from termcolor import colored
 
-from verifier import MisbehaviourObserver
+from scoring_oracle import MisbehaviourObserver
 
 
 def run_test_case(scenario):

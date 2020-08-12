@@ -567,69 +567,20 @@ class Converter:
             lines = list()
             line = list()
             vid = participant.get("id")
-            index = 0
             i = 0
             current_index = int(waypoints[0].attrib.get("lane"))
             while i < len(waypoints):
                 attr = waypoints[i].attrib
-                z = 0 if attr.get("z") is None else attr.get("z")
-                """
-                original_content.extend([
-                    "    new BeamNGWaypoint(wp_{}_{}){{\n".format(vid, index),
-                    "        drawDebug = \"0\";\n",
-                    "        directionalWaypoint = \"0\";\n",
-                    "        position = \"" + attr.get("x") + " " + attr.get("y") + " " + str(z) + "\";\n",
-                    "        scale = \"" + attr.get("tolerance") + " " + attr.get("tolerance") + " "
-                    + attr.get("tolerance") + "\";\n",
-                    "        rotationMatrix = \"1 0 0 0 1 0 0 0 1\";\n",
-                    "        mode = \"Ignore\";\n",
-                    "        canSave = \"1\";\n",
-                    "        canSaveDynamicFields = \"1\";\n",
-                    "    };\n"
-                ])
-                """
-                if 1 < i < len(waypoints) - 1:
-                    attr_prev = waypoints[i - 1].attrib
-                    attr_next = waypoints[i + 1].attrib
-                    p1 = (float(attr_prev.get("x")), float(attr_prev.get("y")))
-                    p2 = (float(attr.get("x")), float(attr.get("y")))
-                    p3 = (float(attr_next.get("x")), float(attr_next.get("y")))
-                    angle = get_angle(p1, p2, p3)
-                    if int(attr.get("lane")) != current_index:
-                        current_index = int(attr.get("lane"))
-                        line[-1]["speed"] = 0
-                        line[-2]["speed"] = 0
-                        line[-3]["speed"] = 0
-                        lines.append(line)
-                        line = list()
-                    else:
-                        if 170 <= angle <= 190:
-                            speed = 13.8
-                        elif 150 <= angle < 170 or 190 > angle >= 210:
-                            speed = 10
-                        elif 130 <= angle < 150 or 210 > angle >= 230:
-                            speed = 8.5
-                        elif 110 <= angle < 130 or 230 > angle >= 250:
-                            speed = 6
-                        elif 90 <= angle < 110 or 250 > angle >= 270:
-                            speed = 3
-                        elif angle < 90 or angle > 270:
-                            speed = 2
-                        else:
-                            speed = 1
-                        if len(line) > 0:
-                            line[-1]["speed"] = 0 if line[-1].get("speed") == 0 else \
-                                (speed + float(line[-1].get("speed"))) / 2
-                        line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
+                if int(attr.get("lane")) != current_index:
+                    current_index = int(attr.get("lane"))
+                    lines.append(line)
+                    line = list()
                 else:
-                    speed = 0 if i == len(waypoints) - 1 else 13.8
-                    line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)), 'speed': speed})
-                    if i == len(waypoints) - 1:
-                        line[-1]["speed"] = 0
-                        line[-2]["speed"] = 0
-                        line[-3]["speed"] = 0
-                        lines.append(line)
-                index += 1
+                    z = 0 if attr.get("z") is None else attr.get("z")
+                    line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)),
+                                 'speed': float(attr.get("speed"))})
+                if i == len(waypoints) - 1:
+                    lines.append(line)
                 i += 1
             self.lines.append({"vid": vid, "lines": lines})
         original_content.append("};")
@@ -639,7 +590,6 @@ class Converter:
 
     def _get_on_race_start_line_content(self):
         participants = self.dbc_root.findall("participants/participant")
-        triggers = self.dbc_root.find("triggerPoints")
         content = ""
         for participant in participants:
             vid = participant.get("id")
@@ -782,7 +732,7 @@ class Converter:
 
         content += "end\n\n"
         content += trigger_content
-        content += "local function onRaceTick(raceTickTime)\n" \
+        content += "\nlocal function onRaceTick(raceTickTime)\n" \
                    "  time = time + raceTickTime\n" \
                    "  local pos = ego:getPosition()\n"
         line_index = 0
@@ -830,7 +780,6 @@ class Converter:
                        + " and triggered_" + str(idx) + " == 0 then\n" \
                        "    triggered_" + str(idx) + " = 1\n" \
                        "    local vehicleName = \"" + vehicle_name + "\"\n" \
-                       "    print(vehicleName)\n" \
                        "    TorqueScript.eval(vehicleName..\'.position = \"" + spawn_point.get("x") + " " \
                        + spawn_point.get("y") + " " + str(z) + "\";\')\n" \
                        "    TorqueScript.eval(vehicleName..\'.rotation = \"0 0 01 " + str(z_rot_spawn) + "\";\')\n"
@@ -843,17 +792,22 @@ class Converter:
                        "  local p1_" + str(idx) + " = Point3F(" + str(pos[0]) + ", " + str(pos[1]) + ", -33)\n" \
                        "  local p2_" + str(idx) + " = Point3F(" + str(pos[0]) + ", " + str(pos[1]) \
                        + ", " + str(pos[2]) + ")\n"
-        content += "  if time == math.floor(time) then\n" \
-                   "    if time % 2 == 0 then\n"
-        for idx, light in enumerate(self.lights):
-            content += "      light_" + str(idx) + ":setPosition(p1_" + str(idx) + ")\n"
-        content += "    else\n"
-        for idx, light in enumerate(self.lights):
-            content += "      light_" + str(idx) + ":setPosition(p2_" + str(idx) + ")\n"
-        content += "    end\n" \
-                   "  end\n"
 
+        # Add blinking behaviour to traffic light mode "blinking". The yellow light gets teleported each second.
+        if len(self.lights) != 0:
+            content += "  if time == math.floor(time) then\n" \
+                       "    if time % 2 == 0 then\n"
+            for idx, light in enumerate(self.lights):
+                content += "      light_" + str(idx) + ":setPosition(p1_" + str(idx) + ")\n"
+            content += "    else\n"
+            for idx, light in enumerate(self.lights):
+                content += "      light_" + str(idx) + ":setPosition(p2_" + str(idx) + ")\n"
+            content += "    end\n" \
+                       "  end\n"
+
+        # Adds behaviour for the traffic lights.
         for idx, trigger in enumerate(traffic_triggers):
+            # Adds the condition to the LUA file as well as the flag that this condition was once entered.
             init_state = trigger.get("initState")
             content += "  if math.sqrt((trigger_traffic_" + str(idx) + ".x - pos.x) ^ 2 + (" \
                        + "trigger_traffic_" + str(idx) + ".y - pos.y) ^ 2) <= " \
@@ -861,17 +815,21 @@ class Converter:
                        + " and triggered_traffic_" + str(idx) + " == 0 then\n" \
                          "    triggered_traffic_" + str(idx) + " = 1\n"
 
+            # Tells which light should be switched on and which should disappear when the car enters the trigger point.
             for idx_1, traffic_light in enumerate(self.traffic_lights):
                 oid = traffic_light[0].get("id")
                 oid = oid[:22]
                 temp_idx = int(oid[-1])
-                old = 0 if init_state == "green" else 2
-                new = 0 if old == 2 else 2
                 if idx == temp_idx:
-                    content += "    " + traffic_light[1].get("id") + ":setPosition(points_1[" \
-                               + str(3 * idx_1 + 2) + "])\n"
-                    content += "    " + traffic_light[new].get("id") + ":setPosition(points_2[" \
-                               + str(3 * idx_1 + new + 1) + "])\n"
+                    if init_state == "green":
+                        new = 0 if init_state == "red" else 2
+                        content += "    " + traffic_light[1].get("id") + ":setPosition(points_1[" \
+                                   + str(3 * idx_1 + 2) + "])\n"
+                        content += "    " + traffic_light[new].get("id") + ":setPosition(points_2[" \
+                                   + str(3 * idx_1 + new + 1) + "])\n"
+                    else:
+                        content += "    " + traffic_light[1].get("id") + ":setPosition(points_2[" \
+                                   + str(3 * idx_1 + 2) + "])\n"
 
             content += "  end\n" \
                        "  if triggered_traffic_" + str(idx) + " == 1 then\n" \
@@ -892,6 +850,22 @@ class Converter:
                     content += "    " + traffic_light[old].get("id") + ":setPosition(points_2[" \
                                + str(3 * idx_1 + old + 1) + "])\n"
             content += "  end\n"
+
+            # Make green light visible and red/yellow light invisible after one second.
+            if init_state == "red":
+                for idx_1, traffic_light in enumerate(self.traffic_lights):
+                    oid = traffic_light[0].get("id")
+                    oid = oid[:22]
+                    temp_idx = int(oid[-1])
+                    if idx == temp_idx:
+                        content += "  if traffic_time_" + str(idx) + " == 1.5 then\n" \
+                                   "    " + traffic_light[1].get("id") + ":setPosition(points_1[" \
+                                   + str(3 * idx_1 + 2) + "])\n" \
+                                   "    " + traffic_light[2].get("id") + ":setPosition(points_1[" \
+                                   + str(3 * idx_1 + 3) + "])\n" \
+                                   "    " + traffic_light[0].get("id") + ":setPosition(points_2[" \
+                                   + str(3 * idx_1 + 1) + "])\n" \
+                                   + "  end\n"
 
             if init_state != "red":
                 content += "  if traffic_time_" + str(idx) + " == 7 then\n"
