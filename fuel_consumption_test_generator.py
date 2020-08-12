@@ -71,13 +71,19 @@ def _add_ego_car(individual):
 
     ego_index = 0
     same_lane = 0
+    action_index = 0
+    actions = individual.get("actions")
     for idx, lane in enumerate(lines):
         control_points = list(lines[idx].coords)
         opposite_dir = False
         deleted_points = list()
         lane_change = False
+        stop_flag = False
         if idx != 0 and ego_lanes[idx] - ego_lanes[idx - 1] != 1:
-            same_lane += 1
+            if actions[action_index] == "stop":
+                same_lane += 1
+                stop_flag = True
+            action_index += 1
             opposite_dir = True
         if idx + 1 < len(ego_lanes) and ego_lanes[idx + 1] - ego_lanes[idx] != 1:
             intersec_point = lines[idx].intersection(lines[idx + 1])
@@ -108,7 +114,7 @@ def _add_ego_car(individual):
                 if len(waypoints) == 0 or euclidean(deleted_points[iterator], waypoints[-1].get("position")) >= 1.5:
                     waypoint = {"position": deleted_points[iterator],
                                 "tolerance": 2,
-                                "lane": same_lane + 1}
+                                "lane": same_lane + 1 if stop_flag else same_lane}
                     waypoints.append(waypoint)
                 iterator += 1
             del waypoints[-1]
@@ -212,10 +218,18 @@ def _add_other_0(individual, lanes_start=None, lanes_end=None):
             spawn_lanes.append(idx)
     i = 0
     j = 0
+    action_index = 0
     waypoints = list()
     spawns = list()
     ends = list()
     while i < len(spawn_lanes):
+        if individual.get("actions")[action_index] == "go":
+            action_index += 1
+            if i < len(spawn_lanes) - 1 and spawn_lanes[i + 1] - spawn_lanes[i] == 1:
+                i += 2
+            else:
+                i += 1
+            continue
         lines = list()
         three_way = False
         if len(spawn_lanes) > 1 and i < len(spawn_lanes) - 1 and spawn_lanes[i + 1] - spawn_lanes[i] == 1:
@@ -312,16 +326,18 @@ def _add_other_0(individual, lanes_start=None, lanes_end=None):
             i += 2
         else:
             i += 1
-    init_state = {"position": waypoints[0].get("position"),
-                  "orientation": triggers[0].get("spawnPoint").get("orientation")}
-    other = {"id": "other_{}".format(0),
-             "init_state": init_state,
-             "waypoints": waypoints,
-             "model": "ETK800",
-             "color": choice(COLORS),
-             "spawn_lanes": spawns,
-             "end_lanes": ends}
-    individual["participants"].append(other)
+        action_index += 1
+    if len(waypoints) != 0:
+        init_state = {"position": waypoints[0].get("position"),
+                      "orientation": triggers[0].get("spawnPoint").get("orientation")}
+        other = {"id": "other_{}".format(0),
+                 "init_state": init_state,
+                 "waypoints": waypoints,
+                 "model": "ETK800",
+                 "color": choice(COLORS),
+                 "spawn_lanes": spawns,
+                 "end_lanes": ends}
+        individual["participants"].append(other)
     return spawn_lanes, triggers
 
 
@@ -438,7 +454,6 @@ def _add_other_2(individual, triggers=None):
              "model": "ETK800",
              "color": choice(COLORS)}
     individual["participants"].append(other)
-    return triggers
 
 
 def _add_other_participants(individual):
@@ -448,8 +463,7 @@ def _add_other_participants(individual):
     spawn_lanes.extend(sl)
     triggers.extend(t)          # TODO Uncomment
     #_add_other_1(individual, spawn_lanes)
-    #t = _add_other_2(individual, triggers)
-    #triggers.extend(t)
+    _add_other_2(individual, triggers)
     individual.setdefault("triggers", []).extend(triggers)
 
 
@@ -475,13 +489,14 @@ def _merge_lanes(population):
 
 def _handle_manual_mode(last_point, oid):
     triggers = list()
+    init_state = choice(["green", "red"])
     trigger_point = {"position": last_point,
                      "action": "switchLights",
                      "tolerance": 2,
                      "triggeredBy": "ego",
                      "triggers": oid,
-                     "initState": "red",
-                     "switchTo": "green"}
+                     "initState": init_state,
+                     "switchTo": "green" if init_state == "red" else "red"}
     triggers.append({"triggerPoint": trigger_point})
     return triggers
 
@@ -569,6 +584,12 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     if sign_on_my_lane.startswith("trafficlight") and mode == "manual":
         triggers = _handle_manual_mode(last_point, oid)
 
+    if sign_on_my_lane.startswith("priority") or obstacles[-1].get("sign") == "priority" \
+            or (len(triggers) != 0 and triggers[0].get("triggerPoint").get("switchTo") == "green"):
+        action = "go"
+    else:
+        action = "stop"
+
     # Left direction.
     if number_of_ways == 4 or direction == "left" or layout == "left":
         opposite_direction(left_point, last_point)
@@ -587,7 +608,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     if number_of_ways == 4 or direction == "right" or layout == "right":
         opposite_direction(right_point, straight_point)
     INTERSECTION_ID += 1
-    return obstacles, triggers
+    return obstacles, triggers, action
 
 
 def _preparation(population):
@@ -790,6 +811,7 @@ class FuelConsumptionTestGenerator:
         obstacles = list()
         directions = list()
         triggers = list()
+        actions = list()
         tries = 0
         lane_index = 0
         number_of_pieces = 3
@@ -822,9 +844,10 @@ class FuelConsumptionTestGenerator:
                         and not intersection_check_width(width_lines, control_points_lines, intersection_lanes_temp):
                     left_lanes = intersection_items.get("left_lanes")
                     right_lanes = intersection_items.get("right_lanes")
-                    obs, trs = _add_traffic_signs(control_points[-1], lanes[lane_index].get("left_lanes"),
-                                                  lanes[lane_index].get("right_lanes"),
-                                                  lanes[lane_index].get("width"), intersection, lane_index + 1)
+                    obs, trs, action = _add_traffic_signs(control_points[-1], lanes[lane_index].get("left_lanes"),
+                                                          lanes[lane_index].get("right_lanes"),
+                                                          lanes[lane_index].get("width"), intersection, lane_index + 1)
+                    actions.append(action)
                     obstacles.extend(obs)
                     triggers.extend(trs)
                     directions.append(intersection.get("direction"))
@@ -866,7 +889,7 @@ class FuelConsumptionTestGenerator:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
             return {"lanes": lanes, "success_point": {"position": last_point, "tolerance": 3}, "ego_lanes": ego_lanes,
                     "obstacles": obstacles, "directions": directions, "triggers": triggers, "tod": random(),
-                    "intersection_lanes": intersection_lanes}
+                    "intersection_lanes": intersection_lanes, "actions": actions}
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
@@ -968,7 +991,8 @@ class FuelConsumptionTestGenerator:
                                  "fitness": 0,
                                  "triggers": urban.get("triggers"),
                                  "tod": urban.get("tod"),
-                                 "intersection_lanes": urban.get("intersection_lanes")})
+                                 "intersection_lanes": urban.get("intersection_lanes"),
+                                 "actions": urban.get("actions")})
                 i += 1
         return startpop
 
@@ -1214,6 +1238,7 @@ class FuelConsumptionTestGenerator:
             return individual
         mode = None
         intersec_id = mutation_list[0]
+        index = 0
         for obstacle in individual.get("obstacles"):
             if not obstacle.get("name").startswith("trafficlight"):
                 continue
@@ -1221,6 +1246,7 @@ class FuelConsumptionTestGenerator:
                 obstacle["mode"] = mode
             else:
                 intersec_id = obstacle.get("intersection_id")
+                index += 1
                 mode = choice(["off", "blinking", "manual"])
                 obstacle["mode"] = mode
                 if mode == "manual":
@@ -1229,8 +1255,9 @@ class FuelConsumptionTestGenerator:
                     oid = "traffic_light_manual_" + str(OID_INDEX)
                     OID_INDEX += 1
                     last_point = individual.get("lanes")[obstacle.get("lane_id")].get("control_points")[0]
-                    triggers = _handle_manual_mode(last_point, oid)
+                    triggers, action = _handle_manual_mode(last_point, oid)
                     individual["triggers"].extend(triggers)
+                    individual["actions"][index] = action
 
     def _mutate_parked_cars(self, individual):
         """Mutates parked cars either car by car (position and rotation) or for a whole lane (rotation angle). Also
@@ -1611,9 +1638,12 @@ class FuelConsumptionTestGenerator:
                 lane_ids.append(lane)
         i = 0
         for idx, intersection in enumerate(intersections):
-            obs, tgr = _add_traffic_signs(intersection.get("last_point"), intersection.get("current_left_lanes"),
-                                          intersection.get("current_right_lanes"), intersection.get("current_width"),
-                                          intersection, lane_ids[idx])
+            obs, tgr, action = _add_traffic_signs(intersection.get("last_point"),
+                                                  intersection.get("current_left_lanes"),
+                                                  intersection.get("current_right_lanes"),
+                                                  intersection.get("current_width"),
+                                                  intersection, lane_ids[idx])
+            individual["actions"][idx] = action
             for obstacle in obs:
                 individual["obstacles"][i]["position"] = obstacle.get("position")
                 i += 1
@@ -1825,14 +1855,11 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Crossover
-#       TODO Car shouldn't stop at yield sign/traffic light mode off and blinking when driving straight or right
 #       TODO Buggy traffic
-#       TODO Init state green
 #       TODO Buggy traffic spawn
 #       TODO Right turns are buggy
 
 # TODO May-have/Improvements:
-#       TODO Green light/priority sign for ego -> Also change mutation and trigger points
 #       TODO Remove redundant XML information
 #       TODO Make all objects collidable
 #       TODO Improve speed of car

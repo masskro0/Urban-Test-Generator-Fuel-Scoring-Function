@@ -809,9 +809,10 @@ class Converter:
         for idx, trigger in enumerate(traffic_triggers):
             # Adds the condition to the LUA file as well as the flag that this condition was once entered.
             init_state = trigger.get("initState")
+            multiplicator = 5 if init_state == "green" else 9
             content += "  if math.sqrt((trigger_traffic_" + str(idx) + ".x - pos.x) ^ 2 + (" \
                        + "trigger_traffic_" + str(idx) + ".y - pos.y) ^ 2) <= " \
-                       + str(float(trigger.get("tolerance"))*5) \
+                       + str(float(trigger.get("tolerance"))*multiplicator) \
                        + " and triggered_traffic_" + str(idx) + " == 0 then\n" \
                          "    triggered_traffic_" + str(idx) + " = 1\n"
 
