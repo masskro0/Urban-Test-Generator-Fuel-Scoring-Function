@@ -3,15 +3,13 @@
 from pathlib import Path
 from glob import glob
 from termcolor import colored
-from os import getcwd, path, chdir
+from os import getcwd, path
 from os.path import exists, join, dirname, abspath
 from shutil import move
 from beamngpy.beamngcommon import ENV
 from json import dump
 import xml.etree.ElementTree as Etree
-from sys import path as syspath
 
-from test_execution import run_test_case
 from xml_converter.converter import Converter
 
 
@@ -87,10 +85,11 @@ def create_json_file(index, participants, author, tod, multiple_prefabs=False, s
         dump(data, outfile, indent=4)
 
 
-def convert_test(dbc, dbe):
+def convert_test(dbc, dbe, move_files=True):
     """Converts the XML files into BeamNG files.
     :param dbc: Path to the criteria XML file.
     :param dbe: Path to the environment XML file.
+    :param move_files: Flag whether files should moves to BNG's scenarios folder or not.
     :return: Returns BNG scenario.
     """
     print(colored("Converting XML files to BNG files...", "grey", attrs=['bold']))
@@ -107,10 +106,11 @@ def convert_test(dbc, dbe):
     create_json_file(index, participants, author, tod)
     converter = Converter(dbc_root, dbe_root, index)
     converter.add_to_prefab()
-    matches = glob("urban_*")
-    print(colored("Moving files to folder {}...".format(join(ENV['BNG_HOME'], "levels", "urban", "scenarios")),
-                  "grey", attrs=['bold']))
-    for match in matches:
-        move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
+    if move_files:
+        matches = glob("urban_*")
+        print(colored("Moving files to folder {}...".format(join(ENV['BNG_HOME'], "levels", "urban", "scenarios")),
+                      "grey", attrs=['bold']))
+        for match in matches:
+            move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
     update_index(index)
     return converter

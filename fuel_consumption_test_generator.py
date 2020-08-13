@@ -10,6 +10,7 @@ from os import path
 from glob import glob
 from pathlib import Path
 from scipy.spatial.distance import euclidean
+from time import sleep
 
 from utils.utility_functions import convert_points_to_lines, get_angle, calc_width, \
     calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines, \
@@ -1836,9 +1837,9 @@ class FuelConsumptionTestGenerator:
         """
         destination_path = path.dirname(path.realpath(__file__)) + "\\scenario"
         xml_names = destination_path + "\\" + self.files_name + "*"
-        matches = glob(xml_names)
         i = 0
         self.genetic_algorithm()
+        matches = glob(xml_names)
         while i < self.POPULATION_SIZE * 2 - 1:
             yield Path(matches[i + 1]), Path(matches[i])
             i += 2
