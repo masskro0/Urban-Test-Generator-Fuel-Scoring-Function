@@ -84,6 +84,7 @@ class Converter:
         self.traffic_lights = list()
         self.light_index = 0
         self.success_point = None
+        self.traffic_triggers = list()
 
     def _init_prefab(self):
         self.bng = BeamNGpy('localhost', 64255)
@@ -97,6 +98,7 @@ class Converter:
         self._add_waypoints()
         self._write_lua_file()
         self._get_success_point()
+        self._get_traffic_triggers()
 
     def add_to_prefab(self):
         self._init_prefab()
@@ -104,6 +106,21 @@ class Converter:
         self._add_obstacles()
         self._add_participants()
         self._finalize_prefab()
+
+    def _get_traffic_triggers(self):
+        trigger_points = self.dbc_root.findall("triggerPoints/triggerPoint")
+        for trigger in trigger_points:
+            if trigger.attrib.get("action") == "switchLights":
+                self.traffic_triggers.append(trigger.attrib)
+
+    def get_traffic_lights_position(self):
+        obstacles = self.dbe_root.find("obstacles")
+        traffic_light_positions = list()
+        for obstacle in obstacles:
+            attr = obstacle.attrib
+            if obstacle.tag.startswith("trafficlight") and attr.get("facingEgo") is not None and attr.get("facingEgo"):
+                traffic_light_positions.append(attr)
+        return traffic_light_positions
 
     def _get_success_point(self):
         success_points = self.dbc_root.findall("success/scPosition")
@@ -571,6 +588,21 @@ class Converter:
             current_index = int(waypoints[0].attrib.get("lane"))
             while i < len(waypoints):
                 attr = waypoints[i].attrib
+                z = 0 if attr.get("z") is None else attr.get("z")
+                original_content.extend([
+                    "    new BeamNGWaypoint(wp_{}_{}){{\n".format(vid, i),
+                    "        drawDebug = \"0\";\n",
+                    "        directionalWaypoint = \"0\";\n",
+                    "        position = \"" + attr.get("x") + " " + attr.get("y") + " " + str(z) + "\";\n",
+                    "        scale = \"" + attr.get("tolerance") + " " + attr.get("tolerance") + " "
+                    + attr.get("tolerance") + "\";\n",
+                    "        rotationMatrix = \"1 0 0 0 1 0 0 0 1\";\n",
+                    "        mode = \"Ignore\";\n",
+                    "        canSave = \"1\";\n",
+                    "        canSaveDynamicFields = \"1\";\n",
+                    "    };\n"
+                ])
+
                 if int(attr.get("lane")) != current_index:
                     current_index = int(attr.get("lane"))
                     lines.append(line)

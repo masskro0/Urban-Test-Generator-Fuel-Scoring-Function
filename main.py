@@ -14,8 +14,8 @@ if __name__ == '__main__':
         for paths in gen.get_test():
             dbe = paths[0]
             dbc = paths[1]
-            scenario, _ = convert_test(dbc, dbe)
-            run_test_case(scenario)
+            converter = convert_test(dbc, dbe)
+            run_test_case(converter.scenario)
     """
     dbc = join(getcwd(), "scenario", "urban0.dbc.xml")
     dbe = join(getcwd(), "scenario", "urban0.dbe.xml")

@@ -100,6 +100,7 @@ class DBEBuilder:
             mode = obstacle.get("mode")
             sign = obstacle.get("sign")
             oid = obstacle.get("oid")
+            facing_ego = obstacle.get("facingEgo")
             full_string = '' + name + ' x="' + str(x) + '" y="' + str(y) + '"'
             if z:
                 full_string += ' z="' + str(z) + '"'
@@ -131,6 +132,8 @@ class DBEBuilder:
                 full_string += ' sign="' + sign + '"'
             if oid:
                 full_string += ' oid="' + oid + '"'
+            if facing_ego:
+                full_string += ' facingEgo="' + str(facing_ego) + '"'
             ElementTree.SubElement(obstacles, full_string)
 
     def set_tod(self, tod):
