@@ -119,7 +119,7 @@ def collect_images(destination_path):
                             else:
                                 time_entry += timer - prev_time
                                 prev_time = timer
-                                if time_entry >= 1.5:
+                                if time_entry >= 1.45:
                                     label = "green"
                                     prev_time = 0
                                     time_entry = 0
@@ -132,7 +132,7 @@ def collect_images(destination_path):
                                     tolerance = float(traffic_triggers[trigger_index].get("tolerance"))
                                     multiplicator = 15 if init_state == "green" else 9
                         else:
-                            if distance_trigger <= 10 and not red_entered:
+                            if distance_trigger <= 9 and not red_entered:
                                 label = "red"
                                 red_entered = True
                                 time_entry += timer - prev_time
@@ -173,9 +173,12 @@ def collect_images(destination_path):
                 traffic_triggers_pos = None if trigger_index >= len(traffic_triggers) else \
                     (float(traffic_triggers[trigger_index]["x"]),
                      float(traffic_triggers[trigger_index]["y"]))
-                init_state = traffic_triggers[trigger_index].get("initState")
-                tolerance = float(traffic_triggers[trigger_index].get("tolerance"))
-                multiplicator = 15 if init_state == "green" else 9
+                init_state = None if trigger_index >= len(traffic_triggers) else \
+                    traffic_triggers[trigger_index].get("initState")
+                tolerance = None if trigger_index >= len(traffic_triggers) else \
+                    float(traffic_triggers[trigger_index].get("tolerance"))
+                multiplicator = 15 if init_state is not None and init_state == "green" else 9
+        sleep(0.4)
         if euclidean(converter.success_point, (ego.state["pos"][0], ego.state["pos"][1])) < 15:
             bng.close()
             break
