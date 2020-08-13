@@ -588,6 +588,7 @@ class Converter:
             current_index = int(waypoints[0].attrib.get("lane"))
             while i < len(waypoints):
                 attr = waypoints[i].attrib
+                """
                 z = 0 if attr.get("z") is None else attr.get("z")
                 original_content.extend([
                     "    new BeamNGWaypoint(wp_{}_{}){{\n".format(vid, i),
@@ -602,7 +603,7 @@ class Converter:
                     "        canSaveDynamicFields = \"1\";\n",
                     "    };\n"
                 ])
-
+                """
                 if int(attr.get("lane")) != current_index:
                     current_index = int(attr.get("lane"))
                     lines.append(line)
