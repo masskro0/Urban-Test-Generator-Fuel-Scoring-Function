@@ -321,5 +321,7 @@ def visualize_results(predictions, false_predictions, images):
 
 if __name__ == '__main__':
     # create_tests(1, True)
-    # collect_images_existing_tests()
+    collect_images_existing_tests()
     predict_all_images()
+
+# TODO Test oracle: Damage, out of street, timeout, traffic rules
