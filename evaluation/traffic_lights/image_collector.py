@@ -47,7 +47,6 @@ def collect_images(destination_path):
         print(colored("Test case {} has not traffic lights. Skipping...".format(converter.scenario.name),
                       "grey", attrs=['bold']))
         return
-
     vehicles = converter.scenario.vehicles
     ego = None
     for vehicle in vehicles.keys():
@@ -71,7 +70,8 @@ def collect_images(destination_path):
     bng.start_scenario()
     traffic_triggers = converter.traffic_triggers
     trigger_index = 0
-    traffic_triggers_pos = (float(traffic_triggers[trigger_index]["x"]), float(traffic_triggers[trigger_index]["y"]))
+    traffic_triggers_pos = None if len(traffic_triggers) == 0 \
+        else (float(traffic_triggers[trigger_index]["x"]), float(traffic_triggers[trigger_index]["y"]))
     traffic_index = 0
     traffic_light_pos = (float(traffic_light_list[traffic_index]["x"]), float(traffic_light_list[traffic_index]["y"]))
     entered = False
@@ -79,13 +79,14 @@ def collect_images(destination_path):
     time_entry = 0
     prev_time = 0
     label = None
-    init_state = traffic_triggers[trigger_index].get("initState")
-    tolerance = float(traffic_triggers[trigger_index].get("tolerance"))
+    init_state = None if len(traffic_triggers) == 0 else traffic_triggers[trigger_index].get("initState")
+    tolerance = None if len(traffic_triggers) == 0 else float(traffic_triggers[trigger_index].get("tolerance"))
     multiplicator = 15 if init_state == "green" else 9
+    sleep(2)
     while True:
         ego.update_vehicle()
         sensors = bng.poll_sensors(ego)
-        if traffic_light_pos is not None and traffic_triggers_pos is not None:
+        if traffic_light_pos is not None:
             timer = sensors["timer"]["time"]
             p0 = (ego.state["pos"][0] + ego.state["dir"][0], ego.state["pos"][1] + ego.state["dir"][1])
             p1 = (ego.state["pos"][0], ego.state["pos"][1])
@@ -97,7 +98,7 @@ def collect_images(destination_path):
                     traffic_light_pos = None
                 else:
                     traffic_light_pos = (float(traffic_light_list[traffic_index]["x"]),
-                                   float(traffic_light_list[traffic_index]["y"]))
+                                         float(traffic_light_list[traffic_index]["y"]))
             elif distance_light <= 60 and (0 <= angle <= fov / 2 or 360 - fov / 2 <= angle <= 360):
                 if traffic_light_list[traffic_index].get("mode") == "off":
                     label = "off"
@@ -106,7 +107,7 @@ def collect_images(destination_path):
                         label = "off"
                     else:
                         label = "yellow"
-                else:
+                elif traffic_triggers_pos is not None:
                     distance_trigger = euclidean(traffic_triggers_pos, (ego.state["pos"][0], ego.state["pos"][1]))
                     if distance_trigger > tolerance * multiplicator:
                         label = init_state
@@ -119,7 +120,7 @@ def collect_images(destination_path):
                             else:
                                 time_entry += timer - prev_time
                                 prev_time = timer
-                                if time_entry >= 1.45:
+                                if time_entry >= 1.3:
                                     label = "green"
                                     prev_time = 0
                                     time_entry = 0
@@ -128,9 +129,11 @@ def collect_images(destination_path):
                                     traffic_triggers_pos = None if trigger_index >= len(traffic_triggers) else \
                                         (float(traffic_triggers[trigger_index]["x"]),
                                          float(traffic_triggers[trigger_index]["y"]))
-                                    init_state = traffic_triggers[trigger_index].get("initState")
-                                    tolerance = float(traffic_triggers[trigger_index].get("tolerance"))
-                                    multiplicator = 15 if init_state == "green" else 9
+                                    init_state = None if trigger_index >= len(traffic_triggers) else \
+                                        traffic_triggers[trigger_index].get("initState")
+                                    tolerance = None if trigger_index >= len(traffic_triggers) else \
+                                        float(traffic_triggers[trigger_index].get("tolerance"))
+                                    multiplicator = 15 if init_state is None or init_state == "green" else 9
                         else:
                             if distance_trigger <= 9 and not red_entered:
                                 label = "red"
@@ -178,11 +181,9 @@ def collect_images(destination_path):
                 tolerance = None if trigger_index >= len(traffic_triggers) else \
                     float(traffic_triggers[trigger_index].get("tolerance"))
                 multiplicator = 15 if init_state is not None and init_state == "green" else 9
-        sleep(0.4)
         if euclidean(converter.success_point, (ego.state["pos"][0], ego.state["pos"][1])) < 15:
             bng.close()
             break
-
 
 def collect_images_existing_tests():
     folders = glob("test_case_*")
@@ -191,6 +192,8 @@ def collect_images_existing_tests():
 
 
 if __name__ == '__main__':
-    collect_images_existing_tests()
+    # create_tests(1, True)
+    #collect_images_existing_tests()
+    collect_images("test_case_1597361624.6063387")
 
 # TODO Visualize results

@@ -879,6 +879,7 @@ class Converter:
                 old = 0 if init_state == "green" else 2
                 new = 0 if old == 2 else 2
                 if idx == temp_idx:
+                    state = "green" if init_state == "red" else "red"
                     content += "    " + traffic_light[new].get("id") + ":setPosition(points_1[" \
                                + str(3 * idx_1 + new + 1) + "])\n"
                     content += "    " + traffic_light[old].get("id") + ":setPosition(points_2[" \

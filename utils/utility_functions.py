@@ -298,11 +298,10 @@ def calc_speed_waypoints(participants):
                     if i - 5 >= 0:
                         waypoints[i - 4]["speed"] = 0
                         waypoints[i - 5]["speed"] = 0
-                    if i - 9 >= 0:
+                    if i - 8 >= 0:
                         waypoints[i - 6]["speed"] = 0
                         waypoints[i - 7]["speed"] = 0
                         waypoints[i - 8]["speed"] = 0
-                        waypoints[i - 9]["speed"] = 0
                 p1 = waypoints[i - 1].get("position")
                 p3 = waypoints[i + 1].get("position")
                 angle = get_angle(p1, waypoints[i].get("position"), p3)

@@ -464,7 +464,7 @@ def _add_other_participants(individual):
     spawn_lanes.extend(sl)
     triggers.extend(t)          # TODO Uncomment
     #_add_other_1(individual, spawn_lanes)
-    _add_other_2(individual, triggers)
+    #_add_other_2(individual, triggers)
     individual.setdefault("triggers", []).extend(triggers)
 
 
@@ -553,7 +553,6 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 
     modes = ["off", "blinking", "manual"]
     mode = choice(modes)
-    mode = "manual"     # TODO Delete
     oid = None
     if mode == "manual":
         oid = "traffic_light_manual_" + str(OID_INDEX)
@@ -1859,6 +1858,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Buggy traffic
 #       TODO Buggy traffic spawn
 #       TODO Right turns are buggy
+#       TODO Traffic light color cant be determined correctly
 
 # TODO May-have/Improvements:
 #       TODO Remove redundant XML information
