@@ -1,0 +1,499 @@
+<?xml version='1.0' encoding='utf-8'?>
+<environment>
+    <author>Michael Heine</author>
+    <timeOfDay>0</timeOfDay>
+    <lanes>
+        <lane leftLanes="2" markings="true" rightLanes="2">
+            <laneSegment x="1.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="1.5800000000" y="0.0000000000" width="16" />
+            <laneSegment x="2.1700000000" y="0.0000000000" width="16" />
+            <laneSegment x="2.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="3.3200000000" y="0.0000000000" width="16" />
+            <laneSegment x="3.8900000000" y="0.0000000000" width="16" />
+            <laneSegment x="4.4600000000" y="0.0000000000" width="16" />
+            <laneSegment x="5.0300000000" y="0.0000000000" width="16" />
+            <laneSegment x="5.5900000000" y="0.0000000000" width="16" />
+            <laneSegment x="6.1600000000" y="0.0000000000" width="16" />
+            <laneSegment x="6.7200000000" y="0.0000000000" width="16" />
+            <laneSegment x="7.2700000000" y="0.0000000000" width="16" />
+            <laneSegment x="7.8300000000" y="0.0000000000" width="16" />
+            <laneSegment x="8.3800000000" y="0.0000000000" width="16" />
+            <laneSegment x="8.9200000000" y="0.0000000000" width="16" />
+            <laneSegment x="9.4700000000" y="0.0000000000" width="16" />
+            <laneSegment x="10.0100000000" y="0.0000000000" width="16" />
+            <laneSegment x="10.5500000000" y="0.0000000000" width="16" />
+            <laneSegment x="11.0800000000" y="0.0000000000" width="16" />
+            <laneSegment x="11.6200000000" y="0.0000000000" width="16" />
+            <laneSegment x="12.1500000000" y="0.0000000000" width="16" />
+            <laneSegment x="12.6700000000" y="0.0000000000" width="16" />
+            <laneSegment x="13.2000000000" y="0.0000000000" width="16" />
+            <laneSegment x="13.7200000000" y="0.0000000000" width="16" />
+            <laneSegment x="14.2400000000" y="0.0000000000" width="16" />
+            <laneSegment x="14.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="15.2700000000" y="0.0000000000" width="16" />
+            <laneSegment x="15.7800000000" y="0.0000000000" width="16" />
+            <laneSegment x="16.2800000000" y="0.0000000000" width="16" />
+            <laneSegment x="16.7900000000" y="0.0000000000" width="16" />
+            <laneSegment x="17.2900000000" y="0.0000000000" width="16" />
+            <laneSegment x="17.7900000000" y="0.0000000000" width="16" />
+            <laneSegment x="18.2900000000" y="0.0000000000" width="16" />
+            <laneSegment x="18.7800000000" y="0.0000000000" width="16" />
+            <laneSegment x="19.2700000000" y="0.0000000000" width="16" />
+            <laneSegment x="19.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="20.2400000000" y="0.0000000000" width="16" />
+            <laneSegment x="20.7200000000" y="0.0000000000" width="16" />
+            <laneSegment x="21.2000000000" y="0.0000000000" width="16" />
+            <laneSegment x="21.6800000000" y="0.0000000000" width="16" />
+            <laneSegment x="22.1500000000" y="0.0000000000" width="16" />
+            <laneSegment x="22.6200000000" y="0.0000000000" width="16" />
+            <laneSegment x="23.0900000000" y="0.0000000000" width="16" />
+            <laneSegment x="23.5500000000" y="0.0000000000" width="16" />
+            <laneSegment x="24.0100000000" y="0.0000000000" width="16" />
+            <laneSegment x="24.4700000000" y="0.0000000000" width="16" />
+            <laneSegment x="24.9300000000" y="0.0000000000" width="16" />
+            <laneSegment x="25.3800000000" y="0.0000000000" width="16" />
+            <laneSegment x="25.8300000000" y="0.0000000000" width="16" />
+            <laneSegment x="26.2800000000" y="0.0000000000" width="16" />
+            <laneSegment x="26.7200000000" y="0.0000000000" width="16" />
+            <laneSegment x="27.1600000000" y="0.0000000000" width="16" />
+            <laneSegment x="27.6000000000" y="0.0000000000" width="16" />
+            <laneSegment x="28.0400000000" y="0.0000000000" width="16" />
+            <laneSegment x="28.4700000000" y="0.0000000000" width="16" />
+            <laneSegment x="28.9000000000" y="0.0000000000" width="16" />
+            <laneSegment x="29.3300000000" y="0.0000000000" width="16" />
+            <laneSegment x="29.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="30.1800000000" y="0.0000000000" width="16" />
+            <laneSegment x="30.5900000000" y="0.0000000000" width="16" />
+            <laneSegment x="31.0100000000" y="0.0000000000" width="16" />
+            <laneSegment x="31.4200000000" y="0.0000000000" width="16" />
+            <laneSegment x="31.8300000000" y="0.0000000000" width="16" />
+            <laneSegment x="32.2400000000" y="0.0000000000" width="16" />
+            <laneSegment x="32.6400000000" y="0.0000000000" width="16" />
+            <laneSegment x="33.0500000000" y="0.0000000000" width="16" />
+            <laneSegment x="33.4400000000" y="0.0000000000" width="16" />
+            <laneSegment x="33.8400000000" y="0.0000000000" width="16" />
+            <laneSegment x="34.2300000000" y="0.0000000000" width="16" />
+            <laneSegment x="34.6200000000" y="0.0000000000" width="16" />
+            <laneSegment x="35.0100000000" y="0.0000000000" width="16" />
+            <laneSegment x="35.4000000000" y="0.0000000000" width="16" />
+            <laneSegment x="35.7800000000" y="0.0000000000" width="16" />
+            <laneSegment x="36.1600000000" y="0.0000000000" width="16" />
+            <laneSegment x="36.5300000000" y="0.0000000000" width="16" />
+            <laneSegment x="36.9000000000" y="0.0000000000" width="16" />
+            <laneSegment x="37.2700000000" y="0.0000000000" width="16" />
+            <laneSegment x="37.6400000000" y="0.0000000000" width="16" />
+            <laneSegment x="38.0100000000" y="0.0000000000" width="16" />
+            <laneSegment x="38.3700000000" y="0.0000000000" width="16" />
+            <laneSegment x="38.7300000000" y="0.0000000000" width="16" />
+            <laneSegment x="39.0800000000" y="0.0000000000" width="16" />
+            <laneSegment x="39.4400000000" y="0.0000000000" width="16" />
+            <laneSegment x="39.7900000000" y="0.0000000000" width="16" />
+            <laneSegment x="40.1300000000" y="0.0000000000" width="16" />
+            <laneSegment x="40.4800000000" y="0.0000000000" width="16" />
+            <laneSegment x="40.8200000000" y="0.0000000000" width="16" />
+            <laneSegment x="41.1600000000" y="0.0000000000" width="16" />
+            <laneSegment x="41.4900000000" y="0.0000000000" width="16" />
+            <laneSegment x="41.8300000000" y="0.0000000000" width="16" />
+            <laneSegment x="42.1600000000" y="0.0000000000" width="16" />
+            <laneSegment x="42.4800000000" y="0.0000000000" width="16" />
+            <laneSegment x="42.8100000000" y="0.0000000000" width="16" />
+            <laneSegment x="43.1300000000" y="0.0000000000" width="16" />
+            <laneSegment x="43.4500000000" y="0.0000000000" width="16" />
+            <laneSegment x="43.7700000000" y="0.0000000000" width="16" />
+            <laneSegment x="44.0800000000" y="0.0000000000" width="16" />
+            <laneSegment x="44.3900000000" y="0.0000000000" width="16" />
+            <laneSegment x="44.7000000000" y="0.0000000000" width="16" />
+            <laneSegment x="45.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="45.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="45.8300000000" y="0.0000000000" width="16" />
+            <laneSegment x="46.6700000000" y="0.0000000000" width="16" />
+            <laneSegment x="47.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="48.3300000000" y="0.0000000000" width="16" />
+            <laneSegment x="49.1700000000" y="0.0000000000" width="16" />
+            <laneSegment x="50.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="50.8300000000" y="0.0000000000" width="16" />
+            <laneSegment x="51.6700000000" y="0.0000000000" width="16" />
+            <laneSegment x="52.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="53.3300000000" y="0.0000000000" width="16" />
+            <laneSegment x="54.1700000000" y="0.0000000000" width="16" />
+            <laneSegment x="55.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="55.8300000000" y="0.0000000000" width="16" />
+            <laneSegment x="56.6700000000" y="0.0000000000" width="16" />
+            <laneSegment x="57.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="58.3300000000" y="0.0000000000" width="16" />
+            <laneSegment x="59.1700000000" y="0.0000000000" width="16" />
+            <laneSegment x="60.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="60.8300000000" y="0.0000000000" width="16" />
+            <laneSegment x="61.6700000000" y="0.0000000000" width="16" />
+            <laneSegment x="62.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="63.3300000000" y="0.0000000000" width="16" />
+            <laneSegment x="64.1700000000" y="0.0000000000" width="16" />
+            <laneSegment x="65.0000000000" y="0.0000000000" width="16" />
+        </lane>
+        <lane leftLanes="2" markings="true" rightLanes="2">
+            <laneSegment x="65.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="66.2500000000" y="0.0000000000" width="16" />
+            <laneSegment x="67.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="68.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="70.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="71.2500000000" y="0.0000000000" width="16" />
+            <laneSegment x="72.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="73.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="75.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="76.2500000000" y="0.0000000000" width="16" />
+            <laneSegment x="77.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="78.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="80.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="81.2500000000" y="0.0000000000" width="16" />
+            <laneSegment x="82.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="83.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="85.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="86.2500000000" y="0.0000000000" width="16" />
+            <laneSegment x="87.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="88.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="90.0000000000" y="0.0000000000" width="16" />
+            <laneSegment x="91.2500000000" y="0.0000000000" width="16" />
+            <laneSegment x="92.5000000000" y="0.0000000000" width="16" />
+            <laneSegment x="93.7500000000" y="0.0000000000" width="16" />
+            <laneSegment x="95.0000000000" y="0.0000000000" width="16" />
+        </lane>
+        <lane leftLanes="1" markings="true" rightLanes="1">
+            <laneSegment x="65.0000000000" y="0.0000000000" width="8" />
+            <laneSegment x="64.8200000000" y="2.0800000000" width="8" />
+            <laneSegment x="64.6400000000" y="4.1500000000" width="8" />
+            <laneSegment x="64.4500000000" y="6.2300000000" width="8" />
+            <laneSegment x="64.2700000000" y="8.3000000000" width="8" />
+            <laneSegment x="64.0900000000" y="10.3800000000" width="8" />
+            <laneSegment x="63.9100000000" y="12.4500000000" width="8" />
+            <laneSegment x="63.7300000000" y="14.5300000000" width="8" />
+            <laneSegment x="63.5500000000" y="16.6000000000" width="8" />
+            <laneSegment x="63.3700000000" y="18.6800000000" width="8" />
+            <laneSegment x="63.1800000000" y="20.7500000000" width="8" />
+            <laneSegment x="63.0000000000" y="22.8300000000" width="8" />
+            <laneSegment x="62.8200000000" y="24.9100000000" width="8" />
+            <laneSegment x="62.6400000000" y="26.9800000000" width="8" />
+            <laneSegment x="62.4600000000" y="29.0600000000" width="8" />
+            <laneSegment x="62.2800000000" y="31.1300000000" width="8" />
+            <laneSegment x="62.0900000000" y="33.2100000000" width="8" />
+            <laneSegment x="61.9100000000" y="35.2800000000" width="8" />
+            <laneSegment x="61.7300000000" y="37.3600000000" width="8" />
+            <laneSegment x="61.5500000000" y="39.4300000000" width="8" />
+            <laneSegment x="61.3700000000" y="41.5100000000" width="8" />
+            <laneSegment x="61.1900000000" y="43.5800000000" width="8" />
+            <laneSegment x="61.0100000000" y="45.6600000000" width="8" />
+            <laneSegment x="60.8200000000" y="47.7300000000" width="8" />
+            <laneSegment x="60.6400000000" y="49.8100000000" width="8" />
+            <laneSegment x="60.6400000000" y="49.8100000000" width="8" />
+            <laneSegment x="60.8000000000" y="50.0100000000" width="8" />
+            <laneSegment x="60.9500000000" y="50.2200000000" width="8" />
+            <laneSegment x="61.1100000000" y="50.4200000000" width="8" />
+            <laneSegment x="61.2600000000" y="50.6300000000" width="8" />
+            <laneSegment x="61.4200000000" y="50.8300000000" width="8" />
+            <laneSegment x="61.5700000000" y="51.0300000000" width="8" />
+            <laneSegment x="61.7300000000" y="51.2400000000" width="8" />
+            <laneSegment x="61.8800000000" y="51.4400000000" width="8" />
+            <laneSegment x="62.0400000000" y="51.6500000000" width="8" />
+            <laneSegment x="62.1900000000" y="51.8500000000" width="8" />
+            <laneSegment x="62.3500000000" y="52.0500000000" width="8" />
+            <laneSegment x="62.5000000000" y="52.2600000000" width="8" />
+            <laneSegment x="62.6600000000" y="52.4600000000" width="8" />
+            <laneSegment x="62.8100000000" y="52.6600000000" width="8" />
+            <laneSegment x="62.9700000000" y="52.8700000000" width="8" />
+            <laneSegment x="63.1200000000" y="53.0700000000" width="8" />
+            <laneSegment x="63.2800000000" y="53.2800000000" width="8" />
+            <laneSegment x="63.4400000000" y="53.4800000000" width="8" />
+            <laneSegment x="63.5900000000" y="53.6900000000" width="8" />
+            <laneSegment x="63.7400000000" y="53.8900000000" width="8" />
+            <laneSegment x="63.9000000000" y="54.0900000000" width="8" />
+            <laneSegment x="64.0600000000" y="54.3000000000" width="8" />
+            <laneSegment x="64.2100000000" y="54.5000000000" width="8" />
+            <laneSegment x="64.3600000000" y="54.7000000000" width="8" />
+            <laneSegment x="64.5200000000" y="54.9100000000" width="8" />
+            <laneSegment x="64.6800000000" y="55.1100000000" width="8" />
+            <laneSegment x="64.8300000000" y="55.3200000000" width="8" />
+            <laneSegment x="64.9900000000" y="55.5200000000" width="8" />
+            <laneSegment x="65.1400000000" y="55.7200000000" width="8" />
+            <laneSegment x="65.3000000000" y="55.9300000000" width="8" />
+            <laneSegment x="65.4500000000" y="56.1300000000" width="8" />
+            <laneSegment x="65.6100000000" y="56.3400000000" width="8" />
+            <laneSegment x="65.7600000000" y="56.5400000000" width="8" />
+            <laneSegment x="65.9200000000" y="56.7400000000" width="8" />
+            <laneSegment x="66.0700000000" y="56.9500000000" width="8" />
+            <laneSegment x="66.2300000000" y="57.1500000000" width="8" />
+            <laneSegment x="66.3800000000" y="57.3600000000" width="8" />
+            <laneSegment x="66.5400000000" y="57.5600000000" width="8" />
+            <laneSegment x="66.6900000000" y="57.7600000000" width="8" />
+            <laneSegment x="66.8500000000" y="57.9700000000" width="8" />
+            <laneSegment x="67.0000000000" y="58.1700000000" width="8" />
+            <laneSegment x="67.1600000000" y="58.3800000000" width="8" />
+            <laneSegment x="67.3100000000" y="58.5800000000" width="8" />
+            <laneSegment x="67.4700000000" y="58.7800000000" width="8" />
+            <laneSegment x="67.6200000000" y="58.9900000000" width="8" />
+            <laneSegment x="67.7800000000" y="59.1900000000" width="8" />
+            <laneSegment x="67.9300000000" y="59.4000000000" width="8" />
+            <laneSegment x="68.0900000000" y="59.6000000000" width="8" />
+            <laneSegment x="68.2400000000" y="59.8000000000" width="8" />
+            <laneSegment x="68.4000000000" y="60.0100000000" width="8" />
+            <laneSegment x="68.5500000000" y="60.2100000000" width="8" />
+            <laneSegment x="68.7100000000" y="60.4100000000" width="8" />
+            <laneSegment x="68.8600000000" y="60.6200000000" width="8" />
+            <laneSegment x="69.0200000000" y="60.8200000000" width="8" />
+            <laneSegment x="69.1700000000" y="61.0300000000" width="8" />
+            <laneSegment x="69.3300000000" y="61.2300000000" width="8" />
+            <laneSegment x="69.4800000000" y="61.4300000000" width="8" />
+            <laneSegment x="69.6400000000" y="61.6400000000" width="8" />
+            <laneSegment x="69.8000000000" y="61.8400000000" width="8" />
+            <laneSegment x="69.9500000000" y="62.0500000000" width="8" />
+            <laneSegment x="70.1100000000" y="62.2500000000" width="8" />
+            <laneSegment x="70.2600000000" y="62.4500000000" width="8" />
+            <laneSegment x="70.4200000000" y="62.6600000000" width="8" />
+            <laneSegment x="70.5700000000" y="62.8600000000" width="8" />
+            <laneSegment x="70.7300000000" y="63.0700000000" width="8" />
+            <laneSegment x="70.8800000000" y="63.2700000000" width="8" />
+            <laneSegment x="71.0400000000" y="63.4700000000" width="8" />
+            <laneSegment x="71.1900000000" y="63.6800000000" width="8" />
+            <laneSegment x="71.3500000000" y="63.8800000000" width="8" />
+            <laneSegment x="71.5000000000" y="64.0900000000" width="8" />
+            <laneSegment x="71.6600000000" y="64.2900000000" width="8" />
+            <laneSegment x="71.8100000000" y="64.4900000000" width="8" />
+            <laneSegment x="71.9700000000" y="64.7000000000" width="8" />
+            <laneSegment x="72.1200000000" y="64.9000000000" width="8" />
+            <laneSegment x="72.2800000000" y="65.1100000000" width="8" />
+            <laneSegment x="72.4300000000" y="65.3100000000" width="8" />
+            <laneSegment x="72.5900000000" y="65.5100000000" width="8" />
+            <laneSegment x="72.7400000000" y="65.7200000000" width="8" />
+            <laneSegment x="72.9000000000" y="65.9200000000" width="8" />
+            <laneSegment x="73.0500000000" y="66.1200000000" width="8" />
+            <laneSegment x="73.2100000000" y="66.3300000000" width="8" />
+            <laneSegment x="73.3600000000" y="66.5300000000" width="8" />
+            <laneSegment x="73.5200000000" y="66.7400000000" width="8" />
+            <laneSegment x="73.6700000000" y="66.9400000000" width="8" />
+            <laneSegment x="73.8300000000" y="67.1400000000" width="8" />
+            <laneSegment x="73.9800000000" y="67.3500000000" width="8" />
+            <laneSegment x="74.1400000000" y="67.5500000000" width="8" />
+            <laneSegment x="74.2900000000" y="67.7600000000" width="8" />
+            <laneSegment x="74.4500000000" y="67.9600000000" width="8" />
+            <laneSegment x="74.6000000000" y="68.1700000000" width="8" />
+            <laneSegment x="74.7600000000" y="68.3700000000" width="8" />
+            <laneSegment x="74.9100000000" y="68.5700000000" width="8" />
+            <laneSegment x="75.0700000000" y="68.7800000000" width="8" />
+            <laneSegment x="75.2200000000" y="68.9800000000" width="8" />
+            <laneSegment x="75.3800000000" y="69.1800000000" width="8" />
+            <laneSegment x="75.5300000000" y="69.3900000000" width="8" />
+            <laneSegment x="75.6900000000" y="69.5900000000" width="8" />
+            <laneSegment x="75.8400000000" y="69.8000000000" width="8" />
+            <laneSegment x="76.0000000000" y="70.0000000000" width="8" />
+            <laneSegment x="76.0000000000" y="70.0000000000" width="8" />
+            <laneSegment x="76.5000000000" y="70.6600000000" width="8" />
+            <laneSegment x="77.0100000000" y="71.3300000000" width="8" />
+            <laneSegment x="77.5100000000" y="71.9900000000" width="8" />
+            <laneSegment x="78.0200000000" y="72.6500000000" width="8" />
+            <laneSegment x="78.5200000000" y="73.3200000000" width="8" />
+            <laneSegment x="79.0300000000" y="73.9800000000" width="8" />
+            <laneSegment x="79.5300000000" y="74.6400000000" width="8" />
+            <laneSegment x="80.0400000000" y="75.3100000000" width="8" />
+            <laneSegment x="80.5400000000" y="75.9700000000" width="8" />
+            <laneSegment x="81.0500000000" y="76.6300000000" width="8" />
+            <laneSegment x="81.5500000000" y="77.3000000000" width="8" />
+            <laneSegment x="82.0500000000" y="77.9600000000" width="8" />
+            <laneSegment x="82.5600000000" y="78.6200000000" width="8" />
+            <laneSegment x="83.0600000000" y="79.2900000000" width="8" />
+            <laneSegment x="83.5700000000" y="79.9500000000" width="8" />
+            <laneSegment x="84.0700000000" y="80.6100000000" width="8" />
+            <laneSegment x="84.5800000000" y="81.2800000000" width="8" />
+            <laneSegment x="85.0800000000" y="81.9400000000" width="8" />
+            <laneSegment x="85.5900000000" y="82.6000000000" width="8" />
+            <laneSegment x="86.0900000000" y="83.2700000000" width="8" />
+            <laneSegment x="86.5900000000" y="83.9300000000" width="8" />
+            <laneSegment x="87.1000000000" y="84.5900000000" width="8" />
+            <laneSegment x="87.6000000000" y="85.2500000000" width="8" />
+            <laneSegment x="88.1100000000" y="85.9200000000" width="8" />
+        </lane>
+        <lane leftLanes="1" markings="true" rightLanes="1">
+            <laneSegment x="88.1100000000" y="85.9200000000" width="8" />
+            <laneSegment x="89.9900000000" y="85.0300000000" width="8" />
+            <laneSegment x="91.8800000000" y="84.1400000000" width="8" />
+            <laneSegment x="93.7600000000" y="83.2500000000" width="8" />
+            <laneSegment x="95.6400000000" y="82.3600000000" width="8" />
+            <laneSegment x="97.5300000000" y="81.4700000000" width="8" />
+            <laneSegment x="99.4100000000" y="80.5800000000" width="8" />
+            <laneSegment x="101.3000000000" y="79.6900000000" width="8" />
+            <laneSegment x="103.1800000000" y="78.8100000000" width="8" />
+            <laneSegment x="105.0700000000" y="77.9200000000" width="8" />
+            <laneSegment x="106.9500000000" y="77.0300000000" width="8" />
+            <laneSegment x="108.8300000000" y="76.1400000000" width="8" />
+            <laneSegment x="110.7200000000" y="75.2500000000" width="8" />
+            <laneSegment x="112.6000000000" y="74.3600000000" width="8" />
+            <laneSegment x="114.4900000000" y="73.4700000000" width="8" />
+            <laneSegment x="116.3700000000" y="72.5800000000" width="8" />
+            <laneSegment x="118.2500000000" y="71.6900000000" width="8" />
+            <laneSegment x="120.1400000000" y="70.8100000000" width="8" />
+            <laneSegment x="122.0200000000" y="69.9200000000" width="8" />
+            <laneSegment x="123.9100000000" y="69.0300000000" width="8" />
+            <laneSegment x="125.7900000000" y="68.1400000000" width="8" />
+            <laneSegment x="127.6700000000" y="67.2500000000" width="8" />
+            <laneSegment x="129.5600000000" y="66.3600000000" width="8" />
+            <laneSegment x="131.4400000000" y="65.4700000000" width="8" />
+            <laneSegment x="133.3300000000" y="64.5800000000" width="8" />
+        </lane>
+        <lane leftLanes="1" markings="true" rightLanes="1">
+            <laneSegment x="88.1100000000" y="85.9200000000" width="8" />
+            <laneSegment x="86.2700000000" y="86.9100000000" width="8" />
+            <laneSegment x="84.4400000000" y="87.8900000000" width="8" />
+            <laneSegment x="82.6000000000" y="88.8800000000" width="8" />
+            <laneSegment x="80.7700000000" y="89.8600000000" width="8" />
+            <laneSegment x="78.9300000000" y="90.8500000000" width="8" />
+            <laneSegment x="77.1000000000" y="91.8400000000" width="8" />
+            <laneSegment x="75.2600000000" y="92.8200000000" width="8" />
+            <laneSegment x="73.4300000000" y="93.8100000000" width="8" />
+            <laneSegment x="71.5900000000" y="94.8000000000" width="8" />
+            <laneSegment x="69.7600000000" y="95.7800000000" width="8" />
+            <laneSegment x="67.9200000000" y="96.7700000000" width="8" />
+            <laneSegment x="66.0900000000" y="97.7500000000" width="8" />
+            <laneSegment x="64.2500000000" y="98.7400000000" width="8" />
+            <laneSegment x="62.4200000000" y="99.7300000000" width="8" />
+            <laneSegment x="60.5800000000" y="100.7100000000" width="8" />
+            <laneSegment x="58.7500000000" y="101.7000000000" width="8" />
+            <laneSegment x="56.9100000000" y="102.6900000000" width="8" />
+            <laneSegment x="55.0800000000" y="103.6700000000" width="8" />
+            <laneSegment x="53.2400000000" y="104.6600000000" width="8" />
+            <laneSegment x="51.4100000000" y="105.6400000000" width="8" />
+            <laneSegment x="49.5700000000" y="106.6300000000" width="8" />
+            <laneSegment x="47.7400000000" y="107.6200000000" width="8" />
+            <laneSegment x="45.9000000000" y="108.6000000000" width="8" />
+            <laneSegment x="44.0700000000" y="109.5900000000" width="8" />
+            <laneSegment x="44.0700000000" y="109.5900000000" width="8" />
+            <laneSegment x="43.2700000000" y="113.7500000000" width="8" />
+            <laneSegment x="42.4400000000" y="117.6100000000" width="8" />
+            <laneSegment x="41.5600000000" y="121.2000000000" width="8" />
+            <laneSegment x="40.6500000000" y="124.5400000000" width="8" />
+            <laneSegment x="39.7100000000" y="127.6300000000" width="8" />
+            <laneSegment x="38.7600000000" y="130.5000000000" width="8" />
+            <laneSegment x="37.8000000000" y="133.1600000000" width="8" />
+            <laneSegment x="36.8300000000" y="135.6200000000" width="8" />
+            <laneSegment x="35.8600000000" y="137.9000000000" width="8" />
+            <laneSegment x="34.9000000000" y="140.0200000000" width="8" />
+            <laneSegment x="33.9600000000" y="141.9900000000" width="8" />
+            <laneSegment x="33.0400000000" y="143.8300000000" width="8" />
+            <laneSegment x="32.1500000000" y="145.5500000000" width="8" />
+            <laneSegment x="31.3000000000" y="147.1800000000" width="8" />
+            <laneSegment x="30.4900000000" y="148.7200000000" width="8" />
+            <laneSegment x="29.7300000000" y="150.1900000000" width="8" />
+            <laneSegment x="29.0200000000" y="151.6000000000" width="8" />
+            <laneSegment x="28.3900000000" y="152.9800000000" width="8" />
+            <laneSegment x="27.8200000000" y="154.3400000000" width="8" />
+            <laneSegment x="27.3200000000" y="155.6900000000" width="8" />
+            <laneSegment x="26.9100000000" y="157.0400000000" width="8" />
+            <laneSegment x="26.5800000000" y="158.4000000000" width="8" />
+            <laneSegment x="26.3200000000" y="159.7700000000" width="8" />
+            <laneSegment x="26.1300000000" y="161.1300000000" width="8" />
+            <laneSegment x="26.0100000000" y="162.5000000000" width="8" />
+            <laneSegment x="25.9500000000" y="163.8700000000" width="8" />
+            <laneSegment x="25.9400000000" y="165.2300000000" width="8" />
+            <laneSegment x="25.9900000000" y="166.6000000000" width="8" />
+            <laneSegment x="26.0800000000" y="167.9600000000" width="8" />
+            <laneSegment x="26.2200000000" y="169.3100000000" width="8" />
+            <laneSegment x="26.4000000000" y="170.6600000000" width="8" />
+            <laneSegment x="26.6200000000" y="172.0000000000" width="8" />
+            <laneSegment x="26.8700000000" y="173.3400000000" width="8" />
+            <laneSegment x="27.1400000000" y="174.6600000000" width="8" />
+            <laneSegment x="27.4400000000" y="175.9700000000" width="8" />
+            <laneSegment x="27.7600000000" y="177.2700000000" width="8" />
+            <laneSegment x="28.0900000000" y="178.5600000000" width="8" />
+            <laneSegment x="28.4400000000" y="179.8300000000" width="8" />
+            <laneSegment x="28.7900000000" y="181.0900000000" width="8" />
+            <laneSegment x="29.1400000000" y="182.3300000000" width="8" />
+            <laneSegment x="29.5000000000" y="183.5500000000" width="8" />
+            <laneSegment x="29.8500000000" y="184.7500000000" width="8" />
+            <laneSegment x="30.2100000000" y="185.9400000000" width="8" />
+            <laneSegment x="30.5800000000" y="187.1000000000" width="8" />
+            <laneSegment x="30.9600000000" y="188.2500000000" width="8" />
+            <laneSegment x="31.3500000000" y="189.3800000000" width="8" />
+            <laneSegment x="31.7500000000" y="190.4800000000" width="8" />
+            <laneSegment x="32.1600000000" y="191.5700000000" width="8" />
+            <laneSegment x="32.5900000000" y="192.6400000000" width="8" />
+            <laneSegment x="33.0400000000" y="193.6900000000" width="8" />
+            <laneSegment x="33.5100000000" y="194.7200000000" width="8" />
+            <laneSegment x="34.0000000000" y="195.7200000000" width="8" />
+            <laneSegment x="34.5100000000" y="196.7100000000" width="8" />
+            <laneSegment x="35.0500000000" y="197.6700000000" width="8" />
+            <laneSegment x="35.6200000000" y="198.6200000000" width="8" />
+            <laneSegment x="36.2200000000" y="199.5400000000" width="8" />
+            <laneSegment x="36.8500000000" y="200.4300000000" width="8" />
+            <laneSegment x="37.5100000000" y="201.3100000000" width="8" />
+            <laneSegment x="38.2100000000" y="202.1600000000" width="8" />
+            <laneSegment x="38.9500000000" y="203.0000000000" width="8" />
+            <laneSegment x="39.7200000000" y="203.8000000000" width="8" />
+            <laneSegment x="40.5300000000" y="204.5900000000" width="8" />
+            <laneSegment x="41.3700000000" y="205.3600000000" width="8" />
+            <laneSegment x="42.2400000000" y="206.1000000000" width="8" />
+            <laneSegment x="43.1500000000" y="206.8200000000" width="8" />
+            <laneSegment x="44.0800000000" y="207.5300000000" width="8" />
+            <laneSegment x="45.0300000000" y="208.2100000000" width="8" />
+            <laneSegment x="46.0200000000" y="208.8800000000" width="8" />
+            <laneSegment x="47.0200000000" y="209.5300000000" width="8" />
+            <laneSegment x="48.0400000000" y="210.1600000000" width="8" />
+            <laneSegment x="49.0800000000" y="210.7700000000" width="8" />
+            <laneSegment x="50.1400000000" y="211.3700000000" width="8" />
+            <laneSegment x="51.2200000000" y="211.9500000000" width="8" />
+            <laneSegment x="52.3000000000" y="212.5200000000" width="8" />
+            <laneSegment x="53.4000000000" y="213.0700000000" width="8" />
+            <laneSegment x="54.5000000000" y="213.6100000000" width="8" />
+            <laneSegment x="55.6200000000" y="214.1400000000" width="8" />
+            <laneSegment x="56.7400000000" y="214.6500000000" width="8" />
+            <laneSegment x="57.8600000000" y="215.1500000000" width="8" />
+            <laneSegment x="58.9800000000" y="215.6400000000" width="8" />
+            <laneSegment x="60.1200000000" y="216.1200000000" width="8" />
+            <laneSegment x="61.2800000000" y="216.5800000000" width="8" />
+            <laneSegment x="62.4800000000" y="217.0300000000" width="8" />
+            <laneSegment x="63.7300000000" y="217.4600000000" width="8" />
+            <laneSegment x="65.0300000000" y="217.8700000000" width="8" />
+            <laneSegment x="66.4200000000" y="218.2600000000" width="8" />
+            <laneSegment x="67.8900000000" y="218.6300000000" width="8" />
+            <laneSegment x="69.4600000000" y="218.9900000000" width="8" />
+            <laneSegment x="71.1500000000" y="219.3100000000" width="8" />
+            <laneSegment x="72.9600000000" y="219.6200000000" width="8" />
+            <laneSegment x="74.9100000000" y="219.8900000000" width="8" />
+            <laneSegment x="77.0100000000" y="220.1400000000" width="8" />
+            <laneSegment x="79.2700000000" y="220.3600000000" width="8" />
+            <laneSegment x="81.7100000000" y="220.5500000000" width="8" />
+            <laneSegment x="84.3400000000" y="220.7100000000" width="8" />
+            <laneSegment x="87.1700000000" y="220.8300000000" width="8" />
+            <laneSegment x="90.2200000000" y="220.9300000000" width="8" />
+            <laneSegment x="93.4900000000" y="220.9800000000" width="8" />
+            <laneSegment x="97.0000000000" y="221.0000000000" width="8" />
+        </lane>
+    </lanes>
+    <obstacles>
+        <trafficlightdouble x="58.92" y="-8.2" zRot="360" mode="blinking" sign="yield" facingEgo="True" />
+        <trafficlightsingle x="60.03942460013303" y="8.510040640457294" zRot="275" mode="blinking" sign="priority" />
+        <trafficlightdouble x="69.1" y="8.2" zRot="180" mode="blinking" sign="yield" />
+        <trafficlightsingle x="88.96889108073535" y="80.1122630571017" zRot="413" mode="off" sign="yield" facingEgo="True" />
+        <trafficlightsingle x="81.33690619545536" y="84.78962897554193" zRot="332" mode="off" sign="priority" />
+        <trafficlightsingle x="95.16396775116631" y="87.2332637239123" zRot="515" mode="off" sign="priority" />
+        <golf x="58.846" y="57.36" zRot="-41.997599766136894" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="60.051" y="61.917" zRot="-37.203579468248144" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="67.905" y="47.299" zRot="135.55634405643934" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="70.546" y="51.267" zRot="140.72030492896334" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="34.165" y="116.91" zRot="64.77939661987068" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="31.378" y="127.95" zRot="61.70282863576536" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="30.943" y="132.81" zRot="63.56312699092571" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="28.83" y="136.456" zRot="65.2851072912493" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="25.28" y="142.723" zRot="64.16829914947265" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="19.779" y="155.497" zRot="67.07071666240398" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="19.575" y="160.414" zRot="45.7939281553751" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="18.742" y="165.147" zRot="49.44072807276103" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="19.306" y="169.494" zRot="43.705384286346955" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="20.442" y="177.657" zRot="38.155797713658416" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="21.181" y="181.732" zRot="31.89956103968578" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="27.201" y="199.99" zRot="13.040416408635863" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="39.535" y="212.242" zRot="-14.988047765918282" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="42.571" y="216.653" zRot="-20.18572330962801" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="49.32" y="220.312" zRot="-24.095799076195465" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="54.096" y="221.028" zRot="-12.503668809612794" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="58.454" y="223.848" zRot="-18.260649281161694" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="62.789" y="224.291" zRot="-30.26452094852202" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="66.846" y="226.598" zRot="-27.660381720499224" color="(0.59, 0.07, 0.37, 1.13)" />
+        <golf x="71.994" y="227.659" zRot="-30.723100379318417" color="(0.59, 0.07, 0.37, 1.13)" />
+    </obstacles>
+</environment>

@@ -3,6 +3,6 @@ venv
 __pycache__
 scenario
 index.txt
-evaluation/traffic_lights/test_case*
+evaluation/traffic_lights/test_case*/images
 evaluation/traffic_lights/detector
 evaluation/traffic_lights/result_pictures
