@@ -17,6 +17,7 @@ from xml_converter.xml_to_bng_files import convert_test
 def create_tests(num_tests, collect):
     gen = FuelConsumptionTestGenerator()
     gen.POPULATION_SIZE = num_tests
+    gen.traffic = False
     for paths in gen.get_test():
         dbe = paths[0]
         dbc = paths[1]
@@ -84,8 +85,8 @@ def collect_images(destination_path):
     multiplicator = 15 if init_state == "green" else 9
     sleep(2)
     while True:
-        ego.update_vehicle()
         sensors = bng.poll_sensors(ego)
+        ego.update_vehicle()
         if traffic_light_pos is not None:
             timer = sensors["timer"]["time"]
             p0 = (ego.state["pos"][0] + ego.state["dir"][0], ego.state["pos"][1] + ego.state["dir"][1])
@@ -113,6 +114,8 @@ def collect_images(destination_path):
                         label = init_state
                     else:
                         if init_state == "red":
+                            if distance_trigger > tolerance * multiplicator - 2.5:
+                                continue
                             if not entered:
                                 label = "yellow_red"
                                 entered = True
@@ -120,8 +123,9 @@ def collect_images(destination_path):
                             else:
                                 time_entry += timer - prev_time
                                 prev_time = timer
-                                if time_entry >= 1.3:
+                                if time_entry >= 1.1:
                                     label = "green"
+                                elif time_entry >= 2:
                                     prev_time = 0
                                     time_entry = 0
                                     trigger_index += 1
@@ -135,12 +139,14 @@ def collect_images(destination_path):
                                         float(traffic_triggers[trigger_index].get("tolerance"))
                                     multiplicator = 15 if init_state is None or init_state == "green" else 9
                         else:
-                            if distance_trigger <= 9 and not red_entered:
+                            if 7 <= distance_trigger <= 13 or 26 <= distance_trigger <= 34:
+                                continue
+                            if distance_trigger <= 10 and not red_entered:
                                 label = "red"
                                 red_entered = True
                                 time_entry += timer - prev_time
                                 prev_time = timer
-                            else:
+                            elif distance_trigger <= 30:
                                 if not entered:
                                     label = "yellow"
                                     entered = True
@@ -148,6 +154,8 @@ def collect_images(destination_path):
                                 else:
                                     time_entry += timer - prev_time
                                     prev_time = timer
+                                    if 7.70 <= time_entry <= 8.3:
+                                        continue
                                     if time_entry >= 8:
                                         label = "green"
                                         prev_time = 0
@@ -163,6 +171,8 @@ def collect_images(destination_path):
                                         multiplicator = 15 if init_state == "green" else 9
                                     elif time_entry >= 7:
                                         label = "yellow_red"
+                print(distance_trigger)
+                print(label)
                 img = sensors["camera"]["colour"].convert("RGB")
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
@@ -192,8 +202,8 @@ def collect_images_existing_tests():
 
 
 if __name__ == '__main__':
-    # create_tests(1, True)
+    #create_tests(1, True)
     #collect_images_existing_tests()
-    collect_images("test_case_1597361624.6063387")
+    collect_images("test_case_1597421169.0304134")
 
 # TODO Visualize results

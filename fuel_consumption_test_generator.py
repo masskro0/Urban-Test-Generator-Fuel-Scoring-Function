@@ -615,7 +615,8 @@ def _preparation(population):
     for individual in population:
         _add_parked_cars(individual)
         _add_ego_car(individual)
-        _add_other_participants(individual)
+        if self.traffic:
+            _add_other_participants(individual)
         calc_speed_waypoints(individual["participants"])
 
 
@@ -725,14 +726,15 @@ class FuelConsumptionTestGenerator:
 
     def __init__(self):
         self.files_name = "urban"
-        self.SPLINE_DEGREE = 3  # Sharpness of curves
-        self.MAX_TRIES = 20  # Maximum number of invalid generated points/segments
-        self.POPULATION_SIZE = 1  # Minimum number of generated roads for each generation
-        self.NUMBER_ELITES = 2  # Number of best kept test cases.
-        self.MIN_SEGMENT_LENGTH = 15  # Minimum length of a road segment
-        self.MAX_SEGMENT_LENGTH = 30  # Maximum length of a road segment
-        self.MIN_NODES = 6  # Minimum number of control points for each road
-        self.MAX_NODES = 12  # Maximum number of control points for each road
+        self.traffic = True             # Enable traffic or not.
+        self.SPLINE_DEGREE = 3          # Sharpness of curves.
+        self.MAX_TRIES = 20             # Maximum number of invalid generated points/segments.
+        self.POPULATION_SIZE = 1        # Minimum number of generated roads for each generation.
+        self.NUMBER_ELITES = 2          # Number of best kept test cases.
+        self.MIN_SEGMENT_LENGTH = 15    # Minimum length of a road segment.
+        self.MAX_SEGMENT_LENGTH = 30    # Maximum length of a road segment.
+        self.MIN_NODES = 6              # Minimum number of control points for each road.
+        self.MAX_NODES = 12             # Maximum number of control points for each road.
         self.population_list = list()
         self.intersection_length = 50
         self.opposite_lane = 30
@@ -1014,7 +1016,7 @@ class FuelConsumptionTestGenerator:
             self._mutate_traffic_light_mode(child)
         if random() <= self.mutation_probability:
             self._mutate_parked_cars(child)
-        if random() <= self.mutation_probability:
+        if self.traffic and random() <= self.mutation_probability:
             self._mutate_traffic(child)
         if random() <= self.mutation_probability:
             child["tod"] = random()
@@ -1659,7 +1661,8 @@ class FuelConsumptionTestGenerator:
                 individual["participants"].remove(participant)
                 break
         _add_ego_car(individual)
-        self._update_others(individual)
+        if self.traffic:
+            self._update_others(individual)
 
         # Update parked cars.
         self._add_parked_cars_mutated(individual)
