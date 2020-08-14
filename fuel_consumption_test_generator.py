@@ -10,7 +10,6 @@ from os import path
 from glob import glob
 from pathlib import Path
 from scipy.spatial.distance import euclidean
-from time import sleep
 
 from utils.utility_functions import convert_points_to_lines, get_angle, calc_width, \
     calc_min_max_angles, get_lanes_of_intersection, get_intersection_lines, get_width_lines, \
@@ -462,9 +461,9 @@ def _add_other_participants(individual):
     triggers = list()
     sl, t = _add_other_0(individual)
     spawn_lanes.extend(sl)
-    triggers.extend(t)          # TODO Uncomment
-    #_add_other_1(individual, spawn_lanes)
-    #_add_other_2(individual, triggers)
+    triggers.extend(t)
+    _add_other_1(individual, spawn_lanes)
+    _add_other_2(individual, triggers)
     individual.setdefault("triggers", []).extend(triggers)
 
 
@@ -566,12 +565,12 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 
     # Bottom direction.
     position, z_rot = my_direction(last_point, right_point)
-    if current_right_lanes == 1:        # TODO Uncomment
-        #if current_left_lanes == 1:
-        #    obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot,
-        #                      "intersection_id": INTERSECTION_ID, "facingEgo": True, "lane_id": lane_id})
-        #else:
-        obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot, "mode": mode,
+    if current_right_lanes == 1:
+        if current_left_lanes == 1:
+            obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot,
+                              "intersection_id": INTERSECTION_ID, "facingEgo": True, "lane_id": lane_id})
+        else:
+            obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot, "mode": mode,
                               "sign": "yield", "oid": oid, "intersection_id": INTERSECTION_ID, "facingEgo": True,
                               "lane_id": lane_id})
     else:
@@ -611,11 +610,11 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     return obstacles, triggers, action
 
 
-def _preparation(population):
+def _preparation(population, traffic):
     for individual in population:
         _add_parked_cars(individual)
         _add_ego_car(individual)
-        if self.traffic:
+        if traffic:
             _add_other_participants(individual)
         calc_speed_waypoints(individual["participants"])
 
@@ -1359,7 +1358,8 @@ class FuelConsumptionTestGenerator:
                 individual["obstacles"].extend(parked_cars)
             else:
                 for idx, obstacle in enumerate(individual.get("obstacles")):
-                    if obstacle.get("name") == "golf" and obstacle.get("lane") == lane_index and random() <= probability:
+                    if obstacle.get("name") == "golf" and obstacle.get("lane") == lane_index \
+                            and random() <= probability:
                         if random() <= probability_attr:
                             old_position = obstacle.get("position")
                             max_distance = individual.get("lanes")[obstacle.get("lane")].get("parked_max_distance")
@@ -1711,7 +1711,7 @@ class FuelConsumptionTestGenerator:
         for trigger in individual["triggers"]:
             if trigger["triggerPoint"].get("triggers") == "other_2":
                 individual["triggers"].remove(trigger)
-        triggers = _add_other_2(individual)
+        _add_other_2(individual)
         individual["triggers"].extend(triggers)
         for participant in individual.get("participants"):
             if participant.get("id") == "other_2":
@@ -1812,7 +1812,7 @@ class FuelConsumptionTestGenerator:
         print(colored("Population finished.", "grey", attrs=['bold']))
         temp_list = deepcopy(self.population_list)
         temp_list = self._spline_population(temp_list)
-        _preparation(temp_list)
+        _preparation(temp_list, self.traffic)
         i = 0
         while i < len(self.population_list):
             self.population_list[i]["obstacles"] = list()

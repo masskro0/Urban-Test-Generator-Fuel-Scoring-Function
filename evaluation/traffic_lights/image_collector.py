@@ -8,6 +8,8 @@ from shutil import move
 from scipy.spatial.distance import euclidean
 from glob import glob
 from math import floor
+import matplotlib.pyplot as plt
+from numpy import arange
 
 from utils.utility_functions import get_angle
 from fuel_consumption_test_generator import FuelConsumptionTestGenerator
@@ -117,7 +119,7 @@ def collect_images(destination_path):
                             if distance_trigger > tolerance * multiplicator - 2.5:
                                 continue
                             if not entered:
-                                label = "yellow_red"
+                                label = "yellow-red"
                                 entered = True
                                 prev_time = timer
                             else:
@@ -170,9 +172,7 @@ def collect_images(destination_path):
                                         tolerance = float(traffic_triggers[trigger_index].get("tolerance"))
                                         multiplicator = 15 if init_state == "green" else 9
                                     elif time_entry >= 7:
-                                        label = "yellow_red"
-                print(distance_trigger)
-                print(label)
+                                        label = "yellow-red"
                 img = sensors["camera"]["colour"].convert("RGB")
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
@@ -195,15 +195,131 @@ def collect_images(destination_path):
             bng.close()
             break
 
+
 def collect_images_existing_tests():
     folders = glob("test_case_*")
     for folder in folders:
         collect_images(abspath(folder))
 
 
-if __name__ == '__main__':
-    #create_tests(1, True)
-    #collect_images_existing_tests()
-    collect_images("test_case_1597421169.0304134")
+def predict_all_images():
+    from evaluation.traffic_lights.detector.main import main as predict, init_function
+    yolo, config = init_function()
+    correct = false = 0
+    green_false = yellow_false = red_false = yellow_red_false = off_false = 0
+    green_images = yellow_images = red_images = yellow_red_images = off_images = 0
 
-# TODO Visualize results
+    folders = glob("test_case_*")
+    for folder in folders:
+        image_folder = join(folder, "images", "*")
+        images = glob(image_folder)
+        for image in images:
+            prediction = predict(abspath(image), config, yolo.model)
+            ground_truth = image.split("\\")[-1].split("_")[0]
+            if prediction == ground_truth:
+                correct += 1
+            else:
+                false += 1
+            if ground_truth == "green":
+                green_images += 1
+                if prediction != ground_truth:
+                    green_false += 1
+            elif ground_truth == "yellow":
+                yellow_images += 1
+                if prediction != ground_truth:
+                    yellow_false += 1
+            elif ground_truth == "red":
+                red_images += 1
+                if prediction != ground_truth:
+                    red_false += 1
+            elif ground_truth == "yellow-red":
+                yellow_red_images += 1
+                if prediction != ground_truth:
+                    yellow_red_false += 1
+            elif ground_truth == "off":
+                off_images += 1
+                if prediction != ground_truth:
+                    off_false += 1
+    print(colored("\nCorrect predictions: {}".format(correct), "green", attrs=['bold']))
+    print(colored("False predictions: {}\n".format(false), "red", attrs=['bold']))
+    print(colored("False green lights predictions: {}".format(green_false), "red", attrs=['bold']))
+    print(colored("False yellow lights predictions: {}".format(yellow_false), "red", attrs=['bold']))
+    print(colored("False red lights predictions: {}".format(red_false), "red", attrs=['bold']))
+    print(colored("False yellow-red lights predictions: {}".format(yellow_false), "red", attrs=['bold']))
+    print(colored("False disabled traffic lights predictions: {}\n".format(off_false), "red", attrs=['bold']))
+    print(colored("Images with green traffic lights: {}".format(green_images), "grey", attrs=['bold']))
+    print(colored("Images with yellow traffic lights: {}".format(yellow_images), "grey", attrs=['bold']))
+    print(colored("Images with red traffic lights: {}".format(red_images), "grey", attrs=['bold']))
+    print(colored("Images with yellow-red traffic lights: {}".format(yellow_red_images), "grey", attrs=['bold']))
+    print(colored("Images with disabled traffic lights: {}".format(off_images), "grey", attrs=['bold']))
+
+    predictions = [correct, false]
+    false_predictions = [green_false, yellow_false, red_false, yellow_red_false, off_false]
+    images = [green_images, yellow_images, red_images, yellow_red_images, off_images]
+    visualize_results(predictions, false_predictions, images)
+
+
+def visualize_results(predictions, false_predictions, images):
+    if not exists("result_pictures"):
+        mkdir("result_pictures")
+    possibilities = ["Correct predictions", "False predictions"]
+    y_pos = arange(len(possibilities))
+    barlist = plt.bar(y_pos, predictions, width=0.8)
+    barlist[0].set_color("g")
+    barlist[1].set_color("r")
+    plt.xticks(y_pos, possibilities)
+    ax = plt.gca()
+    ax.set_ylabel('Number predictions')
+    ax.set_title('Prediction of traffic light color')
+    plt.savefig(join("result_pictures", 'predictions_bar.png'), bbox_inches='tight')
+    plt.show()
+    explode = (0, 0)
+    fig1, ax1 = plt.subplots()
+    ax1.pie(predictions, explode=explode, labels=possibilities, autopct='%1.1f%%',
+            shadow=True, startangle=90)
+    ax1.axis('equal')
+    ax1.set_title('Prediction of traffic light color')
+    plt.savefig(join("result_pictures", 'predictions_pie.png'), bbox_inches='tight')
+    plt.show()
+
+    possibilities = ["Green", "Yellow", "Red", "Yellow-Red", "Off"]
+    y_pos = arange(len(possibilities))
+    plt.bar(y_pos, false_predictions, width=0.4)
+    plt.xticks(y_pos, possibilities)
+    ax = plt.gca()
+    ax.set_ylabel('Number false predictions')
+    ax.set_title('Number of false predictions for each traffic light color')
+    plt.savefig(join("result_pictures", 'number_false_predictions_bar.png'), bbox_inches='tight')
+    plt.show()
+    explode = (0, 0, 0, 0, 0)
+    fig1, ax1 = plt.subplots()
+    ax1.pie(false_predictions, explode=explode, labels=possibilities, autopct='%1.1f%%',
+            shadow=True, startangle=90)
+    ax1.axis('equal')
+    ax1.set_title('Number of false predictions for each traffic light color')
+    plt.savefig(join("result_pictures", 'number_false_predictions_pie.png'), bbox_inches='tight')
+    plt.show()
+
+    possibilities = ["Green", "Yellow", "Red", "Yellow-Red", "Off"]
+    y_pos = arange(len(possibilities))
+    plt.bar(y_pos, images, width=0.4)
+    plt.xticks(y_pos, possibilities)
+    ax = plt.gca()
+    ax.set_ylabel('Number of images')
+    ax.set_title('Number of images for each traffic light color')
+    plt.savefig(join("result_pictures", 'number_images_bar.png'), bbox_inches='tight')
+    plt.show()
+    explode = (0, 0, 0, 0, 0)
+    fig1, ax1 = plt.subplots()
+    ax1.pie(images, explode=explode, labels=possibilities, autopct='%1.1f%%',
+            shadow=True, startangle=90)
+    ax1.axis('equal')
+    ax1.set_title('Number of images for each traffic light color')
+    plt.savefig(join("result_pictures", 'number_images_pie.png'), bbox_inches='tight')
+    plt.show()
+
+
+if __name__ == '__main__':
+    # create_tests(1, True)
+    # collect_images_existing_tests()
+    predict_all_images()
