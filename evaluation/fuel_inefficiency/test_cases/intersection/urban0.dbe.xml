@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<environment>
+    <author>Michael Heine</author>
+    <timeOfDay>0</timeOfDay>
+    <lanes>
+        <lane leftLanes="1" markings="true" rightLanes="1">
+            <laneSegment x="0.0000000000" y="0.0000000000" width="10" />
+            <laneSegment x="200.0000000000" y="0.0000000000" width="10" />
+        </lane>
+        <lane leftLanes="1" markings="true" rightLanes="1">
+            <laneSegment x="100.0000000000" y="-100.0000000000" width="10" />
+            <laneSegment x="100.0000000000" y="100.0000000000" width="10" />
+        </lane>
+    </lanes>
+    <obstacles>
+        <trafficlightsingle x="95" y="-5" zRot="0" mode="manual" sign="yield" oid="traffic_light_manual_0" facingEgo="True" />
+        <trafficlightsingle x="105" y="-5" zRot="90" mode="off" sign="priority" />
+        <trafficlightsingle x="95" y="5" zRot="270" mode="off" sign="priority" />
+        <trafficlightsingle x="105" y="5" zRot="180" mode="off" sign="yield" />
+    </obstacles>
+</environment>

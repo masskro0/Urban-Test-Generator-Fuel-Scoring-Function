@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<criteria>
+    <environment>urban0.dbe.xml</environment>
+    <author>Michael Heine</author>
+    <participants>
+        <participant color="White" id="ego" model="ETK800">
+            <initialState x="1.0" y="-2.5" orientation="0" />
+            <movement>
+                <waypoint x="80.0000000000" y="-2.5000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="85.0000000000" y="-2.5000000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="190.0000000000" y="-2.5000000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="195.0000000000" y="-2.5000000000" tolerance="2" lane="1" speed="0" />
+            </movement>
+        </participant>
+    </participants>
+    <success>
+        <scPosition participant="ego" x="195" y="-2.5" tolerance="3" />
+    </success>
+    <failure>
+        <or>
+            <scDamage participant="ego" />
+            <scLane participant="ego" onLane="offroad" />
+        </or>
+    </failure>
+    <name>Fuel Efficiency Test</name>
+    <triggerPoints>
+        <triggerPoint action="stop" x="60" y="-2.5" triggeredBy="ego" duration="7" tolerance="2" />
+        <triggerPoint action="switchLights" initState="green" switchTo="red" tolerance="2" triggeredBy="ego" triggers="traffic_light_manual_0" x="60" y="-2.5" />
+    </triggerPoints>
+</criteria>
