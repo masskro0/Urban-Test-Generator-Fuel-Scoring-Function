@@ -9,7 +9,7 @@ from numpy import asarray, clip, concatenate, arange, linspace, array, around, d
 from scipy.interpolate import splev
 from re import findall
 
-from utils.utility_functions import get_angle, multilinestrings_to_linestring
+from utils.utility_functions import multilinestrings_to_linestring
 
 NUM_NODES = 100
 
@@ -608,10 +608,9 @@ class Converter:
                     current_index = int(attr.get("lane"))
                     lines.append(line)
                     line = list()
-                else:
-                    z = 0 if attr.get("z") is None else attr.get("z")
-                    line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)),
-                                 'speed': float(attr.get("speed"))})
+                z = 0 if attr.get("z") is None else attr.get("z")
+                line.append({"pos": (float(attr.get("x")), float(attr.get("y")), float(z)),
+                             'speed': float(attr.get("speed"))})
                 if i == len(waypoints) - 1:
                     lines.append(line)
                 i += 1
@@ -702,11 +701,14 @@ class Converter:
         spawn_points = list()
         teleport_triggers = list()
         traffic_triggers = list()
+        stop_triggers = list()
         for trigger in triggers:
             if trigger.attrib.get("action") == "spawnAndStart":
                 teleport_triggers.append(trigger)
             elif trigger.attrib.get("action") == "switchLights":
                 traffic_triggers.append(trigger.attrib)
+            elif trigger.attrib.get("action") == "stop":
+                stop_triggers.append(trigger.attrib)
         for idx, trigger in enumerate(teleport_triggers):
             spawn_point = trigger.find("spawnPoint").attrib
             spawn_points.append(spawn_point)
@@ -715,9 +717,15 @@ class Converter:
             z = 0 if trigger_point.get("z") is None else trigger_point.get("z")
             trigger_content += "local trigger_" + str(idx) + " = Point3F(" + str(trigger_point.get("x")) + ", " \
                                + str(trigger_point.get("y")) + ", " + str(z) + ")\n" \
-                               "local triggered_" + str(idx) + " = 0\n" \
-                               "local ego_time_" + str(idx) + " = 0\n"
+                               "local triggered_teleport_" + str(idx) + " = 0\n"
             trigger_list.append("trigger_" + str(idx))
+
+        for idx, trigger in enumerate(stop_triggers):
+            z = 0 if trigger.get("z") is None else trigger.get("z")
+            trigger_content += "local ego_time_" + str(idx) + " = 0\n" \
+                               "local triggered_stop_" + str(idx) + " = 0\n" \
+                               "local trigger_stop_" + str(idx) + " = Point3F(" + str(trigger.get("x")) + ", " \
+                               + str(trigger.get("y")) + ", " + str(z) + ")\n"
 
         for idx, trigger in enumerate(traffic_triggers):
             z = 0 if trigger.get("z") is None else trigger.get("z")
@@ -805,20 +813,50 @@ class Converter:
             line_content += '}\n' \
                             '    sh.setAiLine(vehicleName, arg)\n'
 
-            content += "  if triggered_" + str(idx) + " == 1 then\n" \
-                       "    ego_time_" + str(idx) + " = ego_time_" + str(idx) + " + raceTickTime\n" \
-                       "  end\n" \
-                       "  if math.sqrt((" + trigger_point + ".x - pos.x) ^ 2 + (" \
+            content += "  if math.sqrt((" + trigger_point + ".x - pos.x) ^ 2 + (" \
                        + trigger_point + ".y - pos.y) ^ 2) <= " + str(float(trigger_points[idx].get("tolerance"))*4) \
-                       + " and triggered_" + str(idx) + " == 0 then\n" \
-                       "    triggered_" + str(idx) + " = 1\n" \
+                       + " and triggered_teleport_" + str(idx) + " == 0 then\n" \
+                       "    triggered_teleport_" + str(idx) + " = 1\n" \
                        "    local vehicleName = \"" + vehicle_name + "\"\n" \
                        "    TorqueScript.eval(vehicleName..\'.position = \"" + spawn_point.get("x") + " " \
                        + spawn_point.get("y") + " " + str(z) + "\";\')\n" \
                        "    TorqueScript.eval(vehicleName..\'.rotation = \"0 0 01 " + str(z_rot_spawn) + "\";\')\n"
             content += line_content
             content += "  end\n\n"
-            content += self._get_vehicle_lines_content(idx)
+
+        for idx, trigger in enumerate(stop_triggers):
+            content += "  if math.sqrt((trigger_stop_" + str(idx) + ".x - pos.x) ^ 2 + (trigger_stop_" + str(idx) \
+                       + ".y - pos.y) ^ 2) <= " + str(float(trigger.get("tolerance"))*4) \
+                       + " and triggered_stop_" + str(idx) + " == 0 then\n" \
+                       "    triggered_stop_" + str(idx) + " = 1\n" \
+                       "  end\n" \
+                       "  if triggered_stop_" + str(idx) + " == 1 then\n" \
+                       "    ego_time_" + str(idx) + " = ego_time_" + str(idx) + " + raceTickTime\n" \
+                       "  end\n"
+            lines = None
+            for entry in self.lines:
+                if entry.get("vid") == "ego":
+                    lines = entry.get("lines")
+                    break
+            assert lines is not None, "Missing line of vehicle \"ego\"."
+            content += '    if ego_time_' + str(idx) + ' == 7 then\n' \
+                       '      local vehicleName = \"ego\"\n'\
+                       '      local arg = {line = {\n                 '
+            i = 0
+            while i < len(lines[idx+1]):
+                pos = lines[idx+1][i].get("pos")
+                speed = lines[idx+1][i].get("speed")
+                content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
+                           + str(speed) + "}"
+                if i + 1 == len(lines[idx+1]):
+                    content += "\n                  }"
+                else:
+                    content += ", \n                   "
+                i += 1
+            content += '}\n' \
+                       '      sh.setAiLine(vehicleName, arg)\n' \
+                       '    end\n'
+
         for idx, light in enumerate(self.lights):
             pos = light.get("position")
             content += "  local light_" + str(idx) + " = scenetree.findObject(\"" + light.get("id") + "\")\n" \
@@ -879,7 +917,6 @@ class Converter:
                 old = 0 if init_state == "green" else 2
                 new = 0 if old == 2 else 2
                 if idx == temp_idx:
-                    state = "green" if init_state == "red" else "red"
                     content += "    " + traffic_light[new].get("id") + ":setPosition(points_1[" \
                                + str(3 * idx_1 + new + 1) + "])\n"
                     content += "    " + traffic_light[old].get("id") + ":setPosition(points_2[" \

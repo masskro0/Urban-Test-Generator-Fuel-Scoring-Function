@@ -365,7 +365,7 @@ def _add_other_1(individual, spawn_lanes=None, end_lane=None):
     for participant in individual.get("participants"):
         if participant.get("id") == "ego":
             ego_waypoints = participant.get("waypoints")
-    for waypoint in ego_waypoints[3:]:
+    for waypoint in ego_waypoints[4:]:
         if waypoint.get("lane") > temp_index:
             break
         waypoints.append(waypoint)
@@ -392,7 +392,7 @@ def _add_other_1(individual, spawn_lanes=None, end_lane=None):
                         "tolerance": 2,
                         "lane": temp_index}
             waypoints.append(waypoint)
-    init_state = {"position": ego_waypoints[2].get("position"),
+    init_state = {"position": ego_waypoints[4].get("position"),
                   "orientation": 0}
     other = {"id": "other_{}".format(1),
              "init_state": init_state,
@@ -487,6 +487,11 @@ def _merge_lanes(population):
     return population
 
 
+def _add_stop_sign_triggers(last_point):
+    trigger_point = {"position": last_point, "action": "stop", "tolerance": 2, "triggeredBy": "ego", "duration": 4}
+    return {"triggerPoint": trigger_point}
+
+
 def _handle_manual_mode(last_point, oid):
     triggers = list()
     init_state = choice(["green", "red"])
@@ -498,6 +503,8 @@ def _handle_manual_mode(last_point, oid):
                      "initState": init_state,
                      "switchTo": "green" if init_state == "red" else "red"}
     triggers.append({"triggerPoint": trigger_point})
+    if init_state == "green":
+        triggers.append(_add_stop_sign_triggers(last_point))
     return triggers
 
 
@@ -582,6 +589,12 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     triggers = list()
     if sign_on_my_lane.startswith("trafficlight") and mode == "manual":
         triggers = _handle_manual_mode(last_point, oid)
+
+    if sign_on_my_lane.startswith("trafficlight") and mode != "manual":
+        triggers.append(_add_stop_sign_triggers(last_point))
+
+    if sign_on_my_lane.startswith("stop"):
+        triggers.append(_add_stop_sign_triggers(last_point))
 
     if sign_on_my_lane.startswith("priority") or obstacles[-1].get("sign") == "priority" \
             or (len(triggers) != 0 and triggers[0].get("triggerPoint").get("switchTo") == "green"):

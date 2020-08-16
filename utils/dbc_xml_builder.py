@@ -65,7 +65,8 @@ class DBCBuilder:
             trigger.set("tolerance", str(trigger_point.get("tolerance")))
             trigger.set("action", trigger_point.get("action"))
             trigger.set("triggeredBy", trigger_point.get("triggeredBy"))
-            trigger.set("triggers", trigger_point.get("triggers"))
+            if trigger_point.get("triggers") is not None:
+                trigger.set("triggers", trigger_point.get("triggers"))
             if trigger_point.get("action") == "spawnAndStart":
                 spawn_point = trigger_dict.get("spawnPoint")
                 ElementTree.SubElement(trigger, 'spawnPoint x="{}" y="{}" orientation="{}"'
@@ -75,6 +76,8 @@ class DBCBuilder:
             elif trigger_point.get("action") == "switchLights":
                 trigger.set("initState", trigger_point.get("initState"))
                 trigger.set("switchTo", trigger_point.get("switchTo"))
+            elif trigger_point.get("action") == "stop":
+                trigger.set("duration", str(trigger_point.get("duration")))
 
     def add_car(self, participant):
         """Adds a car to this test case. At least one car (the ego car) should be added.
