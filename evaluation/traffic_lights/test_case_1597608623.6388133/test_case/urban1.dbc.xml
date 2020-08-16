@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='utf-8'?>
+<criteria>
+    <environment>urban1.dbe.xml</environment>
+    <author>Michael Heine</author>
+    <participants>
+        <participant color="White" id="ego" model="ETK800">
+            <initialState x="1.0" y="-6.0" orientation="0" />
+            <movement>
+                <waypoint x="1.0000000000" y="-6.0000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="5.0900000000" y="-6.0000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="6.8900000000" y="-6.0000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="8.9200000000" y="-5.9900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="11.8800000000" y="-5.9800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="14.5600000000" y="-5.9600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="16.2900000000" y="-5.9400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="18.9200000000" y="-5.8900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="21.3400000000" y="-5.8400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="23.4900000000" y="-5.7700000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="25.7500000000" y="-5.6800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="28.0500000000" y="-5.5600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="30.0900000000" y="-5.4300000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="32.1300000000" y="-5.2800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="34.3000000000" y="-5.0800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="36.2800000000" y="-4.8700000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="38.1700000000" y="-4.6300000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="40.2000000000" y="-4.3300000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="42.1400000000" y="-4.0000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="43.9300000000" y="-3.6600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="45.8400000000" y="-3.2500000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="47.7500000000" y="-2.7800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="49.4900000000" y="-2.3000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="51.3000000000" y="-1.7600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="53.1700000000" y="-1.1300000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="54.9200000000" y="-0.4900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="56.6300000000" y="0.2000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="58.4700000000" y="0.9900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="60.2300000000" y="1.8200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="61.8800000000" y="2.6500000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="63.9500000000" y="3.7700000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="65.3100000000" y="4.5400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="66.8000000000" y="5.3800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="68.1700000000" y="6.1500000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="69.6400000000" y="6.9800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="71.2600000000" y="7.8900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="72.8100000000" y="8.7600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="74.1400000000" y="9.5100000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="75.6300000000" y="10.3400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="77.1100000000" y="11.1800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="78.6300000000" y="12.0300000000" tolerance="2" lane="0" speed="7.9" />
+                <waypoint x="80.0400000000" y="12.8300000000" tolerance="2" lane="0" speed="2.0" />
+                <waypoint x="78.3100000000" y="12.8900000000" tolerance="2" lane="0" speed="7.9" />
+                <waypoint x="79.4300000000" y="11.6200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="80.7400000000" y="10.1300000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="82.1900000000" y="8.4800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="83.3400000000" y="7.1700000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="84.5200000000" y="5.8300000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="85.5900000000" y="4.6200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="86.8100000000" y="3.2400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="88.4100000000" y="1.4200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="89.8800000000" y="-0.2600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="91.1700000000" y="-1.7200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="92.3900000000" y="-3.1100000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="93.7800000000" y="-4.6800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="95.2400000000" y="-6.3400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="96.7200000000" y="-8.0200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.1900000000" y="-9.7000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="99.6700000000" y="-11.3700000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="101.1400000000" y="-13.0500000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="102.6200000000" y="-14.7200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="104.0900000000" y="-16.4000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="105.5700000000" y="-18.0700000000" tolerance="2" lane="0" speed="7.9" />
+                <waypoint x="107.1900000000" y="-19.9200000000" tolerance="2" lane="0" speed="2.0" />
+                <waypoint x="108.1200000000" y="-16.5300000000" tolerance="2" lane="0" speed="7.9" />
+                <waypoint x="107.1800000000" y="-18.0000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="105.8400000000" y="-20.2000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="104.6400000000" y="-22.3900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="103.5600000000" y="-24.5400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="102.5900000000" y="-26.6700000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="101.7300000000" y="-28.7800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="100.9700000000" y="-30.8600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="100.3100000000" y="-32.9100000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="99.7300000000" y="-34.9300000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="99.2500000000" y="-36.9200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.8400000000" y="-38.9000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.5000000000" y="-40.8600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.2200000000" y="-42.8000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.0100000000" y="-44.7100000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.8600000000" y="-46.6100000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.7500000000" y="-48.4900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.6900000000" y="-50.3500000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.6700000000" y="-52.1900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.6800000000" y="-54.0100000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.7200000000" y="-55.8000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.7800000000" y="-57.5600000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.8600000000" y="-59.4200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.9500000000" y="-61.1200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.0300000000" y="-62.7200000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.1700000000" y="-65.4100000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.2400000000" y="-66.9900000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.3000000000" y="-68.5400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.3300000000" y="-70.0700000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.3300000000" y="-73.0400000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.1900000000" y="-75.9000000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="98.0300000000" y="-77.5300000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.8400000000" y="-79.1500000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.6200000000" y="-80.9800000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="97.4400000000" y="-82.5700000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="97.2500000000" y="-84.1600000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="96.8600000000" y="-87.4400000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="96.6700000000" y="-89.1100000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="96.4700000000" y="-90.7500000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="96.2900000000" y="-92.2900000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="96.1000000000" y="-93.9000000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="95.8900000000" y="-95.6600000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="95.2000000000" y="-101.5600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="95.0100000000" y="-103.1600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="94.8300000000" y="-104.7600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="94.6400000000" y="-106.3500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="94.3800000000" y="-108.5700000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="94.1800000000" y="-110.2400000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="93.9900000000" y="-111.8500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="93.8100000000" y="-113.3900000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="93.6300000000" y="-114.9300000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="93.4500000000" y="-116.4600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="93.2600000000" y="-118.0600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="93.0700000000" y="-119.6500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="92.8800000000" y="-121.2500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="92.7000000000" y="-122.8400000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="92.5100000000" y="-124.4400000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="92.2700000000" y="-126.7200000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.7600000000" y="-129.0100000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.4400000000" y="-130.9900000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.2300000000" y="-132.9200000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.1300000000" y="-134.6300000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.1100000000" y="-136.3000000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.1900000000" y="-138.1400000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.3700000000" y="-139.9300000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.6000000000" y="-141.5000000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="91.9000000000" y="-143.0400000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="92.3100000000" y="-144.7200000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="92.8000000000" y="-146.3500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="93.3000000000" y="-147.7700000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="94.5100000000" y="-150.6700000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="95.2300000000" y="-152.1400000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="96.6300000000" y="-154.6500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="97.4700000000" y="-156.0100000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="98.3400000000" y="-157.3300000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="99.9600000000" y="-159.5600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="100.9000000000" y="-160.7800000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="101.8500000000" y="-161.9600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="103.5600000000" y="-163.9500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="105.5000000000" y="-166.0900000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="107.1800000000" y="-167.8800000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="109.1300000000" y="-169.8500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="110.9100000000" y="-171.5300000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="113.0400000000" y="-173.3200000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="115.0700000000" y="-174.8200000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="117.5200000000" y="-176.3600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="119.9100000000" y="-177.5700000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="121.3100000000" y="-178.1800000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="122.7800000000" y="-178.7200000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="125.5800000000" y="-179.5500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="127.2300000000" y="-179.9200000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="128.9600000000" y="-180.2300000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="130.5500000000" y="-180.4500000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="132.2100000000" y="-180.6100000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="134.1400000000" y="-180.7300000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="136.1800000000" y="-180.7800000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="138.0400000000" y="-180.7600000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="139.9700000000" y="-180.6900000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="142.2600000000" y="-180.5400000000" tolerance="2" lane="1" speed="13.8" />
+                <waypoint x="144.6600000000" y="-180.3100000000" tolerance="2" lane="1" speed="0" />
+            </movement>
+        </participant>
+    </participants>
+    <success>
+        <scPosition participant="ego" x="147" y="-176" tolerance="3" />
+    </success>
+    <failure>
+        <or>
+            <scDamage participant="ego" />
+            <scLane participant="ego" onLane="offroad" />
+        </or>
+    </failure>
+    <name>Fuel Efficiency Test</name>
+    <triggerPoints>
+        <triggerPoint action="switchLights" initState="red" switchTo="green" tolerance="2" triggeredBy="ego" triggers="traffic_light_manual_0" x="61" y="9" />
+        <triggerPoint action="stop" duration="4" tolerance="2" triggeredBy="ego" x="102" y="-78" />
+    </triggerPoints>
+</criteria>

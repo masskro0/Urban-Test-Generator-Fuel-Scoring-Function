@@ -68,6 +68,7 @@ def collect_images(destination_path):
     x, y, z = -0.3, 2.1, 1
     camera = Camera((x, y, z), direction, fov, resolution, colour=True, depth=True, annotation=True)
     ego.attach_sensor("camera", camera)
+    print(colored("Starting test case {}.".format(destination_path), "grey", attrs=['bold']))
     bng = beamng.open()
     bng.load_scenario(converter.scenario)
     bng.start_scenario()
@@ -156,6 +157,7 @@ def collect_images(destination_path):
                                 else:
                                     time_entry += timer - prev_time
                                     prev_time = timer
+                                    print(time_entry)
                                     if 7.70 <= time_entry <= 8.3:
                                         continue
                                     if time_entry >= 8:
@@ -173,6 +175,7 @@ def collect_images(destination_path):
                                         multiplicator = 15 if init_state == "green" else 9
                                     elif time_entry >= 7:
                                         label = "yellow-red"
+                                    print(label)
                 img = sensors["camera"]["colour"].convert("RGB")
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
@@ -320,8 +323,11 @@ def visualize_results(predictions, false_predictions, images):
 
 
 if __name__ == '__main__':
-    # create_tests(1, True)
-    collect_images_existing_tests()
-    predict_all_images()
+    # test_case_1597609235.0386705
+    # test_case_1597609344.432248
+    #create_tests(10, True)
+    #collect_images_existing_tests()
+    # predict_all_images()
+    collect_images("test_case_1597609235.0386705")
 
 # TODO Test oracle: Damage, out of street, timeout, traffic rules
