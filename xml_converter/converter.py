@@ -761,15 +761,12 @@ class Converter:
             for idx_1, light in enumerate(trigger):
                 content += "  " + light.get("id") + " = scenetree.findObject(\"" + light.get("id") + "\")\n"
 
-        for idx, trigger in enumerate(self.traffic_lights):
-            oid = trigger[0].get("id")
-            oid = oid[:22]
-            i = int(oid[-1])
-            if i >= len(traffic_triggers):
-                continue
-            init_state = traffic_triggers[i].get("initState")
-            i = 0 if init_state == "green" else 2
-            content += "  " + trigger[i].get("id") + ":setPosition(points_2[" + str(3 * idx + i + 1) + "])\n"
+        for light_trigger in traffic_triggers:
+            for idx, light in enumerate(self.traffic_lights):
+                if light[0].get("id").startswith(light_trigger.get("triggers")):
+                    init_state = light_trigger.get("initState")
+                    i = 0 if init_state == "green" else 2
+                    content += "  " + light[i].get("id") + ":setPosition(points_2[" + str(3 * idx + i + 1) + "])\n"
 
         content += "end\n\n"
         content += trigger_content
@@ -889,10 +886,7 @@ class Converter:
 
             # Tells which light should be switched on and which should disappear when the car enters the trigger point.
             for idx_1, traffic_light in enumerate(self.traffic_lights):
-                oid = traffic_light[0].get("id")
-                oid = oid[:22]
-                temp_idx = int(oid[-1])
-                if idx == temp_idx:
+                if traffic_light[0].get("id").startswith(trigger.get("triggers")):
                     if init_state == "green":
                         new = 0 if init_state == "red" else 2
                         content += "    " + traffic_light[1].get("id") + ":setPosition(points_1[" \
@@ -911,12 +905,9 @@ class Converter:
                        "  if traffic_time_" + str(idx) + " == 8 then\n"
 
             for idx_1, traffic_light in enumerate(self.traffic_lights):
-                oid = traffic_light[0].get("id")
-                oid = oid[:22]
-                temp_idx = int(oid[-1])
                 old = 0 if init_state == "green" else 2
                 new = 0 if old == 2 else 2
-                if idx == temp_idx:
+                if traffic_light[0].get("id").startswith(trigger.get("triggers")):
                     content += "    " + traffic_light[new].get("id") + ":setPosition(points_1[" \
                                + str(3 * idx_1 + new + 1) + "])\n"
                     content += "    " + traffic_light[old].get("id") + ":setPosition(points_2[" \
@@ -926,10 +917,7 @@ class Converter:
             # Make green light visible and red/yellow light invisible after one second.
             if init_state == "red":
                 for idx_1, traffic_light in enumerate(self.traffic_lights):
-                    oid = traffic_light[0].get("id")
-                    oid = oid[:22]
-                    temp_idx = int(oid[-1])
-                    if idx == temp_idx:
+                    if traffic_light[0].get("id").startswith(trigger.get("triggers")):
                         content += "  if traffic_time_" + str(idx) + " == 1.5 then\n" \
                                    "    " + traffic_light[1].get("id") + ":setPosition(points_1[" \
                                    + str(3 * idx_1 + 2) + "])\n" \
@@ -942,19 +930,13 @@ class Converter:
             if init_state != "red":
                 content += "  if traffic_time_" + str(idx) + " == 7 then\n"
                 for idx_1, traffic_light in enumerate(self.traffic_lights):
-                    oid = traffic_light[0].get("id")
-                    oid = oid[:22]
-                    temp_idx = int(oid[-1])
-                    if idx == temp_idx:
+                    if traffic_light[0].get("id").startswith(trigger.get("triggers")):
                         content += "    " + traffic_light[1].get("id") + ":setPosition(points_2[" \
                                    + str(3 * idx_1 + 2) + "])\n"
                 content += "  end\n"
                 content += "  if traffic_time_" + str(idx) + " == 8 then\n"
                 for idx_1, traffic_light in enumerate(self.traffic_lights):
-                    oid = traffic_light[0].get("id")
-                    oid = oid[:22]
-                    temp_idx = int(oid[-1])
-                    if idx == temp_idx:
+                    if traffic_light[0].get("id").startswith(trigger.get("triggers")):
                         content += "    " + traffic_light[1].get("id") + ":setPosition(points_1[" \
                                    + str(3 * idx_1 + 2) + "])\n"
                 content += "  end\n"
@@ -965,10 +947,7 @@ class Converter:
                        + " and yellow_triggered_" + str(idx) + " == 0 then\n" \
                        "    yellow_triggered_" + str(idx) + " = 1\n"
             for idx_1, traffic_light in enumerate(self.traffic_lights):
-                oid = traffic_light[0].get("id")
-                oid = oid[:22]
-                temp_idx = int(oid[-1])
-                if idx == temp_idx and init_state == "green":
+                if traffic_light[0].get("id").startswith(trigger.get("triggers")) and init_state == "green":
                     content += "    " + traffic_light[0].get("id") + ":setPosition(points_1[" \
                                + str(3 * idx_1  + 1) + "])\n"
                     content += "    " + traffic_light[1].get("id") + ":setPosition(points_2[" \
