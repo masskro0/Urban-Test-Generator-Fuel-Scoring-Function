@@ -64,11 +64,12 @@ def build_xml(individual, iterator: int = 0):
     triggers = individual.get("triggers")
     success_points = [success_point]
     ego = None
+    tod = individual.get("tod")
     for participant in participants:
         if participant.get("id") == "ego":
             ego = participant
             break
-    build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles)
+    build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles, tod=tod)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,
                        file_name=file_name, triggers=triggers)
 
