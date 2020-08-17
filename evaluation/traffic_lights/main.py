@@ -121,7 +121,7 @@ def collect_images(destination_path):
                         label = init_state
                     else:
                         if init_state == "red":
-                            if distance_trigger > tolerance * multiplicator - 2.5:
+                            if distance_trigger > tolerance * multiplicator:
                                 continue
                             if not entered:
                                 label = "yellow-red"
@@ -130,9 +130,11 @@ def collect_images(destination_path):
                             else:
                                 time_entry += timer - prev_time
                                 prev_time = timer
-                                if time_entry >= 1.1:
+                                if distance_trigger >= 16.1 or 1.1 <= time_entry < 1.3:
+                                    continue
+                                if time_entry >= 1.3:
                                     label = "green"
-                                elif time_entry >= 2:
+                                elif time_entry >= 2.5:
                                     prev_time = 0
                                     time_entry = 0
                                     trigger_index += 1
@@ -198,6 +200,9 @@ def collect_images(destination_path):
                                         multiplicator = 15 if init_state == "green" else 9
                                     elif time_entry >= 7:
                                         label = "yellow-red"
+                print(distance_trigger)
+                print(time_entry)
+                print(label)
                 img = sensors["camera"]["colour"].convert("RGB")
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
@@ -345,11 +350,8 @@ def visualize_results(predictions, false_predictions, images):
 
 
 if __name__ == '__main__':
-    # test_case_1597609235.0386705
-    # test_case_1597609344.432248
-    #create_tests(10, True)
+    # create_tests(10, True)
     collect_images_existing_tests()
-    # predict_all_images()
-    #collect_images("test_case_1597609235.0386705")
+    predict_all_images()
 
 # TODO Test oracle: Damage, out of street, timeout, traffic rules
