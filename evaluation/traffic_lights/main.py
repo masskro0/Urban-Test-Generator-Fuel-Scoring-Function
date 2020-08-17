@@ -123,6 +123,15 @@ def collect_images(destination_path):
                         if init_state == "red":
                             if distance_trigger > tolerance * multiplicator:
                                 continue
+                            if tolerance * multiplicator - 4.5 < distance_trigger:
+                                if not entered:
+                                    label = "yellow-red"
+                                    entered = True
+                                    prev_time = timer
+                                else:
+                                    time_entry += timer - prev_time
+                                    prev_time = timer
+                                continue
                             if not entered:
                                 label = "yellow-red"
                                 entered = True
@@ -130,9 +139,9 @@ def collect_images(destination_path):
                             else:
                                 time_entry += timer - prev_time
                                 prev_time = timer
-                                if distance_trigger >= 16.1 or 1.1 <= time_entry < 1.3:
+                                if distance_trigger >= 16.1 or 1.1 <= time_entry < 1.5:
                                     continue
-                                if time_entry >= 1.3:
+                                if time_entry >= 1.4:
                                     label = "green"
                                 elif time_entry >= 2.5:
                                     prev_time = 0
@@ -148,7 +157,7 @@ def collect_images(destination_path):
                                         float(traffic_triggers[trigger_index].get("tolerance"))
                                     multiplicator = 15 if init_state is None or init_state == "green" else 9
                         else:
-                            if 8 <= distance_trigger <= 12:
+                            if 7 <= distance_trigger <= 13:
                                 if distance_trigger <= 10:
                                     if not red_entered:
                                         label = "red"
@@ -158,7 +167,7 @@ def collect_images(destination_path):
                                 time_entry += timer - prev_time
                                 prev_time = timer
                                 continue
-                            if 28 <= distance_trigger <= 32:
+                            if 27 <= distance_trigger <= 34:
                                 if distance_trigger <= 30:
                                     if not entered:
                                         label = "yellow"
@@ -181,7 +190,7 @@ def collect_images(destination_path):
                                 else:
                                     time_entry += timer - prev_time
                                     prev_time = timer
-                                    if 6.80 <= time_entry <= 7.2 or 7.80 <= time_entry <= 8.2:
+                                    if 6.6 <= time_entry <= 7.4 or 7.80 <= time_entry <= 8.2:
                                         continue
                                     if time_entry >= 8:
                                         label = "green"
@@ -200,9 +209,6 @@ def collect_images(destination_path):
                                         multiplicator = 15 if init_state == "green" else 9
                                     elif time_entry >= 7:
                                         label = "yellow-red"
-                print(distance_trigger)
-                print(time_entry)
-                print(label)
                 img = sensors["camera"]["colour"].convert("RGB")
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
@@ -350,7 +356,7 @@ def visualize_results(predictions, false_predictions, images):
 
 
 if __name__ == '__main__':
-    # create_tests(10, True)
+    # create_tests(4, True)
     collect_images_existing_tests()
     predict_all_images()
 
