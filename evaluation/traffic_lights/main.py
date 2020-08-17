@@ -281,7 +281,7 @@ def predict_all_images():
     print(colored("False green lights predictions: {}".format(green_false), "red", attrs=['bold']))
     print(colored("False yellow lights predictions: {}".format(yellow_false), "red", attrs=['bold']))
     print(colored("False red lights predictions: {}".format(red_false), "red", attrs=['bold']))
-    print(colored("False yellow-red lights predictions: {}".format(yellow_false), "red", attrs=['bold']))
+    print(colored("False yellow-red lights predictions: {}".format(yellow_red_false), "red", attrs=['bold']))
     print(colored("False disabled traffic lights predictions: {}\n".format(off_false), "red", attrs=['bold']))
     print(colored("Images with green traffic lights: {}".format(green_images), "grey", attrs=['bold']))
     print(colored("Images with yellow traffic lights: {}".format(yellow_images), "grey", attrs=['bold']))
@@ -359,5 +359,3 @@ if __name__ == '__main__':
     # create_tests(4, True)
     collect_images_existing_tests()
     predict_all_images()
-
-# TODO Test oracle: Damage, out of street, timeout, traffic rules
