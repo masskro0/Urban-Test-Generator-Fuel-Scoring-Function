@@ -68,7 +68,7 @@ def collect_images(destination_path):
     x, y, z = -0.3, 2.1, 1
     camera = Camera((x, y, z), direction, fov, resolution, colour=True, depth=True, annotation=True)
     ego.attach_sensor("camera", camera)
-    print(colored("Starting test case {}.".format(destination_path), "grey", attrs=['bold']))
+    print(colored("Starting test case \"{}\".".format(destination_path), "grey", attrs=['bold']))
     bng = beamng.open()
     bng.load_scenario(converter.scenario)
     bng.start_scenario()
@@ -87,6 +87,7 @@ def collect_images(destination_path):
     tolerance = None if len(traffic_triggers) == 0 else float(traffic_triggers[trigger_index].get("tolerance"))
     multiplicator = 15 if init_state == "green" else 9
     sleep(2)
+    at_intersection = False
     while True:
         sensors = bng.poll_sensors(ego)
         ego.update_vehicle()
@@ -96,7 +97,10 @@ def collect_images(destination_path):
             p1 = (ego.state["pos"][0], ego.state["pos"][1])
             angle = get_angle(traffic_light_pos, p1, p0)
             distance_light = euclidean(traffic_light_pos, (ego.state["pos"][0], ego.state["pos"][1]))
-            if distance_light <= 7:
+            if distance_light <= 10:
+                at_intersection = True
+            elif distance_light > 10 and at_intersection:
+                at_intersection = False
                 traffic_index += 1
                 if traffic_index >= len(traffic_light_list):
                     traffic_light_pos = None
@@ -142,12 +146,30 @@ def collect_images(destination_path):
                                         float(traffic_triggers[trigger_index].get("tolerance"))
                                     multiplicator = 15 if init_state is None or init_state == "green" else 9
                         else:
-                            if 7 <= distance_trigger <= 13 or 26 <= distance_trigger <= 34:
+                            if 8 <= distance_trigger <= 12:
+                                if distance_trigger <= 10:
+                                    if not red_entered:
+                                        label = "red"
+                                        red_entered = True
+                                    time_entry = 0
+                                    prev_time = timer
+                                time_entry += timer - prev_time
+                                prev_time = timer
+                                continue
+                            if 28 <= distance_trigger <= 32:
+                                if distance_trigger <= 30:
+                                    if not entered:
+                                        label = "yellow"
+                                        entered = True
+                                        prev_time = timer
+                                    else:
+                                        time_entry += timer - prev_time
+                                        prev_time = timer
                                 continue
                             if distance_trigger <= 10 and not red_entered:
                                 label = "red"
                                 red_entered = True
-                                time_entry += timer - prev_time
+                                time_entry = 0
                                 prev_time = timer
                             elif distance_trigger <= 30:
                                 if not entered:
@@ -157,8 +179,7 @@ def collect_images(destination_path):
                                 else:
                                     time_entry += timer - prev_time
                                     prev_time = timer
-                                    print(time_entry)
-                                    if 7.70 <= time_entry <= 8.3:
+                                    if 6.80 <= time_entry <= 7.2 or 7.80 <= time_entry <= 8.2:
                                         continue
                                     if time_entry >= 8:
                                         label = "green"
@@ -170,12 +191,13 @@ def collect_images(destination_path):
                                         traffic_triggers_pos = None if trigger_index >= len(traffic_triggers) else \
                                             (float(traffic_triggers[trigger_index]["x"]),
                                              float(traffic_triggers[trigger_index]["y"]))
-                                        init_state = traffic_triggers[trigger_index].get("initState")
-                                        tolerance = float(traffic_triggers[trigger_index].get("tolerance"))
+                                        init_state = None if trigger_index >= len(traffic_triggers) else \
+                                            traffic_triggers[trigger_index].get("initState")
+                                        tolerance = None if trigger_index >= len(traffic_triggers) else \
+                                            float(traffic_triggers[trigger_index].get("tolerance"))
                                         multiplicator = 15 if init_state == "green" else 9
                                     elif time_entry >= 7:
                                         label = "yellow-red"
-                                    print(label)
                 img = sensors["camera"]["colour"].convert("RGB")
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
@@ -326,8 +348,8 @@ if __name__ == '__main__':
     # test_case_1597609235.0386705
     # test_case_1597609344.432248
     #create_tests(10, True)
-    #collect_images_existing_tests()
+    collect_images_existing_tests()
     # predict_all_images()
-    collect_images("test_case_1597609235.0386705")
+    #collect_images("test_case_1597609235.0386705")
 
 # TODO Test oracle: Damage, out of street, timeout, traffic rules
