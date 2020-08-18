@@ -462,7 +462,7 @@ def _add_other_participants(individual):
     sl, t = _add_other_0(individual)
     spawn_lanes.extend(sl)
     triggers.extend(t)
-    #_add_other_1(individual, spawn_lanes)
+    # _add_other_1(individual, spawn_lanes)
     _add_other_2(individual, triggers)
     individual.setdefault("triggers", []).extend(triggers)
 
@@ -1423,8 +1423,8 @@ class FuelConsumptionTestGenerator:
                 continue
             if participant.get("id") == "other_0":
                 self._mutate_other_0(individual)
-            elif participant.get("id") == "other_1":
-                self._mutate_other_1(individual)
+            # elif participant.get("id") == "other_1":
+            #    self._mutate_other_1(individual)
             else:
                 self._mutate_other_2(individual)
 
@@ -1711,6 +1711,7 @@ class FuelConsumptionTestGenerator:
             if participant.get("id") == "other_0":
                 participant["color"] = color
         # Update other_1.
+        """
         color = other_1.get("color")
         end_lane = other_1.get("end_lane")
         individual["participants"].remove(other_1)
@@ -1718,6 +1719,7 @@ class FuelConsumptionTestGenerator:
         for participant in individual.get("participants"):
             if participant.get("id") == "other_1":
                 participant["color"] = color
+        """
         # Update other_2.
         color = other_2.get("color")
         individual["participants"].remove(other_2)

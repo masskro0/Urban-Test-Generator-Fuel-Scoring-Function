@@ -115,10 +115,8 @@
         <scPosition participant="ego" x="153" y="90" tolerance="3" />
     </success>
     <failure>
-        <or>
-            <scDamage participant="ego" />
-            <scLane participant="ego" onLane="offroad" />
-        </or>
+        <scDamage participant="ego" />
+        <scLane participant="ego" />
     </failure>
     <name>Fuel Efficiency Test</name>
     <triggerPoints>

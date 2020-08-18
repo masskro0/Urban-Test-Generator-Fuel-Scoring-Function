@@ -1,16 +1,16 @@
-from time import sleep, time
+from time import time
 from beamngpy import BeamNGpy
-from beamngpy.sensors import Electrics, Camera, Timer
+from beamngpy.sensors import Electrics, Camera, Timer, Damage
 from termcolor import colored
 from os.path import join, exists, abspath
 from os import mkdir, getcwd
 from shutil import move
 from scipy.spatial.distance import euclidean
 from glob import glob
-from math import floor
 import matplotlib.pyplot as plt
 from numpy import arange
 
+from test_execution.test_oracle import TrafficLightLabel, TestOracle, TestCaseState
 from utils.utility_functions import get_angle
 from fuel_consumption_test_generator import FuelConsumptionTestGenerator
 from xml_converter.xml_to_bng_files import convert_test
@@ -62,6 +62,8 @@ def collect_images(destination_path):
     ego.attach_sensor('electrics', electrics)
     timer = Timer()
     ego.attach_sensor("timer", timer)
+    damage = Damage()
+    ego.attach_sensor("damage", damage)
     direction = (0, 1, 0)
     fov = 90
     resolution = (1280, 720)
@@ -69,34 +71,23 @@ def collect_images(destination_path):
     camera = Camera((x, y, z), direction, fov, resolution, colour=True, depth=True, annotation=True)
     ego.attach_sensor("camera", camera)
     print(colored("Starting test case \"{}\".".format(destination_path), "grey", attrs=['bold']))
+    traffic_index = 0
+    traffic_light_pos = (float(traffic_light_list[traffic_index]["x"]),
+                         float(traffic_light_list[traffic_index]["y"]))
+    at_intersection = False
+    tllabel = TrafficLightLabel(converter.get_traffic_lights_position(), converter.traffic_triggers)
+    oracle = TestOracle(converter.scenario, matches[0], matches[1])
     bng = beamng.open()
     bng.load_scenario(converter.scenario)
     bng.start_scenario()
-    traffic_triggers = converter.traffic_triggers
-    trigger_index = 0
-    traffic_triggers_pos = None if len(traffic_triggers) == 0 \
-        else (float(traffic_triggers[trigger_index]["x"]), float(traffic_triggers[trigger_index]["y"]))
-    traffic_index = 0
-    traffic_light_pos = (float(traffic_light_list[traffic_index]["x"]), float(traffic_light_list[traffic_index]["y"]))
-    entered = False
-    red_entered = False
-    time_entry = 0
-    prev_time = 0
-    label = None
-    init_state = None if len(traffic_triggers) == 0 else traffic_triggers[trigger_index].get("initState")
-    tolerance = None if len(traffic_triggers) == 0 else float(traffic_triggers[trigger_index].get("tolerance"))
-    multiplicator = 15 if init_state == "green" else 9
-    sleep(2)
-    at_intersection = False
     while True:
         sensors = bng.poll_sensors(ego)
         ego.update_vehicle()
+        label = None
         if traffic_light_pos is not None:
-            timer = sensors["timer"]["time"]
-            p0 = (ego.state["pos"][0] + ego.state["dir"][0], ego.state["pos"][1] + ego.state["dir"][1])
+            label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state)
             p1 = (ego.state["pos"][0], ego.state["pos"][1])
-            angle = get_angle(traffic_light_pos, p1, p0)
-            distance_light = euclidean(traffic_light_pos, (ego.state["pos"][0], ego.state["pos"][1]))
+            distance_light = euclidean(traffic_light_pos, p1)
             if distance_light <= 10:
                 at_intersection = True
             elif distance_light > 10 and at_intersection:
@@ -107,126 +98,16 @@ def collect_images(destination_path):
                 else:
                     traffic_light_pos = (float(traffic_light_list[traffic_index]["x"]),
                                          float(traffic_light_list[traffic_index]["y"]))
-            elif distance_light <= 60 and (0 <= angle <= fov / 2 or 360 - fov / 2 <= angle <= 360):
-                if traffic_light_list[traffic_index].get("mode") == "off":
-                    label = "off"
-                elif traffic_light_list[traffic_index].get("mode") == "blinking":
-                    if floor(timer) % 2 == 0:
-                        label = "off"
-                    else:
-                        label = "yellow"
-                elif traffic_triggers_pos is not None:
-                    distance_trigger = euclidean(traffic_triggers_pos, (ego.state["pos"][0], ego.state["pos"][1]))
-                    if distance_trigger > tolerance * multiplicator:
-                        label = init_state
-                    else:
-                        if init_state == "red":
-                            if distance_trigger > tolerance * multiplicator:
-                                continue
-                            if tolerance * multiplicator - 4.5 < distance_trigger:
-                                if not entered:
-                                    label = "yellow-red"
-                                    entered = True
-                                    prev_time = timer
-                                else:
-                                    time_entry += timer - prev_time
-                                    prev_time = timer
-                                continue
-                            if not entered:
-                                label = "yellow-red"
-                                entered = True
-                                prev_time = timer
-                            else:
-                                time_entry += timer - prev_time
-                                prev_time = timer
-                                if distance_trigger >= 16.1 or 1.1 <= time_entry < 1.5:
-                                    continue
-                                if time_entry >= 1.4:
-                                    label = "green"
-                                elif time_entry >= 2.5:
-                                    prev_time = 0
-                                    time_entry = 0
-                                    trigger_index += 1
-                                    entered = False
-                                    traffic_triggers_pos = None if trigger_index >= len(traffic_triggers) else \
-                                        (float(traffic_triggers[trigger_index]["x"]),
-                                         float(traffic_triggers[trigger_index]["y"]))
-                                    init_state = None if trigger_index >= len(traffic_triggers) else \
-                                        traffic_triggers[trigger_index].get("initState")
-                                    tolerance = None if trigger_index >= len(traffic_triggers) else \
-                                        float(traffic_triggers[trigger_index].get("tolerance"))
-                                    multiplicator = 15 if init_state is None or init_state == "green" else 9
-                        else:
-                            if 7 <= distance_trigger <= 13:
-                                if distance_trigger <= 10:
-                                    if not red_entered:
-                                        label = "red"
-                                        red_entered = True
-                                    time_entry = 0
-                                    prev_time = timer
-                                time_entry += timer - prev_time
-                                prev_time = timer
-                                continue
-                            if 27 <= distance_trigger <= 34:
-                                if distance_trigger <= 30:
-                                    if not entered:
-                                        label = "yellow"
-                                        entered = True
-                                        prev_time = timer
-                                    else:
-                                        time_entry += timer - prev_time
-                                        prev_time = timer
-                                continue
-                            if distance_trigger <= 10 and not red_entered:
-                                label = "red"
-                                red_entered = True
-                                time_entry = 0
-                                prev_time = timer
-                            elif distance_trigger <= 30:
-                                if not entered:
-                                    label = "yellow"
-                                    entered = True
-                                    prev_time = timer
-                                else:
-                                    time_entry += timer - prev_time
-                                    prev_time = timer
-                                    if 6.6 <= time_entry <= 7.4 or 7.80 <= time_entry <= 8.2:
-                                        continue
-                                    if time_entry >= 8:
-                                        label = "green"
-                                        prev_time = 0
-                                        time_entry = 0
-                                        trigger_index += 1
-                                        entered = False
-                                        red_entered = False
-                                        traffic_triggers_pos = None if trigger_index >= len(traffic_triggers) else \
-                                            (float(traffic_triggers[trigger_index]["x"]),
-                                             float(traffic_triggers[trigger_index]["y"]))
-                                        init_state = None if trigger_index >= len(traffic_triggers) else \
-                                            traffic_triggers[trigger_index].get("initState")
-                                        tolerance = None if trigger_index >= len(traffic_triggers) else \
-                                            float(traffic_triggers[trigger_index].get("tolerance"))
-                                        multiplicator = 15 if init_state == "green" else 9
-                                    elif time_entry >= 7:
-                                        label = "yellow-red"
+                continue
+            p0 = (ego.state["pos"][0] + ego.state["dir"][0], ego.state["pos"][1] + ego.state["dir"][1])
+            angle = get_angle(traffic_light_pos, p1, p0)
+            if 8 <= distance_light <= 60 and (0 <= angle <= fov / 2 or 360 - fov / 2 <= angle <= 360) \
+                    and label is not None:
                 img = sensors["camera"]["colour"].convert("RGB")
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
                 img.save(file_path)
-            elif entered:
-                prev_time = 0
-                time_entry = 0
-                trigger_index += 1
-                entered = False
-                red_entered = False
-                traffic_triggers_pos = None if trigger_index >= len(traffic_triggers) else \
-                    (float(traffic_triggers[trigger_index]["x"]),
-                     float(traffic_triggers[trigger_index]["y"]))
-                init_state = None if trigger_index >= len(traffic_triggers) else \
-                    traffic_triggers[trigger_index].get("initState")
-                tolerance = None if trigger_index >= len(traffic_triggers) else \
-                    float(traffic_triggers[trigger_index].get("tolerance"))
-                multiplicator = 15 if init_state is not None and init_state == "green" else 9
+        oracle.validate_test_case([ego.state], ego.state, sensors["timer"]["time"], label, sensors["damage"])
         if euclidean(converter.success_point, (ego.state["pos"][0], ego.state["pos"][1])) < 15:
             bng.close()
             break
@@ -356,6 +237,7 @@ def visualize_results(predictions, false_predictions, images):
 
 
 if __name__ == '__main__':
-    # create_tests(4, True)
-    collect_images_existing_tests()
-    predict_all_images()
+    create_tests(1, True)
+    #collect_images_existing_tests()
+    #predict_all_images()
+

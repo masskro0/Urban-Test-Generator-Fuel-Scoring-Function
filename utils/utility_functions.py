@@ -1,13 +1,12 @@
 """This file offers some utility functions that can be used universally."""
 
-
 from shapely import affinity
 from shapely.geometry import LineString, MultiLineString
-from math import degrees, atan2
+from math import degrees, atan2, sqrt
 from random import randint
 
-MIN_DEGREES = 90    # Minimum degree between three points.
-MAX_DEGREES = 270   # Maximum degree between three points.
+MIN_DEGREES = 90  # Minimum degree between three points.
+MAX_DEGREES = 270  # Maximum degree between three points.
 
 
 def multilinestrings_to_linestring(linestring):
@@ -187,11 +186,11 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     if intersection.get("direction") == "straight":
         if number_of_ways == 4:
             lanes.extend([{"control_points": [intersec_point, left_point], "width": new_width,
-                          "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
+                           "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
                            "type": "intersection"},
-                         {"control_points": [intersec_point, right_point], "width": new_width,
-                          "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
-                          "type": "intersection"}])
+                          {"control_points": [intersec_point, right_point], "width": new_width,
+                           "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
+                           "type": "intersection"}])
             intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
             lane_index += 5
         else:
@@ -292,9 +291,9 @@ def calc_speed_waypoints(participants):
             if 1 < i < len(waypoints) - 1:
                 if int(waypoints[i].get("lane")) != current_index:
                     current_index = int(waypoints[i].get("lane"))
-                    waypoints[i-1]["speed"] = 0
-                    waypoints[i-2]["speed"] = 0
-                    waypoints[i-3]["speed"] = 0
+                    waypoints[i - 1]["speed"] = 0
+                    waypoints[i - 2]["speed"] = 0
+                    waypoints[i - 3]["speed"] = 0
                     if i - 5 >= 0:
                         waypoints[i - 4]["speed"] = 0
                         waypoints[i - 5]["speed"] = 0
@@ -315,10 +314,14 @@ def calc_speed_waypoints(participants):
                     speed = 6
                 else:
                     speed = 4
-                waypoints[i-1]["speed"] = 0 if waypoints[i-1].get("speed") == 0 else \
-                        (speed + float(waypoints[i-1].get("speed"))) / 2
+                waypoints[i - 1]["speed"] = 0 if waypoints[i - 1].get("speed") == 0 else \
+                    (speed + float(waypoints[i - 1].get("speed"))) / 2
                 waypoints[i]["speed"] = speed
             else:
                 speed = 0 if i == len(waypoints) - 1 else 13.8
                 waypoints[i]["speed"] = speed
             i += 1
+
+
+def get_magnitude_of_3d_vector(vector):
+    return sqrt(vector[0] ** 2 + vector[1] ** 2 + vector[2] ** 2)
