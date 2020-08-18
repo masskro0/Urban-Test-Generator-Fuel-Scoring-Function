@@ -20,8 +20,9 @@ class TrafficLightLabel:
         self.traffic_triggers_pos = None if len(traffic_triggers) == 0 \
             else (float(traffic_triggers[self.trigger_index]["x"]), float(traffic_triggers[self.trigger_index]["y"]))
         self.traffic_index = 0
-        self.traffic_light_pos = (float(traffic_light_list[self.traffic_index]["x"]),
-                                  float(traffic_light_list[self.traffic_index]["y"]))
+        self.traffic_light_pos = None if len(traffic_light_list) == 0 else \
+            (float(traffic_light_list[self.traffic_index]["x"]),
+             float(traffic_light_list[self.traffic_index]["y"]))
         self.init_state = None if len(traffic_triggers) == 0 else traffic_triggers[self.trigger_index].get("initState")
         self.tolerance = None if len(traffic_triggers) == 0 \
             else float(traffic_triggers[self.trigger_index].get("tolerance"))
@@ -188,6 +189,8 @@ class TestOracle:
 
     def _get_ego_signs(self):
         obstacles = self.dbe_root.find("obstacles")
+        if obstacles is None:
+            obstacles = list()
         for obstacle in obstacles:
             attr = obstacle.attrib
             if attr.get("facingEgo") is not None and attr.get("facingEgo"):

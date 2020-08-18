@@ -115,6 +115,8 @@ class Converter:
 
     def get_traffic_lights_position(self):
         obstacles = self.dbe_root.find("obstacles")
+        if obstacles is None:
+            obstacles = list()
         traffic_light_positions = list()
         for obstacle in obstacles:
             attr = obstacle.attrib
