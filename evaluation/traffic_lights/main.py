@@ -80,12 +80,11 @@ def collect_images(destination_path):
     bng = beamng.open()
     bng.load_scenario(converter.scenario)
     bng.start_scenario()
-    while True:
+    while oracle.state == TestCaseState.OK:
         sensors = bng.poll_sensors(ego)
         ego.update_vehicle()
-        label = None
+        label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state)
         if traffic_light_pos is not None:
-            label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state)
             p1 = (ego.state["pos"][0], ego.state["pos"][1])
             distance_light = euclidean(traffic_light_pos, p1)
             if distance_light <= 10:
@@ -107,10 +106,9 @@ def collect_images(destination_path):
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
                 img.save(file_path)
-        oracle.validate_test_case([ego.state], ego.state, sensors["timer"]["time"], label, sensors["damage"])
-        if euclidean(converter.success_point, (ego.state["pos"][0], ego.state["pos"][1])) < 15:
-            bng.close()
-            break
+        oracle.validate_test_case([{"id": "ego", "state": ego.state}], ego.state, sensors["timer"]["time"], label,
+                                  [{"id": "ego", "damage": sensors["damage"]["damage"]}])
+    bng.close()
 
 
 def collect_images_existing_tests():
@@ -237,7 +235,7 @@ def visualize_results(predictions, false_predictions, images):
 
 
 if __name__ == '__main__':
-    create_tests(1, True)
-    #collect_images_existing_tests()
+    # create_tests(1, True)
+    collect_images_existing_tests()
     #predict_all_images()
 

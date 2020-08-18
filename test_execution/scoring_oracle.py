@@ -14,7 +14,7 @@ class MisbehaviourObserver:
         self.brake_infractions = 0
         self.engine_idle_infractions = 0
         self.score = 0
-        self.second_passed = False
+        self.prev_time = 0
         self.log = {
             "throttle_misbehavior": self.throttle_infractions,
             "rpm_misbehavior": self.rpm_infractions,
@@ -38,7 +38,7 @@ class MisbehaviourObserver:
         """
         return self.score
 
-    def _check_throttle_infraction(self, throttle):
+    def _validate_throttle_infraction(self, throttle):
         """Checks whether the throttle value is over the upper limit.
         :param throttle: Throttle value.
         :return: Void.
@@ -57,7 +57,7 @@ class MisbehaviourObserver:
                         break
                     i += 1
 
-    def _check_brake_infraction(self, brake):
+    def _validate_brake_infraction(self, brake):
         """Checks whether the brake value is over the upper limit.
         :param brake: Brake value.
         :return: Void.
@@ -76,7 +76,7 @@ class MisbehaviourObserver:
                         break
                     i += 1
 
-    def _check_rpm_infraction(self, rpm):
+    def _validate_rpm_infraction(self, rpm):
         """Checks whether the rpm is above the allowed limit and logs the global position of the car.
         :param rpm: Current rpm of the vehicle.
         :return: Void.
@@ -95,7 +95,7 @@ class MisbehaviourObserver:
                         break
                     i += 1
 
-    def _check_accelerate_and_stop_infraction(self, throttle, brake):
+    def _validate_accelerate_and_stop_infraction(self, throttle, brake):
         """Checks for accelerate and stop behaviour of cars. Uses the local cache of this class.
         :param throttle: Throttle value.
         :param brake: Brake value.
@@ -144,7 +144,7 @@ class MisbehaviourObserver:
         self.log["fuel"] = value
         self.log["consumed_fuel"] = 1 - value
 
-    def _check_engine_idle_infraction(self, wheelspeed, running):
+    def _validate_engine_idle_infraction(self, wheelspeed, running, time):
         """Checks if the engine is in idle mode when the speed is 0 after one second.
         :param wheelspeed: Wheel speed of the car.
         :param running: {@code True} is the engine of the car is running, else {@code False}.
@@ -152,26 +152,23 @@ class MisbehaviourObserver:
         """
         velocity = wheelspeed * 3.6
         if velocity < 0.1:
-            if running and self.second_passed:
-                self.second_passed = False
+            if running and time - self.prev_time >= 1:
+                self.prev_time = time
                 self.engine_idle_infractions += 1
                 self.score += 4
-            else:
-                self.second_passed = True
         else:
-            self.second_passed = False
+            self.prev_time = time
 
-    def check_infraction(self, sensors, vehicle_state):
+    def validate_infraction(self, sensors, time):
         """Checks for faulty behaviors of a car at the current state and logs it.
+        :param time: Simulation time.
         :param sensors: Sensors of a car. Only the electrics sensor is needed.
-        :param vehicle_state: Vehicle state information in the simulation.
         :return: Void.
         """
         electrics = sensors['electrics']['values']
-        self._check_accelerate_and_stop_infraction(electrics['throttle'], electrics['brake'])
-        self._check_brake_infraction(electrics['brake'])
-        self._check_engine_idle_infraction(electrics['wheelspeed'], electrics['running'])
-        self._check_rpm_infraction(electrics['rpmTacho'])
-        self._check_throttle_infraction(electrics['throttle'])
+        self._validate_accelerate_and_stop_infraction(electrics['throttle'], electrics['brake'])
+        self._validate_brake_infraction(electrics['brake'])
+        self._validate_engine_idle_infraction(electrics['wheelspeed'], electrics['running'], time)
+        self._validate_rpm_infraction(electrics['rpmTacho'])
+        self._validate_throttle_infraction(electrics['throttle'])
         self.set_fuel_value(electrics['fuel'])
-

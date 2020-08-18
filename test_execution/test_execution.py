@@ -32,9 +32,8 @@ def run_test_case(converter, dbc, dbe):
     while oracle.state == TestCaseState.OK:
         ego.update_vehicle()
         sensors = bng.poll_sensors(ego)
-        observer.check_infraction(sensors, ego.state)
+        observer.validate_infraction(sensors, sensors["timer"]["time"])
         label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state)
         oracle.validate_test_case([{"id": "ego", "state": ego.state}], ego.state, sensors["timer"]["time"], label,
                                   [{"id": "ego", "damage": sensors["damage"]["damage"]}])
-        sleep(1)
     bng.close()
