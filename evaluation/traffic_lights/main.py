@@ -1,4 +1,4 @@
-from time import time
+from time import time, sleep
 from beamngpy import BeamNGpy
 from beamngpy.sensors import Electrics, Camera, Timer, Damage
 from termcolor import colored
@@ -80,6 +80,7 @@ def collect_images(destination_path):
     bng = beamng.open()
     bng.load_scenario(converter.scenario)
     bng.start_scenario()
+    sleep(2)
     while oracle.state == TestCaseState.OK:
         sensors = bng.poll_sensors(ego)
         ego.update_vehicle()
@@ -237,5 +238,5 @@ def visualize_results(predictions, false_predictions, images):
 if __name__ == '__main__':
     # create_tests(1, True)
     collect_images_existing_tests()
-    #predict_all_images()
+    predict_all_images()
 

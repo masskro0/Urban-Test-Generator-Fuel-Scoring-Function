@@ -1666,7 +1666,7 @@ class FuelConsumptionTestGenerator:
 
         # Update success point.
         individual["success_point"] = {"position": individual.get("lanes")[-1].get("control_points")[-1],
-                                       "tolerance": 3}
+                                       "tolerance": 10}
 
         # Update initial states of vehicles.
         for participant in individual.get("participants"):

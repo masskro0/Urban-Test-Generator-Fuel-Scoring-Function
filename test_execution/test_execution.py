@@ -37,3 +37,4 @@ def run_test_case(converter, dbc, dbe):
         oracle.validate_test_case([{"id": "ego", "state": ego.state}], ego.state, sensors["timer"]["time"], label,
                                   [{"id": "ego", "damage": sensors["damage"]["damage"]}])
     bng.close()
+    return observer.get_results()

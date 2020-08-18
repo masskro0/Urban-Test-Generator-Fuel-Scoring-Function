@@ -16,13 +16,14 @@ class MisbehaviourObserver:
         self.score = 0
         self.prev_time = 0
         self.log = {
-            "throttle_misbehavior": self.throttle_infractions,
-            "rpm_misbehavior": self.rpm_infractions,
+            "throttle_infractions": self.throttle_infractions,
+            "rpm_infractions": self.rpm_infractions,
             "fuel": None,
             "consumed_fuel": None,
-            "accelerate_and_stop_misbehavior": self.accelerate_and_stop_infractions,
-            "brake_misbehavior": self.brake_infractions,
-            "engine_idle_misbehavior": self.engine_idle_infractions
+            "accelerate_and_stop_infractions": self.accelerate_and_stop_infractions,
+            "brake_infractions": self.brake_infractions,
+            "engine_idle_infractions": self.engine_idle_infractions,
+            "score": self.score
         }
         self.cache = {"last_actions": list(), "values": list()}
 

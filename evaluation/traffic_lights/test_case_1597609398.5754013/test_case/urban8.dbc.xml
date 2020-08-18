@@ -198,7 +198,7 @@
         </participant>
     </participants>
     <success>
-        <scPosition participant="ego" x="97" y="-150" tolerance="3" />
+        <scPosition participant="ego" x="97" y="-150" tolerance="10" />
     </success>
     <failure>
         <scDamage participant="ego" />

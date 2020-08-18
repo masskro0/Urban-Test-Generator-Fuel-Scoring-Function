@@ -53,12 +53,12 @@ class TrafficLightLabel:
                     self.label = "yellow"
             elif self.traffic_triggers_pos is not None:
                 distance_trigger = euclidean(self.traffic_triggers_pos, (ego_state["pos"][0], ego_state["pos"][1]))
-                if distance_trigger > self.tolerance * self.multiplicator:
+                if distance_trigger > self.tolerance * self.multiplicator and self.time_entry == 0:
                     self.label = self.init_state
                 else:
                     if self.init_state == "red":
                         if self.tolerance * self.multiplicator - 4.5 < distance_trigger \
-                                < self.tolerance * self.multiplicator:
+                                < self.tolerance * self.multiplicator and self.time_entry < 3:
                             if not self.entered:
                                 self.label = "yellow-red"
                                 self.entered = True
@@ -76,9 +76,7 @@ class TrafficLightLabel:
                             self.prev_time = time
                             if 18 >= distance_trigger >= 16.1 or 1.1 <= self.time_entry < 1.5:
                                 return None
-                            if self.time_entry >= 1.4:
-                                self.label = "green"
-                            elif self.time_entry >= 3.5:
+                            if self.time_entry >= 3:
                                 self.prev_time = 0
                                 self.time_entry = 0
                                 self.trigger_index += 1
@@ -94,6 +92,8 @@ class TrafficLightLabel:
                                 self.multiplicator = 15 if self.init_state is None or self.init_state == "green" \
                                     else 9
                                 self.label = self.init_state
+                            elif self.time_entry >= 1.4:
+                                self.label = "green"
                     else:
                         if 26 <= distance_trigger <= 34:
                             if distance_trigger <= 30:
@@ -105,7 +105,7 @@ class TrafficLightLabel:
                                     self.time_entry += time - self.prev_time
                                     self.prev_time = time
                             return None
-                        elif 8 < distance_trigger <= 13:
+                        elif 7 < distance_trigger <= 14:
                             return None
                         elif distance_trigger <= 10 and not self.red_entered:
                             self.label = "red"
