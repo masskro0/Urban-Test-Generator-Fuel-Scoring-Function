@@ -695,6 +695,8 @@ class Converter:
         :return:
         """
         triggers = self.dbc_root.find("triggerPoints")
+        if triggers is None:
+            triggers = list()
         trigger_content = ""
         trigger_list = list()
         trigger_points = list()

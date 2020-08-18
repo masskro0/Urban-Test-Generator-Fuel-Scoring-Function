@@ -313,12 +313,8 @@ def calc_speed_waypoints(participants):
                     speed = 8.5
                 elif 110 <= angle < 130 or 230 > angle >= 250:
                     speed = 6
-                elif 90 <= angle < 110 or 250 > angle >= 270:
-                    speed = 3
-                elif angle < 90 or angle > 270:
-                    speed = 2
                 else:
-                    speed = 1
+                    speed = 4
                 waypoints[i-1]["speed"] = 0 if waypoints[i-1].get("speed") == 0 else \
                         (speed + float(waypoints[i-1].get("speed"))) / 2
                 waypoints[i]["speed"] = speed

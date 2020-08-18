@@ -42,7 +42,7 @@ def build_criteria_xml(participants, ego_car, success_points, triggers=None, fil
         dbc.add_car(participant)
     for success_point in success_points:
         dbc.add_success_point(ego_car.get("id"), success_point)
-    dbc.add_failure_conditions(ego_car.get("id"), "offroad")
+    dbc.add_failure_conditions(ego_car.get("id"))
     if triggers is not None:
         dbc.add_trigger_points(triggers)
     save_xml(file_name, dbc.root, "criteria")

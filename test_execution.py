@@ -20,7 +20,6 @@ def run_test_case(scenario):
     ego.attach_sensor('electrics', electrics)
     bng = beamng.open()
     bng.load_scenario(scenario)
-    sleep(1)
     bng.start_scenario()
     observer = MisbehaviourObserver()
     for _ in range(2000):

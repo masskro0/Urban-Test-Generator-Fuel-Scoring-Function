@@ -150,12 +150,10 @@ class DBCBuilder:
         ElementTree.SubElement(self.failure, 'scLane participant="{}" onLane="{}"'
                                .format(participant_id, lane))
 
-    def add_failure_conditions(self, participant_id, lane="offroad"):
+    def add_failure_conditions(self, participant_id):
         """Adds both lane following and damage observation as a test failure condition.
         :param participant_id: participant id (string)
-        :param lane: on which lane should the test fail? (markings, leftLanes, rightLanes, offroad)
         :return: Void
         """
-        or_tag = ElementTree.SubElement(self.failure, "or")
-        ElementTree.SubElement(or_tag, 'scDamage participant="{}"'.format(participant_id))
-        ElementTree.SubElement(or_tag, 'scLane participant="{}" onLane="{}"'.format(participant_id, lane))
+        ElementTree.SubElement(self.failure, 'scDamage participant="{}"'.format(participant_id))
+        ElementTree.SubElement(self.failure, 'scLane participant="{}"'.format(participant_id))

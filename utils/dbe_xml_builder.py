@@ -1,10 +1,9 @@
 """This class builds an environment XML file."""
 
 import xml.etree.ElementTree as ElementTree
-from os import path, remove, getcwd, mkdir
-from os.path import abspath, dirname
+from os import path, remove, mkdir
+from os.path import abspath, dirname, join
 from pathlib import Path
-from shutil import move
 
 
 def indent(elem, level=0):
@@ -28,8 +27,9 @@ def indent(elem, level=0):
             elem.tail = i
 
 
-def save_xml(name, root, xml_type):
+def save_xml(name, root, xml_type, destination_path=None):
     """Creates and saves the XML file, and moves it to the scenario folder.
+    :param destination_path: Path where the XML file should be written to.
     :param xml_type: Environment or criteria.
     :param root: Root of the XML file.
     :param name: Desired name of this file.
@@ -40,23 +40,16 @@ def save_xml(name, root, xml_type):
     indent(root)
     full_name = name + '.dbe.xml' if xml_type == "environment" else name + '.dbc.xml'
 
-    current_path_of_file = Path(getcwd())
-    current_path_of_file = path.realpath(current_path_of_file) + "\\" + full_name
-
-    destination_path = Path(dirname(abspath(__file__))).parent
-    destination_path = path.realpath(destination_path) + "\\scenario"
-
-    tree.write(full_name, encoding="utf-8", xml_declaration=True)
+    if destination_path is None:
+        destination_path = join(Path(dirname(abspath(__file__))).parent, "scenario")
 
     if not path.exists(destination_path):
         mkdir(destination_path)
 
-    # Delete old files with the same name.
-    if path.exists(destination_path + "\\" + full_name):
-        remove(destination_path + "\\" + full_name)
+    if path.exists(join(destination_path, full_name)):
+        remove(join(destination_path, full_name))
 
-    # Move created file to scenario folder.
-    move(current_path_of_file, destination_path)
+    tree.write(join(destination_path, full_name), encoding="utf-8", xml_declaration=True)
 
 
 class DBEBuilder:

@@ -33,7 +33,7 @@ def _add_ego_car(individual):
     :param individual: Individual of the population.
     :return: Void.
     """
-    samples = 57
+    samples = 100
     lanes = individual.get("lanes")
     ego_lanes = individual.get("ego_lanes")
     directions = individual.get("directions")
@@ -462,7 +462,7 @@ def _add_other_participants(individual):
     sl, t = _add_other_0(individual)
     spawn_lanes.extend(sl)
     triggers.extend(t)
-    _add_other_1(individual, spawn_lanes)
+    #_add_other_1(individual, spawn_lanes)
     _add_other_2(individual, triggers)
     individual.setdefault("triggers", []).extend(triggers)
 
@@ -901,7 +901,7 @@ class FuelConsumptionTestGenerator:
                 tries += 1
         if number_of_pieces >= self.MIN_NODES and one_intersection:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
-            return {"lanes": lanes, "success_point": {"position": last_point, "tolerance": 3}, "ego_lanes": ego_lanes,
+            return {"lanes": lanes, "success_point": {"position": last_point, "tolerance": 10}, "ego_lanes": ego_lanes,
                     "obstacles": obstacles, "directions": directions, "triggers": triggers, "tod": random(),
                     "intersection_lanes": intersection_lanes, "actions": actions}
         else:
@@ -1871,6 +1871,7 @@ class FuelConsumptionTestGenerator:
 
 # TODO Desired features:
 #       TODO Crossover
+#       TODO Test oracle
 #       TODO Buggy traffic
 #       TODO Buggy traffic spawn
 #       TODO Right turns are buggy
