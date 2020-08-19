@@ -15,7 +15,14 @@ class MisbehaviourObserver:
         self.engine_idle_infractions = 0
         self.score = 0
         self.prev_time = 0
-        self.log = {
+        self.prev_time_called = 0
+        self.cache = {"last_actions": list(), "values": list()}
+
+    def get_results(self):
+        """Returns the log file with all logged misbehavior actions.
+        :return: log file as a dict.
+        """
+        return {
             "throttle_infractions": self.throttle_infractions,
             "rpm_infractions": self.rpm_infractions,
             "fuel": None,
@@ -25,13 +32,6 @@ class MisbehaviourObserver:
             "engine_idle_infractions": self.engine_idle_infractions,
             "score": self.score
         }
-        self.cache = {"last_actions": list(), "values": list()}
-
-    def get_results(self):
-        """Returns the log file with all logged misbehavior actions.
-        :return: log file as a dict.
-        """
-        return self.log
 
     def get_score(self):
         """Returns the score.
@@ -166,10 +166,12 @@ class MisbehaviourObserver:
         :param sensors: Sensors of a car. Only the electrics sensor is needed.
         :return: Void.
         """
-        electrics = sensors['electrics']['values']
-        self._validate_accelerate_and_stop_infraction(electrics['throttle'], electrics['brake'])
-        self._validate_brake_infraction(electrics['brake'])
-        self._validate_engine_idle_infraction(electrics['wheelspeed'], electrics['running'], time)
-        self._validate_rpm_infraction(electrics['rpmTacho'])
-        self._validate_throttle_infraction(electrics['throttle'])
-        self.set_fuel_value(electrics['fuel'])
+        if time - self.prev_time_called >= 1:
+            electrics = sensors['electrics']['values']
+            self._validate_accelerate_and_stop_infraction(electrics['throttle'], electrics['brake'])
+            self._validate_brake_infraction(electrics['brake'])
+            self._validate_engine_idle_infraction(electrics['wheelspeed'], electrics['running'], time)
+            self._validate_rpm_infraction(electrics['rpmTacho'])
+            self._validate_throttle_infraction(electrics['throttle'])
+            self.set_fuel_value(electrics['fuel'])
+            self.prev_time_called = time

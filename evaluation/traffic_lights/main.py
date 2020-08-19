@@ -12,6 +12,7 @@ from numpy import arange
 
 from test_execution.test_oracle import TrafficLightLabel, TestOracle, TestCaseState
 from utils.utility_functions import get_angle
+from utils.plotter import plot_road_traffic_light
 from fuel_consumption_test_generator import FuelConsumptionTestGenerator
 from xml_converter.xml_to_bng_files import convert_test
 
@@ -124,18 +125,30 @@ def predict_all_images():
     correct = false = 0
     green_false = yellow_false = red_false = yellow_red_false = off_false = 0
     green_images = yellow_images = red_images = yellow_red_images = off_images = 0
+    test_cases_status = list()
+    limit_false_predictions = 5
 
     folders = glob("test_case_*")
     for folder in folders:
+        test_cases = glob(join(folder, "test_case", "*"))
+        road_network_dir = join(folder, "road_network")
+        if not exists(road_network_dir):
+            mkdir(road_network_dir)
+        plot_road_traffic_light(test_cases[0], test_cases[1], show=True, save_path=road_network_dir)
+        false_predictions = 0
+        bbox_path = abspath(join(folder, "bounding_boxes"))
+        if not exists(bbox_path):
+            mkdir(bbox_path)
         image_folder = join(folder, "images", "*")
         images = glob(image_folder)
         for image in images:
-            prediction = predict(abspath(image), config, yolo.model)
+            prediction = predict(abspath(image), config, yolo.model, bbox_path)
             ground_truth = image.split("\\")[-1].split("_")[0]
             if prediction == ground_truth:
                 correct += 1
             else:
                 false += 1
+                false_predictions += 1
             if ground_truth == "green":
                 green_images += 1
                 if prediction != ground_truth:
@@ -156,6 +169,10 @@ def predict_all_images():
                 off_images += 1
                 if prediction != ground_truth:
                     off_false += 1
+        if false_predictions < limit_false_predictions:
+            test_cases_status.append({"name": folder, "status": "success"})
+        else:
+            test_cases_status.append({"name": folder, "status": "fail"})
     print(colored("\nCorrect predictions: {}".format(correct), "green", attrs=['bold']))
     print(colored("False predictions: {}\n".format(false), "red", attrs=['bold']))
     print(colored("False green lights predictions: {}".format(green_false), "red", attrs=['bold']))
@@ -167,7 +184,12 @@ def predict_all_images():
     print(colored("Images with yellow traffic lights: {}".format(yellow_images), "grey", attrs=['bold']))
     print(colored("Images with red traffic lights: {}".format(red_images), "grey", attrs=['bold']))
     print(colored("Images with yellow-red traffic lights: {}".format(yellow_red_images), "grey", attrs=['bold']))
-    print(colored("Images with disabled traffic lights: {}".format(off_images), "grey", attrs=['bold']))
+    print(colored("Images with disabled traffic lights: {}\n".format(off_images), "grey", attrs=['bold']))
+    for tc in test_cases_status:
+        if tc.get("status") == "success":
+            print(colored("Test case \"{}\" succeeded.".format(tc.get("name")), "green", attrs=['bold']))
+        else:
+            print(colored("Test case \"{}\" failed.".format(tc.get("name")), "red", attrs=['bold']))
 
     predictions = [correct, false]
     false_predictions = [green_false, yellow_false, red_false, yellow_red_false, off_false]

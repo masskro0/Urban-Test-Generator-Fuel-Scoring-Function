@@ -1,6 +1,7 @@
 """This file offers several plotting methods to visualize functions or roads."""
 
 import matplotlib.pyplot as plt
+import xml.etree.ElementTree as Etree
 
 
 def plotter(lanes):
@@ -15,7 +16,7 @@ def plotter(lanes):
         for point in control_points:
             x.append(point[0])
             y.append(point[1])
-        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width")/6)
+        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width") / 6)
     plt.axis('scaled')
     plt.title('Road overview')
     plt.show()
@@ -70,7 +71,49 @@ def plot_splined_list(splined_list):
         for point in lane:
             x.append(point[0])
             y.append(point[1])
-        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width")/2)
+        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width") / 2)
     plt.axis('scaled')
     plt.title('Road overview')
     plt.show()
+
+
+def plot_road_traffic_light(dbc, dbe, save_path=None, show=False):
+    dbe_root = Etree.parse(dbe).getroot()
+    dbc_root = Etree.parse(dbc).getroot()
+    lanes = dbe_root.findall("lanes/lane")
+    for lane in lanes:
+        x = list()
+        y = list()
+        segments = lane.findall("laneSegment")
+        width = 10
+        for seg in segments:
+            width = seg.attrib.get("width")
+            x.append(float(seg.attrib.get("x")))
+            y.append(float(seg.attrib.get("y")))
+        plt.plot(x, y, '-og', markersize=1, linewidth=float(float(width)), label="Road")
+    obstacles = dbe_root.find("obstacles")
+    for obs in obstacles:
+        if obs.tag.startswith("trafficlight") or obs.tag.endswith("sign"):
+            plt.plot(float(obs.attrib.get("x")), float(obs.attrib.get("y")), markersize=12, marker='.', color="peru",
+                     label="Traffic Sign/Light")
+    participants = dbc_root.findall("participants/participant")
+    for par in participants:
+        if par.attrib.get("id") == "ego":
+            init_state = par.find("initialState").attrib
+            plt.plot(float(init_state.get("x")), float(init_state.get("y")), markersize=12, marker='>', color="r",
+                     label="Ego Car")
+    success_points = dbc_root.findall("success/scPosition")
+    for sp in success_points:
+        if sp.attrib.get("participant") == "ego":
+            plt.plot(float(sp.attrib.get("x")), float(sp.attrib.get("y")), markersize=12, marker='.', color="b",
+                     label="Success Point")
+    tod = abs((float(dbe_root.find("timeOfDay").text) - 0.5) * 2)
+    plt.gca().set_facecolor(str(tod))
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys(), loc="best")
+    plt.title('Road overview')
+    if show:
+        plt.show()
+    if save_path is not None:
+        plt.savefig(save_path, bbox_inches='tight')

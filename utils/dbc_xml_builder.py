@@ -115,10 +115,10 @@ class DBCBuilder:
             for waypoint in waypoints:
                 position = waypoint.get("position")
                 ElementTree.SubElement(movement, 'waypoint x="{}" y="{}" tolerance="{}" lane="{}" speed="{}"'
-                                                  .format('{0:.10f}'.format(round(position[0], 2)),
-                                                          '{0:.10f}'.format(round(position[1], 2)),
-                                                          str(waypoint.get("tolerance")), waypoint.get("lane"),
-                                                          str(waypoint.get("speed"))))
+                                       .format('{0:.10f}'.format(round(position[0], 2)),
+                                               '{0:.10f}'.format(round(position[1], 2)),
+                                               str(waypoint.get("tolerance")), waypoint.get("lane"),
+                                               str(waypoint.get("speed"))))
 
     def add_success_point(self, participant_id, success_point):
         """Point when reached a test was successfully finished.

@@ -12,6 +12,7 @@ class TrafficLightLabel:
         self.entered = False
         self.red_entered = False
         self.at_intersection = False
+        self.trigger_entered = False
         self.time_entry = 0
         self.prev_time = 0
         self.traffic_light_list = traffic_light_list  # converter.get_traffic_lights_position()
@@ -96,7 +97,7 @@ class TrafficLightLabel:
                             elif self.time_entry >= 1.4:
                                 self.label = "green"
                     else:
-                        if 26 <= distance_trigger <= 34:
+                        if 26 <= distance_trigger <= 34 and not self.trigger_entered:
                             if distance_trigger <= 30:
                                 if not self.entered:
                                     self.label = "yellow"
@@ -106,13 +107,39 @@ class TrafficLightLabel:
                                     self.time_entry += time - self.prev_time
                                     self.prev_time = time
                             return None
-                        elif 7 < distance_trigger <= 14:
+                        elif 7 < distance_trigger <= 12:
+                            self.trigger_entered = True
+                            if distance_trigger <= 10:
+                                if not self.red_entered:
+                                    self.label = "red"
+                                    self.red_entered = True
+                                    self.time_entry = 0
+                                    self.prev_time = time
+                                else:
+                                    self.time_entry += time - self.prev_time
+                                    self.prev_time = time
+                                    if 6.6 <= self.time_entry <= 7.4 or 7.70 <= self.time_entry <= 8.3:
+                                        return None
+                                    if self.time_entry >= 8:
+                                        self.label = "green"
+                                        self.prev_time = 0
+                                        self.time_entry = 0
+                                        self.trigger_index += 1
+                                        self.entered = False
+                                        self.red_entered = False
+                                        self.trigger_entered = False
+                                        self.traffic_triggers_pos = None if self.trigger_index >= len(
+                                            self.traffic_triggers) else \
+                                            (float(self.traffic_triggers[self.trigger_index]["x"]),
+                                             float(self.traffic_triggers[self.trigger_index]["y"]))
+                                        self.init_state = None if self.trigger_index >= len(self.traffic_triggers) \
+                                            else self.traffic_triggers[self.trigger_index].get("initState")
+                                        self.tolerance = None if self.trigger_index >= len(self.traffic_triggers) \
+                                            else float(self.traffic_triggers[self.trigger_index].get("tolerance"))
+                                        self.multiplicator = 15 if self.init_state == "green" else 9
+                                    elif self.time_entry >= 7:
+                                        self.label = "yellow-red"
                             return None
-                        elif distance_trigger <= 10 and not self.red_entered:
-                            self.label = "red"
-                            self.red_entered = True
-                            self.time_entry = 0
-                            self.prev_time = time
                         elif distance_trigger <= 30:
                             if not self.entered:
                                 self.label = "yellow"
@@ -130,6 +157,7 @@ class TrafficLightLabel:
                                     self.trigger_index += 1
                                     self.entered = False
                                     self.red_entered = False
+                                    self.trigger_entered = False
                                     self.traffic_triggers_pos = None if self.trigger_index >= len(
                                         self.traffic_triggers) else \
                                         (float(self.traffic_triggers[self.trigger_index]["x"]),

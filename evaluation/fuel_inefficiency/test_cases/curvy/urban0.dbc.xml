@@ -90,7 +90,8 @@
                 <waypoint x="287.4500000000" y="29.6300000000" tolerance="2" lane="0" speed="13.8" />
                 <waypoint x="292.7700000000" y="13.7700000000" tolerance="2" lane="0" speed="13.8" />
                 <waypoint x="299.2500000000" y="-5.6700000000" tolerance="2" lane="0" speed="13.8" />
-                <waypoint x="306.8800000000" y="-28.5600000000" tolerance="2" lane="0" speed="0" />
+                <waypoint x="319.2500000000" y="-59.6700000000" tolerance="2" lane="0" speed="13.8" />
+                <waypoint x="320.8800000000" y="-60.5600000000" tolerance="2" lane="0" speed="0" />
             </movement>
         </participant>
     </participants>
