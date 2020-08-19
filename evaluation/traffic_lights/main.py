@@ -134,7 +134,7 @@ def predict_all_images():
         road_network_dir = join(folder, "road_network")
         if not exists(road_network_dir):
             mkdir(road_network_dir)
-        plot_road_traffic_light(test_cases[0], test_cases[1], show=True, save_path=road_network_dir)
+        plot_road_traffic_light(test_cases[0], test_cases[1], show=False, save_path=road_network_dir)
         false_predictions = 0
         bbox_path = abspath(join(folder, "bounding_boxes"))
         if not exists(bbox_path):
@@ -198,11 +198,12 @@ def predict_all_images():
 
 
 def visualize_results(predictions, false_predictions, images):
+    plt.clf()
     if not exists("result_pictures"):
         mkdir("result_pictures")
     possibilities = ["Correct predictions", "False predictions"]
     y_pos = arange(len(possibilities))
-    barlist = plt.bar(y_pos, predictions, width=0.8)
+    barlist = plt.bar(y_pos, predictions, width=0.5)
     barlist[0].set_color("g")
     barlist[1].set_color("r")
     plt.xticks(y_pos, possibilities)
@@ -210,55 +211,30 @@ def visualize_results(predictions, false_predictions, images):
     ax.set_ylabel('Number predictions')
     ax.set_title('Prediction of traffic light color')
     plt.savefig(join("result_pictures", 'predictions_bar.png'), bbox_inches='tight')
-    plt.show()
-    explode = (0, 0)
-    fig1, ax1 = plt.subplots()
-    ax1.pie(predictions, explode=explode, labels=possibilities, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    ax1.axis('equal')
-    ax1.set_title('Prediction of traffic light color')
-    plt.savefig(join("result_pictures", 'predictions_pie.png'), bbox_inches='tight')
-    plt.show()
 
+    plt.clf()
+    correct_predictions = list()
+    i = 0
+    while i < len(images):
+        correct_predictions.append(images[i] - false_predictions[i])
+        i += 1
     possibilities = ["Green", "Yellow", "Red", "Yellow-Red", "Off"]
-    y_pos = arange(len(possibilities))
-    plt.bar(y_pos, false_predictions, width=0.4)
-    plt.xticks(y_pos, possibilities)
-    ax = plt.gca()
-    ax.set_ylabel('Number false predictions')
-    ax.set_title('Number of false predictions for each traffic light color')
-    plt.savefig(join("result_pictures", 'number_false_predictions_bar.png'), bbox_inches='tight')
-    plt.show()
-    explode = (0, 0, 0, 0, 0)
-    fig1, ax1 = plt.subplots()
-    ax1.pie(false_predictions, explode=explode, labels=possibilities, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    ax1.axis('equal')
-    ax1.set_title('Number of false predictions for each traffic light color')
-    plt.savefig(join("result_pictures", 'number_false_predictions_pie.png'), bbox_inches='tight')
-    plt.show()
-
-    possibilities = ["Green", "Yellow", "Red", "Yellow-Red", "Off"]
-    y_pos = arange(len(possibilities))
-    plt.bar(y_pos, images, width=0.4)
-    plt.xticks(y_pos, possibilities)
-    ax = plt.gca()
-    ax.set_ylabel('Number of images')
-    ax.set_title('Number of images for each traffic light color')
-    plt.savefig(join("result_pictures", 'number_images_bar.png'), bbox_inches='tight')
-    plt.show()
-    explode = (0, 0, 0, 0, 0)
-    fig1, ax1 = plt.subplots()
-    ax1.pie(images, explode=explode, labels=possibilities, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    ax1.axis('equal')
-    ax1.set_title('Number of images for each traffic light color')
-    plt.savefig(join("result_pictures", 'number_images_pie.png'), bbox_inches='tight')
-    plt.show()
+    ind = arange(len(images))
+    width = 0.4
+    p1 = plt.bar(ind, correct_predictions, width)
+    p2 = plt.bar(ind, false_predictions, width, bottom=correct_predictions)
+    for ax in p1:
+        ax.set_color("g")
+    for ax in p2:
+        ax.set_color("r")
+    plt.ylabel('Predictions')
+    plt.title('Correct and false predictions for each traffic light color')
+    plt.xticks(ind, possibilities)
+    plt.legend((p1[0], p2[0]), ('Correct', 'False'))
+    plt.savefig(join("result_pictures", 'predictions_per_light_bar.png'), bbox_inches='tight')
 
 
 if __name__ == '__main__':
     # create_tests(1, True)
-    collect_images_existing_tests()
+    # collect_images_existing_tests()
     predict_all_images()
-

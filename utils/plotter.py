@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as Etree
+from os.path import join
 
 
 def plotter(lanes):
@@ -116,4 +117,5 @@ def plot_road_traffic_light(dbc, dbe, save_path=None, show=False):
     if show:
         plt.show()
     if save_path is not None:
-        plt.savefig(save_path, bbox_inches='tight')
+        plt.savefig(join(save_path, "road_network.png"), bbox_inches='tight')
+    plt.clf()
