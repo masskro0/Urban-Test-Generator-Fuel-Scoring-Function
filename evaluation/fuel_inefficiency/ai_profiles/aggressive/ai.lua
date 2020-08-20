@@ -163,7 +163,7 @@ local function resetSpeedModeAndValue()
 end
 
 local function setAggressionInternal(v)
-  aggression = 2
+  aggression = 1.35
   baseTurnAccel = 2 * g
 end
 
@@ -222,6 +222,7 @@ local function updatePlayerData()
 end
 
 local function driveCar(steering, throttle, brake, parkingbrake)
+  steering = steering * 2
   input.event("steering", -steering, 1)
   input.event("throttle", throttle, 2)
   input.event("brake", brake, 2)

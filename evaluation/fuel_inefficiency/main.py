@@ -10,7 +10,8 @@ from test_execution.test_execution import run_test_case, run_test_case_role_mode
 from xml_converter.xml_to_bng_files import convert_test
 
 
-def visualize_results(results, name):
+def visualize_results(results):
+    print(results)
     # TODO Bar plot for consumed fuel per test case.
     if not exists("result_pictures"):
         mkdir("result_pictures")
@@ -55,48 +56,33 @@ def visualize_results(results, name):
 
 
 def main():
+    repeat = 10
     test_cases = glob(join("test_cases", "*"))
     assert exists(ENV["BNG_HOME"]), "Please set your BNG_HOME variable to BeamNG's trunk folder."
     ai_path = join(ENV["BNG_HOME"], "lua", "vehicle", "ai.lua")
+    results = list()
     for test_case in test_cases:
-        #if test_case.endswith("curvy"):
-        #    continue
-        results = list()
+        test_case_name = test_case.split("\\")[-1]
         files = glob(join(test_case, "*.xml"))
         converter = convert_test(files[0], files[1])
         profiles = glob(join("ai_profiles", "*"))
         for profile in profiles:
-            if not profile.endswith("role_model"):
-                continue
+            i = 0
             copyfile(join(profile, "ai.lua"), ai_path)
             profile_name = profile.split("\\")[-1]
             if profile_name == "role_model":
-                results.append({"profile": profile_name, "results": run_test_case_role_model(converter, files[0], files[1])})
+                while i < repeat:
+                    results.append({"profile": profile_name, "test_case": test_case_name,
+                                    "results": run_test_case_role_model(converter, files[0], files[1])})
+                    i += 1
             else:
-                results.append({"profile": profile_name, "results": run_test_case(converter, files[0], files[1])})
-        test_case_name = test_case.split("\\")[-1]
-        visualize_results(results, test_case_name)
+                while i < repeat:
+                    results.append({"profile": profile_name, "test_case": test_case_name,
+                                    "results": run_test_case(converter, files[0], files[1])})
+                    i += 1
+    visualize_results(results)
     copyfile(join("ai_profiles", "default", "ai.lua"), ai_path)
 
 
 if __name__ == '__main__':
     main()
-    """
-    results = [{'profile': 'aggressive', 'results': {'throttle_infractions': 8, 'rpm_infractions': 56, 'fuel': None, 'consumed_fuel': None, 'accelerate_and_stop_infractions': 3, 'brake_infractions': 5, 'engine_idle_infractions': 0, 'score': 522}}, {'profile': 'default', 'results': {'throttle_infractions': 7, 'rpm_infractions': 56, 'fuel': None,
-                                                         'consumed_fuel': None, 'accelerate_and_stop_infractions': 2,
-                                                         'brake_infractions': 4, 'engine_idle_infractions': 0,
-                                                         'score': 482.7186198532869}}, {'profile': 'role_model',
-                                                                                        'results': {
-                                                                                            'throttle_infractions': 13,
-                                                                                            'rpm_infractions': 53,
-                                                                                            'fuel': None,
-                                                                                            'consumed_fuel': None,
-                                                                                            'accelerate_and_stop_infractions': 5,
-                                                                                            'brake_infractions': 6,
-                                                                                            'engine_idle_infractions': 0,
-                                                                                            'score': 551.3503740260464}}]
-    name = "curvy"
-    # results =
-    # name = "intersection"
-    visualize_results(results, name)
-    """
