@@ -36,5 +36,6 @@ def run_test_case(converter, dbc, dbe):
         label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state)
         oracle.validate_test_case([{"id": "ego", "state": ego.state}], ego.state, sensors["timer"]["time"], label,
                                   [{"id": "ego", "damage": sensors["damage"]["damage"]}])
+        sleep(1)
     bng.close()
     return observer.get_results()

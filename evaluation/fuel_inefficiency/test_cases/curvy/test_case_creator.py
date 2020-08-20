@@ -10,8 +10,7 @@ def main():
     dbe = DBEBuilder()
     dbe.set_tod(0)
     lanes = [{"width": 10, "left_lanes": 1, "right_lanes": 1}]
-    control_points = [(1, 0), (20, 30), (40, 60), (60, 0), (80, -60), (100, 0), (120, 60), (140, 0), (160, -60),
-                      (180, 0), (200, 60), (220, 0), (240, -60), (260, 0), (280, 60), (300, 0), (320, -60)]
+    control_points = [(1, 0), (35, 60), (70, -20), (115, 30), (160, -70), (185, 40)]
     control_points = b_spline(control_points, samples=150)
     lanes[0]["control_points"] = control_points
     dbe.add_lanes(lanes)
@@ -29,7 +28,7 @@ def main():
     ego = {"id": "ego", "init_state": {"position": (4, 2), "orientation": 60}, "model": "etk800", "color": "White",
            "waypoints": ego.get("waypoints")}
     dbc.add_car(ego)
-    dbc.add_success_point("ego", {"position": control_points[-1], "tolerance": 6})
+    dbc.add_success_point("ego", {"position": ego["waypoints"][-2].get("position"), "tolerance": 6})
     dbc.add_failure_conditions("ego")
     save_xml(file_name, dbc.root, "criteria", abspath(dirname(__file__)))
 

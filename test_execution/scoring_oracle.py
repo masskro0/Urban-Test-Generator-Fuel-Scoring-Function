@@ -131,6 +131,7 @@ class MisbehaviourObserver:
                     infraction_score += values[-(i+1)]
                     i += 1
                 infraction_score *= 10
+                infraction_score = round(infraction_score)
                 if infraction_score > score_limit:
                     infraction_score = score_limit
                 self.score += infraction_score

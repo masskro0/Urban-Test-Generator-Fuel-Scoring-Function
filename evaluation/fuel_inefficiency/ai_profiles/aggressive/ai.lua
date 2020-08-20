@@ -25,7 +25,7 @@ M.debugMode = 'off'
 M.targetObjectID = -1
 M.speedMode = nil
 M.routeSpeed = nil
-M.extAggression = 1
+M.extAggression = 2
 M.cutOffDrivability = 0
 M.driveInLaneFlag = 'off'
 
@@ -37,9 +37,9 @@ local gravityVec = gravityDir * g
 
 -- [[ PERFORMANCE RELATED ]] --
 local maxExternalAggression = 2
-local initialAggression = 1 / maxExternalAggression
-local initialAggAccCoeff = 0.8
-local maxAggAccCoeff = 1.3
+local initialAggression = 2
+local initialAggAccCoeff = 2
+local maxAggAccCoeff = 2
 local aggression = initialAggression
 
 local accCoeffGrad = (maxAggAccCoeff - initialAggAccCoeff) / (1 - initialAggression)
@@ -47,7 +47,7 @@ local accCoeffYintercept = initialAggAccCoeff - accCoeffGrad * initialAggression
 
 local aggressionMode
 
-local baseTurnAccel = min(0.5, aggression) * g
+local baseTurnAccel = 2 * g
 local maxTottalAccel = g
 
 local learned_turn_accel
@@ -163,12 +163,12 @@ local function resetSpeedModeAndValue()
 end
 
 local function setAggressionInternal(v)
-  aggression = min(max((v and v * M.extAggression) or initialAggression * M.extAggression, 0.15), 1)
-  baseTurnAccel = min(0.5, aggression) * g
+  aggression = 2
+  baseTurnAccel = 2 * g
 end
 
 local function setAggressionExternal(v)
-  M.extAggression = v or M.extAggression
+  M.extAggression = 2 or M.extAggression
   setAggressionInternal()
 end
 
@@ -266,7 +266,7 @@ local function aimToTarget()
       else
         pbrake = 0
       end
-      driveCar(dirDiff, 0.5, 0, pbrake)
+      driveCar(dirDiff, 0.7, 0, pbrake)
     else
       if aiSpeed > 4 and aiSpeed < 30 and abs(dirDiff) > 0.8 and brake == 0 or (aiSpeed < 0.15 and targetSpeed and targetSpeed <= 1e-5) then
         pbrake = 1
@@ -1217,9 +1217,9 @@ local function updateGFX(dt)
       updatePlayerData()
       if player ~= nil then
         if (aiPos - player.pos):dot(aiDirVec) > 0 then
-          setAggressionInternal(max(min(0.1 + max((150 - (player.pos - aiPos):length())/150, 0), 1), 0.5))
+          setAggressionInternal(2)
         else
-          setAggressionInternal(0.95)
+          setAggressionInternal(2)
         end
       end
     end
