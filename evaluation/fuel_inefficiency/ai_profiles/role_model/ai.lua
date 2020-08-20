@@ -36,10 +36,10 @@ local gravityVec = gravityDir * g
 ----------------------------------
 
 -- [[ PERFORMANCE RELATED ]] --
-local maxExternalAggression = 2
-local initialAggression = 1 / maxExternalAggression
-local initialAggAccCoeff = 0.8
-local maxAggAccCoeff = 1.3
+local maxExternalAggression = 1
+local initialAggression = 0.4
+local initialAggAccCoeff = 0.5
+local maxAggAccCoeff = 1
 local aggression = initialAggression
 
 local accCoeffGrad = (maxAggAccCoeff - initialAggAccCoeff) / (1 - initialAggression)
@@ -71,7 +71,7 @@ local aiLength -- this comes back zero at this point
 
 local forces = {}
 
-local throttle = 1
+local throttle = 0.5
 local brake = 0
 local threewayturn = 0
 local lastCommand = {steering = 0, throttle = 0, brake = 0, parkingbrake = 0}
@@ -1358,14 +1358,14 @@ local function updateGFX(dt)
       if internalState == 'tail' then
         internalState = 'onroad'
         targetPos = player.pos
-        throttle = 1
+        throttle = 0.5
         brake = 0
         currentRoute = nil
         aimToTarget()
         return
       elseif internalState == 'offroad' then
         targetPos = player.pos
-        throttle = 1
+        throttle = 0.5
         brake = 0
         targetSpeed = math.huge
         aimToTarget()
@@ -1398,7 +1398,7 @@ local function updateGFX(dt)
     return
   end
 
-  throttle = 1
+  throttle = 0.5
   brake = 0
   if currentRoute then
     targetSpeed = targetSpeedSmoother:get(currentRoute.plan[1].speed, dt)
@@ -1452,12 +1452,12 @@ local function updateGFX(dt)
             * min(square(sqrt(aiSpeed/(targetSpeed + 1e-30)) - square(trnAccRatio)) , 1) -- TODO: I think this should be vehicle dependent
             * max(min(2 - (aiSpeed - wheelSpeed) * 0.2, 1), 0)
 
-    throttle = max(0, min((targetSpeed - aiSpeed) * 2 * square(aggression), 1))
+    throttle = max(0, min((targetSpeed - aiSpeed) * 2 * square(aggression), 0.5))
 
     -- see https://www.desmos.com/calculator/e24ebyxrbr for the second term in the calculation below
     throttle = ((throttle > 0.1 * (1 - aggression)) and throttle or 0)
                 * min(square(1 - square(trnAccRatio)) , 1) -- TODO: I think this should be vehicle dependent
-                * min(max((7 - (wheelSpeed - aiSpeed)) / 6.5, 0), 1)
+                * min(max((7 - (wheelSpeed - aiSpeed)) / 6.5, 0), 0.5)
   end
 
   -- TODO: this still runs if there is no currentPlan, but raises error if there is no targetSpeed

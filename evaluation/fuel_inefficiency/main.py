@@ -6,7 +6,7 @@ from shutil import copyfile
 import matplotlib.pyplot as plt
 from numpy import arange
 
-from test_execution.test_execution import run_test_case
+from test_execution.test_execution import run_test_case, run_test_case_role_model
 from xml_converter.xml_to_bng_files import convert_test
 
 
@@ -55,7 +55,6 @@ def visualize_results(results, name):
 
 
 def main():
-    # TODO create profiles
     test_cases = glob(join("test_cases", "*"))
     assert exists(ENV["BNG_HOME"]), "Please set your BNG_HOME variable to BeamNG's trunk folder."
     ai_path = join(ENV["BNG_HOME"], "lua", "vehicle", "ai.lua")
@@ -67,9 +66,14 @@ def main():
         converter = convert_test(files[0], files[1])
         profiles = glob(join("ai_profiles", "*"))
         for profile in profiles:
+            if not profile.endswith("role_model"):
+                continue
             copyfile(join(profile, "ai.lua"), ai_path)
             profile_name = profile.split("\\")[-1]
-            results.append({"profile": profile_name, "results": run_test_case(converter, files[0], files[1])})
+            if profile_name == "role_model":
+                results.append({"profile": profile_name, "results": run_test_case_role_model(converter, files[0], files[1])})
+            else:
+                results.append({"profile": profile_name, "results": run_test_case(converter, files[0], files[1])})
         test_case_name = test_case.split("\\")[-1]
         visualize_results(results, test_case_name)
     copyfile(join("ai_profiles", "default", "ai.lua"), ai_path)

@@ -82,7 +82,7 @@ class MisbehaviourObserver:
         :param rpm: Current rpm of the vehicle.
         :return: Void.
         """
-        upper_limit = self.engine_type.get_rpm_shifting_sweetspots()['upper_limit']
+        upper_limit = self.engine_type.get_rpm_shifting_sweetspots()['upper_limit'] + 100
         if rpm > upper_limit:
             self.rpm_infractions += 1
             increase = 180
