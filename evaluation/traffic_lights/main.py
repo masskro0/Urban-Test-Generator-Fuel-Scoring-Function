@@ -126,7 +126,7 @@ def predict_all_images():
     green_false = yellow_false = red_false = yellow_red_false = off_false = 0
     green_images = yellow_images = red_images = yellow_red_images = off_images = 0
     test_cases_status = list()
-    limit_false_predictions = 5
+    limit_false_predictions = 6
 
     folders = glob("test_case_*")
     for folder in folders:
