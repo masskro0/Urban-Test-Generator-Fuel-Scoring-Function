@@ -63,7 +63,7 @@ def run_test_case_role_model(converter, dbc, dbe, engine_type=EngineType.PETROL)
     oracle = TestOracle(converter.scenario, dbc, dbe)
     tllabel = TrafficLightLabel(converter.get_traffic_lights_position(), converter.traffic_triggers)
     spots = engine_type.get_rpm_shifting_sweetspots()
-    upper_limit = spots.get("upper_limit")
+    upper_limit = spots.get("upper_limit") - 100
     lower_limit = spots.get("lower_limit")
     bng = beamng.open()
     bng.load_scenario(converter.scenario)

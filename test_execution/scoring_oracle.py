@@ -7,12 +7,13 @@ class MisbehaviourObserver:
         :param engine_type: Engine/Fuel type of a car. Check the file engine_types.py for more information.
         """
         self.engine_type = engine_type
-        self.log = dict()
         self.throttle_infractions = 0
         self.rpm_infractions = 0
         self.accelerate_and_stop_infractions = 0
         self.brake_infractions = 0
         self.engine_idle_infractions = 0
+        self.fuel = 0
+        self.consumed_fuel = 0
         self.score = 0
         self.prev_time = 0
         self.prev_time_called = 0
@@ -25,8 +26,8 @@ class MisbehaviourObserver:
         return {
             "throttle_infractions": self.throttle_infractions,
             "rpm_infractions": self.rpm_infractions,
-            "fuel": None,
-            "consumed_fuel": None,
+            "fuel": self.fuel,
+            "consumed_fuel": self.consumed_fuel,
             "accelerate_and_stop_infractions": self.accelerate_and_stop_infractions,
             "brake_infractions": self.brake_infractions,
             "engine_idle_infractions": self.engine_idle_infractions,
@@ -44,7 +45,7 @@ class MisbehaviourObserver:
         :param throttle: Throttle value.
         :return: Void.
         """
-        upper_limit = 0.45
+        upper_limit = 0.6
         if throttle >= upper_limit:
             self.throttle_infractions += 1
             interval = 0.04
@@ -143,8 +144,8 @@ class MisbehaviourObserver:
         :param value: Fuel value.
         :return: Void.
         """
-        self.log["fuel"] = value
-        self.log["consumed_fuel"] = 1 - value
+        self.fuel = value
+        self.consumed_fuel = 1 - value
 
     def _validate_engine_idle_infraction(self, wheelspeed, running, time):
         """Checks if the engine is in idle mode when the speed is 0 after one second.
