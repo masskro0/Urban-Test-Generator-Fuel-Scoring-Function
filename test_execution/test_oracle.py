@@ -140,7 +140,7 @@ class TrafficLightLabel:
                                     elif self.time_entry >= 7:
                                         self.label = "yellow-red"
                             return None
-                        elif distance_trigger <= 30:
+                        elif distance_trigger <= 30 or self.trigger_entered:
                             if not self.entered:
                                 self.label = "yellow"
                                 self.entered = True
