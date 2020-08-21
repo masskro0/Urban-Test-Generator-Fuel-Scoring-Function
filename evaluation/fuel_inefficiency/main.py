@@ -137,14 +137,12 @@ def visualize_results(results):
 
 
 def main():
-    repeat = 1
+    repeat = 10
     test_cases = glob(join("test_cases", "*"))
     assert exists(ENV["BNG_HOME"]), "Please set your BNG_HOME variable to BeamNG's trunk folder."
     ai_path = join(ENV["BNG_HOME"], "lua", "vehicle", "ai.lua")
     results = list()
     for test_case in test_cases:
-        if test_case.endswith("curvy"):
-            continue
         test_case_name = test_case.split("\\")[-1]
         files = glob(join(test_case, "*.xml"))
         converter = convert_test(files[0], files[1])
