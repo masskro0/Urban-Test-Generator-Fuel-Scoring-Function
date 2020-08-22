@@ -54,6 +54,9 @@ class TrafficLightLabel:
                 else:
                     self.label = "yellow"
             elif self.traffic_triggers_pos is not None:
+                p0 = (ego_state["pos"][0] + ego_state["dir"][0], ego_state["pos"][1] + ego_state["dir"][1])
+                p1 = (ego_state["pos"][0], ego_state["pos"][1])
+                angle = get_angle(self.traffic_light_pos, p1, p0)
                 distance_trigger = euclidean(self.traffic_triggers_pos, (ego_state["pos"][0], ego_state["pos"][1]))
                 if distance_trigger > self.tolerance * self.multiplicator and self.time_entry == 0:
                     self.label = self.init_state
@@ -78,11 +81,12 @@ class TrafficLightLabel:
                             self.prev_time = time
                             if 18 >= distance_trigger >= 16.1 or 1.1 <= self.time_entry < 1.5:
                                 return None
-                            if self.time_entry >= 3:
+                            if self.trigger_entered and angle > 110:
                                 self.prev_time = 0
                                 self.time_entry = 0
                                 self.trigger_index += 1
                                 self.entered = False
+                                self.trigger_entered = False
                                 self.traffic_triggers_pos = None if self.trigger_index >= len(
                                     self.traffic_triggers) else \
                                     (float(self.traffic_triggers[self.trigger_index]["x"]),
@@ -95,6 +99,7 @@ class TrafficLightLabel:
                                     else 9
                                 self.label = self.init_state
                             elif self.time_entry >= 1.4:
+                                self.trigger_entered = True
                                 self.label = "green"
                     else:
                         if 26 <= distance_trigger <= 34 and not self.trigger_entered:
@@ -294,19 +299,25 @@ class TestOracle:
                                                              and sign.get("mode") != "manual"
                                                              and sign.get("sign") == "priority"):
                 if distance_sign < 10 and angle > 65:
-                    if vel < 5:
+                    if vel < 4:
                         self.state = TestCaseState.FAILED
                         print(colored("TEST FAILED. \"ego\" STOPPED AT A PRIORITY SIGN.", "red", attrs=['bold']))
                     else:
                         self.sign_index += 1
             elif sign.get("kind").startswith("trafficlight") and sign.get("mode") == "manual":
-                if distance_sign < 10 and angle > 65:
-                    if label == "red" and vel >= 1:
-                        self.state = TestCaseState.FAILED
-                        print(colored("TEST FAILED. \"ego\" DIDN'T STOP AT A RED TRAFFIC LIGHT.", "red",
-                                      attrs=['bold']))
+                if distance_sign < 10:
+                    if angle > 65:
+                        if label == "red" and vel >= 1:
+                            self.state = TestCaseState.FAILED
+                            print(colored("TEST FAILED. \"ego\" DIDN'T STOP AT A RED TRAFFIC LIGHT.", "red",
+                                          attrs=['bold']))
+                        else:
+                            self.sign_index += 1
                     else:
-                        self.sign_index += 1
+                        if label == "green" and vel < 4:
+                            self.state = TestCaseState.FAILED
+                            print(colored("TEST FAILED. \"ego\" STOPPED AT A GREEN TRAFFIC LIGHT.", "red",
+                                          attrs=['bold']))
 
     def validate_test_case(self, states, ego_state, timer, label, damage_states):
         self._validate_traffic_rules(ego_state, timer, label)
