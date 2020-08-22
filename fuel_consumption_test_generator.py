@@ -1878,6 +1878,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Buggy traffic spawn
 #       TODO Right turns are buggy
 #       TODO Traffic light color cant be determined correctly
+#       TODO Ego shouldn't stop at yield sign when other car spawns on opposite lane
 
 # TODO May-have/Improvements:
 #       TODO Remove redundant XML information

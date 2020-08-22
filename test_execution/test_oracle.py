@@ -298,14 +298,14 @@ class TestOracle:
             elif sign.get("kind").startswith("priority") or (sign.get("kind").startswith("trafficlight")
                                                              and sign.get("mode") != "manual"
                                                              and sign.get("sign") == "priority"):
-                if distance_sign < 10 and angle > 65:
+                if distance_sign < 20:
                     if vel < 4:
                         self.state = TestCaseState.FAILED
                         print(colored("TEST FAILED. \"ego\" STOPPED AT A PRIORITY SIGN.", "red", attrs=['bold']))
-                    else:
+                    elif angle > 65:
                         self.sign_index += 1
             elif sign.get("kind").startswith("trafficlight") and sign.get("mode") == "manual":
-                if distance_sign < 10:
+                if distance_sign < 20:
                     if angle > 65:
                         if label == "red" and vel >= 1:
                             self.state = TestCaseState.FAILED
@@ -313,11 +313,10 @@ class TestOracle:
                                           attrs=['bold']))
                         else:
                             self.sign_index += 1
-                    else:
-                        if label == "green" and vel < 4:
-                            self.state = TestCaseState.FAILED
-                            print(colored("TEST FAILED. \"ego\" STOPPED AT A GREEN TRAFFIC LIGHT.", "red",
-                                          attrs=['bold']))
+                    elif label == "green" and vel < 4:
+                        self.state = TestCaseState.FAILED
+                        print(colored("TEST FAILED. \"ego\" STOPPED AT A GREEN TRAFFIC LIGHT.", "red",
+                                      attrs=['bold']))
 
     def validate_test_case(self, states, ego_state, timer, label, damage_states):
         self._validate_traffic_rules(ego_state, timer, label)
