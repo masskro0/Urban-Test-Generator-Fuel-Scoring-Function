@@ -1,0 +1,18 @@
+1: Should fail. Detector can neither detect off nor yellow.
+2: Should fail. Same as above. Wrong detections (sometimes off or yellow are classified as green)
+3: Should fail. There are many off lights and some yellow-red. But many off and red lights were detected as green. Yellow-red were detected as red.
+4: Should fail. Many off lights. Many off lights detected as red because of the yield sign. Yellow-red are detected as red. Half of red lights were not detected at all.
+5: Should pass. Only two yellow-red lights, rest green or red. Have problems detecting traffic lights that are fruther away. 
+6: Should fail. Too many yellow and yellow-red lights. Green lights couldn't be detected at all. Red lights only half of it, even though ego was in front of light and car lights shined at traffic light. Could be distance again and because of night(not very likely)
+7: Should fail. 6 misclassified off traffic lights. Red could be because of yield sign but why green? Better job at detecting yellow-red but as red.
+8: Should fail. Couldn't detect green lights, maybe because of distance. Misclassifies off as green. Yellow arbitrary green or red. Could be because of background (sunrise), blueish-greenish.
+9: Should fail. Red lights barely detected, maybe because of distance and dark environment. Could be because of the fading distance. Detects yellow-red as red.
+10: Should fail. Only yellow and off lights. Many misclassifications. Background detected as green again. Many off lights detected as green. Some yellow lights were green only one was red. 
+11: Should pass. Could only predict one image. Problem was the dark environment.
+
+Confusion Matrix:
+			ground true	ground false
+predicted true		     0                0
+predicted false		     2                9
+
+Problem: test cases didn't failed because of missing yellow, yellow-red and off labels. They also failed because of many mispredictions.

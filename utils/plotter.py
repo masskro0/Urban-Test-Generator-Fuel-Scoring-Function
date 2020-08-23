@@ -93,6 +93,8 @@ def plot_road_traffic_light(dbc, dbe, save_path=None, show=False):
             y.append(float(seg.attrib.get("y")))
         plt.plot(x, y, '-og', markersize=1, linewidth=float(float(width)), label="Road")
     obstacles = dbe_root.find("obstacles")
+    if obstacles is None:
+        obstacles = list()
     for obs in obstacles:
         if obs.tag.startswith("trafficlight") or obs.tag.endswith("sign"):
             plt.plot(float(obs.attrib.get("x")), float(obs.attrib.get("y")), markersize=12, marker='.', color="peru",
@@ -101,8 +103,8 @@ def plot_road_traffic_light(dbc, dbe, save_path=None, show=False):
     for par in participants:
         if par.attrib.get("id") == "ego":
             init_state = par.find("initialState").attrib
-            plt.plot(float(init_state.get("x")), float(init_state.get("y")), markersize=12, marker='>', color="r",
-                     label="Ego Car")
+            plt.plot(float(init_state.get("x")), float(init_state.get("y")), markersize=12,
+                     marker=(3, 0, float(init_state.get("orientation")) - 90), color="r", label="Ego Car")
     success_points = dbc_root.findall("success/scPosition")
     for sp in success_points:
         if sp.attrib.get("participant") == "ego":
