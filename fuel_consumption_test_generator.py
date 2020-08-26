@@ -521,7 +521,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     number_of_ways = intersection.get("number_of_ways")
     direction = intersection.get("direction")
 
-    def opposite_direction(my_point, my_right_point):
+    def opposite_direction(my_point, my_right_point, num_lanes):
         line = LineString([intersection_point, my_point])
         my_z_rot = int(round(get_angle(temp_point, line.coords[0], line.coords[1]))) + 180
         angle = int(round(get_angle(my_right_point, line.coords[0], line.coords[1])))
@@ -537,7 +537,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
             obstacles.append({"name": "prioritysign", "position": my_position, "zRot": my_z_rot,
                               "intersection_id": INTERSECTION_ID})
         else:
-            if new_right_lanes == 1:
+            if num_lanes == 1:
                 obstacles.append({"name": "trafficlightsingle", "position": my_position, "zRot": my_z_rot,
                                   "mode": my_mode, "sign": "priority", "intersection_id": INTERSECTION_ID})
             else:
@@ -604,12 +604,22 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 
     # Left direction.
     if number_of_ways == 4 or direction == "left" or layout == "left":
-        opposite_direction(left_point, last_point)
+        if (direction == "left" or (direction == "straight" and number_of_ways == 4)) and layout != "left":
+            opposite_direction(left_point, last_point, new_left_lanes)
+        else:
+            opposite_direction(left_point, last_point, new_right_lanes)
 
     # Top direction.
     if number_of_ways == 4 or direction == "straight" or layout == "straight":
+        if sign_on_my_lane.startswith("trafficlight"):
+            if current_left_lanes == 1:
+                this_sign = "trafficlightsingle"
+            else:
+                this_sign = "trafficlightdouble"
+        else:
+            this_sign = "stopsign"
         position, z_rot = my_direction(straight_point, left_point)
-        obstacles.append({"name": sign_on_my_lane, "position": position,
+        obstacles.append({"name": this_sign, "position": position,
                           "zRot": z_rot, "intersection_id": INTERSECTION_ID})
         if sign_on_my_lane.startswith("trafficlight"):
             mode = "off" if mode == "manual" else mode
@@ -618,7 +628,11 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 
     # Right direction.
     if number_of_ways == 4 or direction == "right" or layout == "right":
-        opposite_direction(right_point, straight_point)
+        if direction == "right" and layout != "right":
+            opposite_direction(right_point, straight_point, new_left_lanes)
+        else:
+            opposite_direction(right_point, straight_point, new_right_lanes)
+
     INTERSECTION_ID += 1
     return obstacles, triggers, action
 
