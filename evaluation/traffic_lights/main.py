@@ -8,7 +8,7 @@ from shutil import move
 from scipy.spatial.distance import euclidean
 from glob import glob
 import matplotlib.pyplot as plt
-from numpy import arange
+from numpy import arange, array
 
 from test_execution.test_oracle import TrafficLightLabel, TestOracle, TestCaseState
 from utils.utility_functions import get_angle
@@ -142,6 +142,8 @@ def predict_all_images():
         image_folder = join(folder, "images", "*")
         images = glob(image_folder)
         for image in images:
+            if not image.endswith(".png") and not image.endswith(".jpg"):
+                continue
             prediction = predict(abspath(image), config, yolo.model, bbox_path)
             ground_truth = image.split("\\")[-1].split("_")[0]
             if prediction == ground_truth:
@@ -191,38 +193,38 @@ def predict_all_images():
         else:
             print(colored("Test case \"{}\" failed.".format(tc.get("name")), "red", attrs=['bold']))
 
-    predictions = [correct, false]
     false_predictions = [green_false, yellow_false, red_false, yellow_red_false, off_false]
     images = [green_images, yellow_images, red_images, yellow_red_images, off_images]
-    visualize_results(predictions, false_predictions, images)
+    visualize_results(false_predictions, images)
 
 
-def visualize_results(predictions, false_predictions, images):
+def visualize_results(false_predictions, images):
     plt.clf()
     if not exists("result_pictures"):
         mkdir("result_pictures")
-    possibilities = ["Correct predictions", "False predictions"]
-    y_pos = arange(len(possibilities))
-    barlist = plt.bar(y_pos, predictions, width=0.5)
-    barlist[0].set_color("g")
-    barlist[1].set_color("r")
-    plt.xticks(y_pos, possibilities)
-    ax = plt.gca()
-    ax.set_ylabel('Number predictions')
-    ax.set_title('Prediction of traffic light color')
-    plt.savefig(join("result_pictures", 'predictions_bar.png'), bbox_inches='tight')
-
-    plt.clf()
     correct_predictions = list()
     i = 0
     while i < len(images):
         correct_predictions.append(images[i] - false_predictions[i])
         i += 1
+    np_cp = array(correct_predictions)
+    np_fp = array(false_predictions)
+
     possibilities = ["Green", "Yellow", "Red", "Yellow-Red", "Off"]
     ind = arange(len(images))
     width = 0.4
     p1 = plt.bar(ind, correct_predictions, width)
     p2 = plt.bar(ind, false_predictions, width, bottom=correct_predictions)
+    for xpos, ypos, yval in zip(ind, np_cp / 2, np_cp):
+        if yval == 0:
+            continue
+        plt.text(xpos, ypos, "%.1f" % yval, ha="center", va="center")
+    for xpos, ypos, yval in zip(ind, np_cp + np_fp / 2, np_fp):
+        if yval == 0:
+            continue
+        plt.text(xpos, ypos, "%.1f" % yval, ha="center", va="center")
+    for xpos, ypos, yval in zip(ind, np_cp + np_fp, np_cp + np_fp):
+        plt.text(xpos, ypos, "N=%d" % yval, ha="center", va="bottom")
     for ax in p1:
         ax.set_color("g")
     for ax in p2:
@@ -232,6 +234,32 @@ def visualize_results(predictions, false_predictions, images):
     plt.xticks(ind, possibilities)
     plt.legend((p1[0], p2[0]), ('Correct', 'False'))
     plt.savefig(join("result_pictures", 'predictions_per_light_bar.png'), bbox_inches='tight')
+
+    plt.clf()
+    snum = np_cp + np_fp
+    cp_norm = np_cp / snum * 100
+    fp_norm = np_fp / snum * 100
+    p1 = plt.bar(ind, cp_norm, width=width, label='Correct')
+    p2 = plt.bar(ind, fp_norm, width=width, bottom=cp_norm, label='False')
+    for xpos, ypos, yval in zip(ind, cp_norm / 2, cp_norm):
+        if yval == 0:
+            continue
+        plt.text(xpos, ypos, "%.1f" % yval, ha="center", va="center")
+    for xpos, ypos, yval in zip(ind, cp_norm + fp_norm / 2, fp_norm):
+        if yval == 0:
+            continue
+        plt.text(xpos, ypos, "%.1f" % yval, ha="center", va="center")
+    for xpos, ypos, yval in zip(ind, cp_norm + fp_norm, snum):
+        plt.text(xpos, ypos, "N=%d" % yval, ha="center", va="bottom")
+    for ax in p1:
+        ax.set_color("g")
+    for ax in p2:
+        ax.set_color("r")
+    plt.ylabel('Relation correct and false predictions')
+    plt.title('Relation between correct and false predictions for each traffic light color')
+    plt.xticks(ind, possibilities)
+    plt.legend(handles=[p1, p2], labels=('Correct', 'False'), bbox_to_anchor=(1, 1), loc='upper left', fancybox=True)
+    plt.savefig(join("result_pictures", 'norm_predictions_per_light_bar.png'), bbox_inches='tight')
 
 
 if __name__ == '__main__':

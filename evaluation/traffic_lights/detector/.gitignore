@@ -30,7 +30,6 @@ dataset/images/*
 !dataset/images/.gitkeep
 *.h5
 trainval.json
-checkpoints/*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

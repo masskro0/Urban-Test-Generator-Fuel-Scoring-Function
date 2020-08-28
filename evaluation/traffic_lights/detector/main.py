@@ -13,7 +13,7 @@ def init_function():
     with open(config_path) as config_buffer:
         config = loads(config_buffer.read())
     yolo = YOLO(config)
-    yolo.model.load_weights(join(this_path, "checkpoints", "traffic-light-detection1.h5"))
+    yolo.model.load_weights(join(this_path, "checkpoints", "traffic-light-detection.h5"))
     return yolo, config
 
 
@@ -22,7 +22,7 @@ def main(image_path, config, model, bbox_path):
     pplt_image = draw_boxes(imread(image_path), boxes, config['model']['classes'])
     imwrite(join(bbox_path, str(time()) + ".png"), pplt_image)
     if len(boxes) == 0:
-        return "nothing"
+        return "off"
     else:
         for box in boxes:
             label = config['model']['classes'][box.get_label()]
