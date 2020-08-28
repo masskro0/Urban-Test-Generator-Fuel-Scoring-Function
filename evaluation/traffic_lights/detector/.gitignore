@@ -28,7 +28,6 @@ MANIFEST
 
 dataset/images/*
 !dataset/images/.gitkeep
-*.h5
 trainval.json
 
 # PyInstaller
