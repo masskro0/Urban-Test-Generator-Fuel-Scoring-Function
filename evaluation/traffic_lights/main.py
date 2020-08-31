@@ -233,7 +233,8 @@ def visualize_results(false_predictions, images):
     plt.title('Correct and false predictions for each traffic light color')
     plt.xticks(ind, possibilities)
     plt.legend((p1[0], p2[0]), ('Correct', 'False'))
-    plt.savefig(join("result_pictures", 'predictions_per_light_bar.png'), bbox_inches='tight')
+    plt.tight_layout()
+    plt.savefig(join("result_pictures", 'predictions_per_light_bar.png'), dpi=200)
 
     plt.clf()
     snum = np_cp + np_fp
@@ -259,7 +260,8 @@ def visualize_results(false_predictions, images):
     plt.title('Relation between correct and false predictions for each traffic light color')
     plt.xticks(ind, possibilities)
     plt.legend(handles=[p1, p2], labels=('Correct', 'False'), bbox_to_anchor=(1, 1), loc='upper left', fancybox=True)
-    plt.savefig(join("result_pictures", 'norm_predictions_per_light_bar.png'), bbox_inches='tight')
+    plt.tight_layout()
+    plt.savefig(join("result_pictures", 'norm_predictions_per_light_bar.png'), dpi=200)
 
 
 if __name__ == '__main__':

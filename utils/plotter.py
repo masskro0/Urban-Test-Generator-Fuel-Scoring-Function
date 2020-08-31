@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as Etree
 from os.path import join
+from mpl_toolkits.axes_grid1 import Divider, Size
 
 
 def plotter(lanes):
@@ -119,5 +120,6 @@ def plot_road_traffic_light(dbc, dbe, save_path=None, show=False):
     if show:
         plt.show()
     if save_path is not None:
-        plt.savefig(join(save_path, "road_network.png"), bbox_inches='tight')
+        plt.tight_layout()
+        plt.savefig(join(save_path, "road_network.png"), dpi=200)
     plt.clf()

@@ -6,6 +6,8 @@ from beamngpy import ENV
 from shutil import copyfile
 import matplotlib.pyplot as plt
 from numpy import arange
+from scipy.stats import spearmanr
+from termcolor import colored
 
 from test_execution.test_execution import run_test_case, run_test_case_role_model
 from xml_converter.xml_to_bng_files import convert_test
@@ -114,6 +116,50 @@ def visualize_results(results):
                 plt.savefig(join("result_pictures", 'consumed_fuel_boxplot_{}.png'.format(test_case)),
                             bbox_inches='tight')
                 plt.clf()
+
+                plt.ylabel('Infractions')
+                plt.title('RPM Infractions by Profile in Test Case "{}"'.format(test_case))
+                plt.boxplot(rpm_ind, notch=False, sym="o", labels=profiles)
+                plt.savefig(join("result_pictures", 'rpm_infractions_boxplot_{}_{}.png'.format(profile, test_case)),
+                            bbox_inches='tight')
+                plt.clf()
+
+                plt.ylabel('Infractions')
+                plt.title('Throttle Infractions by Profile in Test Case "{}"'.format(test_case))
+                plt.boxplot(throttle_ind, notch=False, sym="o", labels=profiles)
+                plt.savefig(join("result_pictures",
+                                 'throttle_infractions_boxplot_{}_{}.png'.format(profile, test_case)),
+                            bbox_inches='tight')
+                plt.clf()
+
+                plt.ylabel('Infractions')
+                plt.title('Brake Infractions by Profile in Test Case "{}"'.format(test_case))
+                plt.boxplot(brake_ind, notch=False, sym="o", labels=profiles)
+                plt.savefig(join("result_pictures", 'brake_infractions_boxplot_{}_{}.png'.format(profile, test_case)),
+                            bbox_inches='tight')
+                plt.clf()
+
+                plt.ylabel('Infractions')
+                plt.title('Engine Idle Infractions by Profile in Test Case "{}"'.format(test_case))
+                plt.boxplot(engine_idle_ind, notch=False, sym="o", labels=profiles)
+                plt.savefig(join("result_pictures",
+                                 'engine_idle_infractions_boxplot_{}_{}.png'.format(profile, test_case)),
+                            bbox_inches='tight')
+                plt.clf()
+
+                plt.ylabel('Infractions')
+                plt.title('Accelerate-and-Stop Infractions by Profile in Test Case "{}"'.format(test_case))
+                plt.boxplot(accelerate_and_stop_ind, notch=False, sym="o", labels=profiles)
+                plt.savefig(join("result_pictures", 'aas_infractions_boxplot_{}_{}.png'.format(profile, test_case)),
+                            bbox_inches='tight')
+                plt.clf()
+
+                correlation = spearmanr(consumed_fuel_all, scores_all)
+                correlation_tmp = spearmanr(scores_all, consumed_fuel_all)
+                print(correlation)
+                print(correlation_tmp)
+                print(colored("Spearman correlation for test case \"{}\": {}.".format(test_case, correlation), "grey",
+                              attrs=['bold']))
 
             test_case = result.get("test_case")
             rpm_all = list()
