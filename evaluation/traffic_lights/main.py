@@ -270,9 +270,38 @@ def visualize_results(test_case_folder, false_predictions, images):
     plt.savefig(join(test_case_folder, "result_pictures", 'norm_predictions_per_light_bar.png'), dpi=200)
 
 
+def plot_confusion_matrix(pred, y_test, test_case, save_path):
+    from sklearn.metrics import confusion_matrix
+    from seaborn import heatmap
+    from numpy import trace, asarray
+    from numpy import sum as npsum
+
+    labels = ['Success', 'Fail']
+    cm = confusion_matrix(y_test, pred, labels)
+    accuracy = trace(cm) / float(npsum(cm))
+    precision = cm[1, 1] / sum(cm[:, 1])
+    recall = cm[1, 1] / sum(cm[1, :])
+    f1_score = 2 * precision * recall / (precision + recall)
+    stats_text = "Accuracy={:0.3f}\nPrecision={:0.3f}\nRecall={:0.3f}\nF1 Score={:0.3f}".format(
+        accuracy, precision, recall, f1_score)
+    group_counts = ["{0:0.0f}".format(value) for value in cm.flatten()]
+    group_percentages = ["{0:.2%}".format(value) for value in cm.flatten() / npsum(cm)]
+    box_labels = [f"{v1}\n{v2}" for v1, v2 in zip(group_counts, group_percentages)]
+    box_labels = asarray(box_labels).reshape(2, 2)
+    heatmap(cm, fmt="", annot=box_labels, xticklabels=["Success", "Fail"], yticklabels=["Success", "Fail"])
+    plt.title("Confusion Matrix of TLDS in Test Case \"{}\"".format(test_case))
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.gcf().subplots_adjust(bottom=0.28)
+    plt.gcf().subplots_adjust(right=1.05)
+    plt.figtext(0.49, 0.01, stats_text, ha="center", fontsize=12,
+                bbox={"facecolor": "gray", "alpha": 0.5, "pad": 5})
+    plt.savefig(join(save_path, "cm_" + test_case + ".png"), dpi=200)
+
+
 if __name__ == '__main__':
     # create_tests(1, True)
-    # collect_images_existing_tests(join("random", "test_case_*"))
+    collect_images_existing_tests(join("random", "test_case_*"))
     predict_all_images(join("random", "test_case_*"))
     # collect_images_existing_tests(join("daylight", "test_case_*"))
     # predict_all_images(join("daylight", "test_case_*"))
@@ -284,3 +313,7 @@ if __name__ == '__main__':
     # predict_all_images(join("15m", "test_case_*"))
     # collect_images_existing_tests(join("45m", "test_case_*"), 16, 45)
     # predict_all_images(join("45m", "test_case_*"))
+    # y_test = ['Success', 'Success', 'Success', 'Success', 'Success', 'Fail', 'Success', 'Fail', 'Fail',
+    #           'Fail', 'Success']
+    # pred = ['Success', 'Success', 'Fail', 'Fail', 'Fail', 'Fail', 'Fail', 'Fail', 'Fail', 'Fail', 'Fail']
+    # plot_confusion_matrix(pred, y_test, "45m", join("45m", "result_pictures"))
