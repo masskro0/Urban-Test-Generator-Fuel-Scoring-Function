@@ -39,7 +39,9 @@ def create_tests(num_tests, collect):
             collect_images(destination_path)
 
 
-def collect_images(destination_path):
+def collect_images(destination_path, min_distance=None, max_distance=None):
+    max_distance = 60 if max_distance is None else max_distance
+    min_distance = 8 if min_distance is None else min_distance
     test_case_dir = join(destination_path, "test_case")
     image_dir = join(destination_path, "images")
     if not exists(image_dir):
@@ -80,6 +82,8 @@ def collect_images(destination_path):
     oracle = TestOracle(converter.scenario, matches[0], matches[1])
     bng = beamng.open()
     bng.load_scenario(converter.scenario)
+    if converter.weather is not None:
+        bng.set_weather_preset(converter.weather)
     bng.start_scenario()
     sleep(2)
     while oracle.state == TestCaseState.OK:
@@ -102,7 +106,7 @@ def collect_images(destination_path):
                 continue
             p0 = (ego.state["pos"][0] + ego.state["dir"][0], ego.state["pos"][1] + ego.state["dir"][1])
             angle = get_angle(traffic_light_pos, p1, p0)
-            if 8 <= distance_light <= 60 and (0 <= angle <= fov / 2 or 360 - fov / 2 <= angle <= 360) \
+            if min_distance <= distance_light <= max_distance and (0 <= angle <= fov / 2 or 360 - fov / 2 <= angle <= 360) \
                     and label is not None:
                 img = sensors["camera"]["colour"].convert("RGB")
                 filename = label + '_{}.png'.format(time())
@@ -113,13 +117,13 @@ def collect_images(destination_path):
     bng.close()
 
 
-def collect_images_existing_tests():
-    folders = glob("test_case_*")
+def collect_images_existing_tests(test_cases, min_distance=None, max_distance=None):
+    folders = glob(test_cases)
     for folder in folders:
-        collect_images(abspath(folder))
+        collect_images(abspath(folder), min_distance, max_distance)
 
 
-def predict_all_images():
+def predict_all_images(test_case_folder):
     from evaluation.traffic_lights.detector.main import main as predict, init_function
     yolo, config = init_function()
     correct = false = 0
@@ -128,7 +132,7 @@ def predict_all_images():
     test_cases_status = list()
     limit_false_predictions = 6
 
-    folders = glob("test_case_*")
+    folders = glob(test_case_folder)
     for folder in folders:
         test_cases = glob(join(folder, "test_case", "*"))
         road_network_dir = join(folder, "road_network")
@@ -195,13 +199,16 @@ def predict_all_images():
 
     false_predictions = [green_false, yellow_false, red_false, yellow_red_false, off_false]
     images = [green_images, yellow_images, red_images, yellow_red_images, off_images]
-    visualize_results(false_predictions, images)
+    visualize_results(test_case_folder, false_predictions, images)
 
 
-def visualize_results(false_predictions, images):
+def visualize_results(test_case_folder, false_predictions, images):
+    test_case_folder = test_case_folder.split("\\")[0]
+    print(false_predictions)
+    print(images)
     plt.clf()
-    if not exists("result_pictures"):
-        mkdir("result_pictures")
+    if not exists(join(test_case_folder, "result_pictures")):
+        mkdir(join(test_case_folder, "result_pictures"))
     correct_predictions = list()
     i = 0
     while i < len(images):
@@ -230,11 +237,11 @@ def visualize_results(false_predictions, images):
     for ax in p2:
         ax.set_color("r")
     plt.ylabel('Predictions')
-    plt.title('Correct and false predictions for each traffic light color')
+    plt.title('Correct and False Predictions for each Traffic Light Color')
     plt.xticks(ind, possibilities)
     plt.legend((p1[0], p2[0]), ('Correct', 'False'))
     plt.tight_layout()
-    plt.savefig(join("result_pictures", 'predictions_per_light_bar.png'), dpi=200)
+    plt.savefig(join(test_case_folder, "result_pictures", 'predictions_per_light_bar.png'), dpi=200)
 
     plt.clf()
     snum = np_cp + np_fp
@@ -256,15 +263,24 @@ def visualize_results(false_predictions, images):
         ax.set_color("g")
     for ax in p2:
         ax.set_color("r")
-    plt.ylabel('Relation correct and false predictions')
-    plt.title('Relation between correct and false predictions for each traffic light color')
+    plt.ylabel('Relation in Percentage')
+    plt.title('Relations between Correct and False Predictions')
     plt.xticks(ind, possibilities)
-    plt.legend(handles=[p1, p2], labels=('Correct', 'False'), bbox_to_anchor=(1, 1), loc='upper left', fancybox=True)
-    plt.tight_layout()
-    plt.savefig(join("result_pictures", 'norm_predictions_per_light_bar.png'), dpi=200)
+    plt.legend((p1[0], p2[0]), ('Correct', 'False'), loc="upper left", bbox_to_anchor=(0, 0.95), framealpha=0.9)
+    plt.savefig(join(test_case_folder, "result_pictures", 'norm_predictions_per_light_bar.png'), dpi=200)
 
 
 if __name__ == '__main__':
     # create_tests(1, True)
-    # collect_images_existing_tests()
-    predict_all_images()
+    # collect_images_existing_tests(join("random", "test_case_*"))
+    predict_all_images(join("random", "test_case_*"))
+    # collect_images_existing_tests(join("daylight", "test_case_*"))
+    # predict_all_images(join("daylight", "test_case_*"))
+    # collect_images_existing_tests(join("nighttime", "test_case_*"))
+    # predict_all_images(join("nighttime", "test_case_*"))
+    # collect_images_existing_tests(join("cloudy", "test_case_*"))
+    # predict_all_images(join("cloudy", "test_case_*"))
+    # collect_images_existing_tests(join("15m", "test_case_*"), 7, 15)
+    # predict_all_images(join("15m", "test_case_*"))
+    # collect_images_existing_tests(join("45m", "test_case_*"), 16, 45)
+    # predict_all_images(join("45m", "test_case_*"))

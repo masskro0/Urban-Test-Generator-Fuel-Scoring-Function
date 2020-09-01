@@ -85,6 +85,7 @@ class Converter:
         self.light_index = 0
         self.success_point = None
         self.traffic_triggers = list()
+        self.weather = None
 
     def _init_prefab(self):
         self.bng = BeamNGpy('localhost', 64255)
@@ -93,12 +94,18 @@ class Converter:
     def _finalize_prefab(self):
         self.bng.user = None
         self.scenario.make(self.bng)
+        self._get_weather()
         self._change_object_options()
         self._add_lights_to_prefab()
         self._add_waypoints()
         self._write_lua_file()
         self._get_success_point()
         self._get_traffic_triggers()
+
+    def _get_weather(self):
+        weather = self.dbe_root.find("weather")
+        if weather is not None:
+            self.weather = weather.text
 
     def add_to_prefab(self):
         self._init_prefab()

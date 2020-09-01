@@ -30,6 +30,8 @@ def move_files_to_bng_folder():
     move("urban", levels_folder)
     lua_folder = join(ENV['BNG_HOME'], "lua", "ge", "extensions", "scenario")
     move("scenariohelper.lua", lua_folder)
+    weather_folder = join(ENV['BNG_HOME'], "art", "weather")
+    move("defaults.json", weather_folder)
 
 
 if __name__ == '__main__':

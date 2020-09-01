@@ -757,7 +757,7 @@ class FuelConsumptionTestGenerator:
         self.MAX_TRIES = 20             # Maximum number of invalid generated points/segments.
         self.POPULATION_SIZE = 1        # Minimum number of generated roads for each generation.
         self.NUMBER_ELITES = 2          # Number of best kept test cases.
-        self.MIN_SEGMENT_LENGTH = 15    # Minimum length of a road segment.
+        self.MIN_SEGMENT_LENGTH = 10    # Minimum length of a road segment.
         self.MAX_SEGMENT_LENGTH = 30    # Maximum length of a road segment.
         self.MIN_NODES = 6              # Minimum number of control points for each road.
         self.MAX_NODES = 12             # Maximum number of control points for each road.
