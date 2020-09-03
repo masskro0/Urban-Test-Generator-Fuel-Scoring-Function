@@ -6,7 +6,7 @@ from beamngpy import ENV
 from shutil import copyfile
 import matplotlib.pyplot as plt
 from numpy import arange
-from scipy.stats import spearmanr
+from scipy.stats import spearmanr, kendalltau
 from termcolor import colored
 
 from test_execution.test_execution import run_test_case, run_test_case_role_model
@@ -43,6 +43,8 @@ def visualize_results(results):
     scores_ind = list()
     infractions_ind = list()
     consumed_fuel_ind = list()
+    fuel_list = list()
+    score_list = list()
     profiles = ["Aggressive", "Default", "Role Model"]
     for idx, result in enumerate(results):
         if profile != result.get("profile") or idx == len(results) - 1:
@@ -94,6 +96,8 @@ def visualize_results(results):
                             bbox_inches='tight', dpi=200)
                 plt.clf()
 
+            score_list.extend(scores_ind)
+            fuel_list.extend(consumed_fuel_ind)
             rpm_ind = list()
             throttle_ind = list()
             brake_ind = list()
@@ -155,15 +159,15 @@ def visualize_results(results):
                             bbox_inches='tight', dpi=200)
                 plt.clf()
 
-                avg_scores = list()
-                for score in scores_all:
-                    avg_scores.append(get_avg_value(score))
-                avg_fuel = list()
-                for fuel in consumed_fuel_all:
-                    avg_fuel.append(get_avg_value(fuel))
-                correlation = spearmanr(avg_scores, avg_fuel)
-                print(colored("Spearman correlation for test case \"{}\": {}.".format(test_case, correlation), "grey",
+            if test_case is not None:
+                spearman = spearmanr(score_list, fuel_list)
+                print(colored("Spearman correlation for test case \"{}\": {}.".format(test_case, spearman), "grey",
                               attrs=['bold']))
+                kendall = kendalltau(score_list, fuel_list)
+                print(colored("Kendall correlation for test case \"{}\": {}.".format(test_case, kendall), "grey",
+                              attrs=['bold']))
+                score_list = list()
+                fuel_list = list()
 
             test_case = result.get("test_case")
             rpm_all = list()
