@@ -264,8 +264,7 @@ class TestOracle:
                 if state.get("id") == request.get("participant") and float(state.get("damage")) > 0:
                     self.state = TestCaseState.FAILED
                     break_flag = True
-                    print(colored("TEST FAILED. \"{}\" CRASHED INTO \"{}\"".format(state.get("id"),
-                                                                                   request.get("id")),
+                    print(colored("TEST FAILED. \"{}\" CRASHED INTO ANOTHER CAR".format(state.get("id")),
                                   "red", attrs=['bold']))
                     break
             if break_flag:

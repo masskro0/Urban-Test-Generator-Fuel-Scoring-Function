@@ -252,8 +252,11 @@ def _add_other_0(individual, lanes_start=None, lanes_end=None):
             else lanes[spawn_index].get("control_points")[0]
         end_point = lanes[end_index].get("control_points")[-1] if end_index != spawn_lanes[i] - 1 \
             else lanes[end_index].get("control_points")[0]
-        middle_point = lanes[spawn_index].get("control_points")[0]
-        orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point, middle_point)
+        middle_point = lanes[spawn_index].get("control_points")[-1]
+        orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point,
+                                 lanes[spawn_index].get("control_points")[1]) + 180
+        if (three_way and spawn_index == spawn_lanes[i] + 1) or (not three_way and spawn_index != spawn_lanes[i] + 2):
+            orientation += 0
         temp_lane = lanes[spawn_lanes[i] - 1] if spawn_index != spawn_lanes[i] + 2 else lanes[spawn_lanes[i] - 2]
         temp_points = temp_lane.get("control_points")
         temp_line = LineString(temp_points)
@@ -1825,9 +1828,9 @@ class FuelConsumptionTestGenerator:
         return elite
 
     def genetic_algorithm(self):
-
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
+            print(self.population_list)
 
         while len(self.population_list) < self.POPULATION_SIZE:
             selected_indices = sample(range(0, len(self.population_list)), 2)
