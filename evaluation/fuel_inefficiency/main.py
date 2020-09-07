@@ -184,15 +184,15 @@ def visualize_results(results):
                 boxplot_settings(bpl, bpr, profiles)
                 file_name = val + '_infraction_boxplots.png'
                 if val == "rpm":
-                    title = 'Boxplots for RPM Infractions'
+                    title = 'Box Plots for RPM Infractions'
                 elif val == "throttle":
-                    title = 'Boxplots for Throttle Infractions'
+                    title = 'Box Plots for Throttle Infractions'
                 elif val == "brake":
-                    title = 'Boxplots for Brake Infractions'
+                    title = 'Box Plots for Brake Infractions'
                 elif val == "engine_idle":
-                    title = 'Boxplots for Engine Idling Infractions'
+                    title = 'Box Plots for Engine Idling Infractions'
                 elif val == "accelerate_and_stop":
-                    title = 'Boxplots for Accelerate-and-Stop Infractions'
+                    title = 'Box Plots for Accelerate-and-Stop Infractions'
                 elif val == "infractions":
                     title = "Total Number of Infractions"
                     file_name = "infractions_boxplots.png"
