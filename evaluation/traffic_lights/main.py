@@ -308,6 +308,7 @@ if __name__ == '__main__':
     # create_tests(1, True)
     # collect_images_existing_tests(join("random", "test_case_*"))
     predict_all_images(join("random", "test_case_*"))
+    # predict_all_images(join("random", "test_case_*"))
     # collect_images_existing_tests(join("daylight", "test_case_*"))
     # predict_all_images(join("daylight", "test_case_*"))
     # collect_images_existing_tests(join("nighttime", "test_case_*"))
