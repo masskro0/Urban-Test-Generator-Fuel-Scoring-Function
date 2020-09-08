@@ -220,6 +220,8 @@ def visualize_results(test_case_folder, false_predictions, images):
     possibilities = ["Green", "Yellow", "Red", "Yellow-Red", "Off"]
     ind = arange(len(images))
     width = 0.4
+    plt.figure(figsize=(10, 5.3))
+    plt.subplot(1, 2, 1)
     p1 = plt.bar(ind, correct_predictions, width)
     p2 = plt.bar(ind, false_predictions, width, bottom=correct_predictions)
     for xpos, ypos, yval in zip(ind, np_cp / 2, np_cp):
@@ -241,12 +243,11 @@ def visualize_results(test_case_folder, false_predictions, images):
     plt.xticks(ind, possibilities)
     plt.legend((p1[0], p2[0]), ('Correct', 'False'))
     plt.tight_layout()
-    plt.savefig(join(test_case_folder, "result_pictures", 'predictions_per_light_bar.png'), dpi=200)
 
-    plt.clf()
     snum = np_cp + np_fp
     cp_norm = np_cp / snum * 100
     fp_norm = np_fp / snum * 100
+    plt.subplot(1, 2, 2)
     p1 = plt.bar(ind, cp_norm, width=width, label='Correct')
     p2 = plt.bar(ind, fp_norm, width=width, bottom=cp_norm, label='False')
     for xpos, ypos, yval in zip(ind, cp_norm / 2, cp_norm):
@@ -267,7 +268,11 @@ def visualize_results(test_case_folder, false_predictions, images):
     plt.title('Relations between Correct and False Predictions')
     plt.xticks(ind, possibilities)
     plt.legend((p1[0], p2[0]), ('Correct', 'False'), loc="upper left", bbox_to_anchor=(0, 0.95), framealpha=0.9)
-    plt.savefig(join(test_case_folder, "result_pictures", 'norm_predictions_per_light_bar.png'), dpi=200)
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.88)
+    plt.suptitle("Test case \"{}\"".format(test_case_folder), fontsize=14)
+    plt.savefig(join(test_case_folder, "result_pictures", test_case_folder + '_predictions_per_light_bar.png'),
+                dpi=200)
 
 
 def plot_confusion_matrix(pred, y_test, test_case, save_path):
@@ -301,7 +306,7 @@ def plot_confusion_matrix(pred, y_test, test_case, save_path):
 
 if __name__ == '__main__':
     # create_tests(1, True)
-    collect_images_existing_tests(join("random", "test_case_*"))
+    # collect_images_existing_tests(join("random", "test_case_*"))
     predict_all_images(join("random", "test_case_*"))
     # collect_images_existing_tests(join("daylight", "test_case_*"))
     # predict_all_images(join("daylight", "test_case_*"))

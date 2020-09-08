@@ -1021,7 +1021,7 @@ class FuelConsumptionTestGenerator:
                                  "directions": urban.get("directions"),
                                  "fitness": 0,
                                  "triggers": urban.get("triggers"),
-                                 "tod": urban.get("tod"),
+                                 "tod": 0,
                                  "intersection_lanes": urban.get("intersection_lanes"),
                                  "actions": urban.get("actions")})
                 i += 1
@@ -1830,7 +1830,6 @@ class FuelConsumptionTestGenerator:
     def genetic_algorithm(self):
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
-            print(self.population_list)
 
         while len(self.population_list) < self.POPULATION_SIZE:
             selected_indices = sample(range(0, len(self.population_list)), 2)

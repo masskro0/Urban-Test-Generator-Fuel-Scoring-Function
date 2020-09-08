@@ -155,7 +155,7 @@ class MisbehaviourObserver:
         """
         velocity = wheelspeed * 3.6
         if velocity < 0.1:
-            if running and time - self.prev_time >= 1:
+            if running == 1 and time - self.prev_time >= 1:
                 self.prev_time = time
                 self.engine_idle_infractions += 1
                 self.score += 4
