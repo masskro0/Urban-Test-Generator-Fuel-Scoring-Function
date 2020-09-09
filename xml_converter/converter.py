@@ -641,7 +641,8 @@ class Converter:
                 if entry.get("vid") == vid:
                     lines = entry.get("lines")
                     break
-            assert lines is not None, "Missing line of vehicle \"{}\".".format(vid)
+            if lines is None:
+                continue
             content += '  vehicleName = \'' + vid + '\'\n'\
                        '  arg = {line = {\n                 '
             i = 0

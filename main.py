@@ -13,4 +13,5 @@ if __name__ == '__main__':
             dbe = paths[0]
             dbc = paths[1]
             converter = convert_test(dbc, dbe)
-            run_test_case(converter, dbc, dbe)
+            results = run_test_case(converter, dbc, dbe)
+            gen.on_test_finished(float(results.get("score")))

@@ -1021,7 +1021,7 @@ class FuelConsumptionTestGenerator:
                                  "directions": urban.get("directions"),
                                  "fitness": 0,
                                  "triggers": urban.get("triggers"),
-                                 "tod": 0,
+                                 "tod": urban.get("tod"),
                                  "intersection_lanes": urban.get("intersection_lanes"),
                                  "actions": urban.get("actions")})
                 i += 1
@@ -1895,6 +1895,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Right turns are buggy
 #       TODO Traffic light color cant be determined correctly
 #       TODO Ego shouldn't stop at yield sign when other car spawns on opposite lane
+#       TODO Flashing == blinking
 
 # TODO May-have/Improvements:
 #       TODO Remove redundant XML information
