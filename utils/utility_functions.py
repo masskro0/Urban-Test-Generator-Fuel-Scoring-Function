@@ -116,6 +116,7 @@ def get_width_lines(splined_lanes):
     return complete_width_list
 
 
+# Done
 def get_angle(a, b, c):
     """Returns the angle between three points (two lines so to say).
     :param a: First point.
@@ -127,6 +128,7 @@ def get_angle(a, b, c):
     return ang + 360 if ang < 0 else ang
 
 
+# Done
 def calc_width(left_lanes, right_lanes):
     """Calculates the width depending on the number of lanes. Width per lane can be 4 or 5.
     :param left_lanes: Number of left lanes.
@@ -136,14 +138,16 @@ def calc_width(left_lanes, right_lanes):
     return (left_lanes + right_lanes) * randint(4, 5)
 
 
+# Done
 def calc_min_max_angles(num_lanes):
     """Calculates the minimum and maximum angle depending on the number of lanes.
     :param num_lanes: Number of lanes.
     :return: Minimum and maximum angles.
     """
-    return MIN_DEGREES + (num_lanes - 1) * 15, MAX_DEGREES - (num_lanes - 1) * 15
+    return MIN_DEGREES + (num_lanes - 2) * 25, MAX_DEGREES - (num_lanes - 2) * 25
 
 
+# Done
 def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right_lanes, lane_index):
     """Splits the intersection into lanes, assigns the right number of lanes and width to the lanes,
     determines the lanes that the ego car needs for its waypoints.
