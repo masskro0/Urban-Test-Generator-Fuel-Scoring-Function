@@ -491,11 +491,13 @@ def _merge_lanes(population):
     return population
 
 
+# Done.
 def _add_stop_sign_triggers(last_point):
     trigger_point = {"position": last_point, "action": "stop", "tolerance": 2, "triggeredBy": "ego", "duration": 4}
     return {"triggerPoint": trigger_point}
 
 
+# Done.
 def _handle_manual_mode(last_point, oid):
     triggers = list()
     init_state = choice(["green", "red"])
@@ -512,6 +514,7 @@ def _handle_manual_mode(last_point, oid):
     return triggers
 
 
+# Done.
 def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, width, intersection, lane_id):
     global OID_INDEX
     global INTERSECTION_ID
@@ -604,7 +607,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     if sign_on_my_lane.startswith("trafficlight") and mode == "manual":
         triggers = _handle_manual_mode(last_point, oid)
 
-    if sign_on_my_lane.startswith("trafficlight") and pole_sign == "yield":
+    if sign_on_my_lane.startswith("trafficlight") and mode != "manual" and pole_sign == "yield":
         triggers.append(_add_stop_sign_triggers(last_point))
 
     if sign_on_my_lane.startswith("stop"):
@@ -866,8 +869,11 @@ class FuelConsumptionTestGenerator:
         intersection_probability = 0.25
         lines_of_roads = convert_points_to_lines(lanes)
         last_point = p2
+        xd = 0
         while (number_of_pieces <= self.MAX_NODES and tries <= self.MAX_TRIES) \
                 or len(lanes[lane_index].get("control_points")) == 1:
+            print("turn up", xd)
+            xd += 1
             control_points = lanes[lane_index].get("control_points")
             if intersection_possible and ((number_of_pieces == self.MAX_NODES - 1 and not one_intersection)
                                           or random() <= intersection_probability) and len(control_points) > 1:
