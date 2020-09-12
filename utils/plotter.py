@@ -6,8 +6,17 @@ from os.path import join
 from mpl_toolkits.axes_grid1 import Divider, Size
 
 
-def plotter(lanes):
+def plotter(lanes, markersize=8, color="-og", marker=True, linewidth=None, title="Road Overview", show=True, dpi=200,
+            save_path=None):
     """Plots every point and lines between them. Used to visualize a road network.
+    :param save_path:
+    :param dpi:
+    :param show:
+    :param title:
+    :param linewidth:
+    :param marker:
+    :param color:
+    :param markersize:
     :param lanes: List of dicts containing multiple lanes.
     :return: Void.
     """
@@ -18,10 +27,16 @@ def plotter(lanes):
         for point in control_points:
             x.append(point[0])
             y.append(point[1])
-        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width") / 6)
+        plt.plot(x, y, color=color, marker="o" if marker else None, markersize=markersize,
+                 linewidth = lane.get("width") / 6 if linewidth is None else linewidth)
     plt.axis('scaled')
-    plt.title('Road overview')
-    plt.show()
+    if title is not None and title != "":
+        plt.title(title)
+    if save_path is not None:
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=dpi)
+    if show:
+        plt.show()
 
 
 def plot_all(population):

@@ -27,6 +27,80 @@ COLORS = ["White", "Red", "Green", "Yellow", "Black", "Blue", "Orange", "Gray", 
 PARTICIPANTS_SAMPLES = 45
 
 
+def _add_parked_cars(individual):
+    car_positions = list()
+    for idx, lane in enumerate(individual.get("lanes")):
+        control_points = lane.get("control_points")
+        if lane.get("type") == "intersection" or control_points[0] == control_points[-1]:
+            continue
+        width = lane.get("width")
+        rotations = [0, 45, 90]
+        rotation = choice(rotations)
+        noise = [x / 10 for x in range(-10, 10)]
+        if rotation == 45:
+            offset = 3.5
+            max_distance = 4
+        elif rotation == 90:
+            offset = 3
+            max_distance = 4.5
+        else:
+            offset = 2
+            max_distance = 5.5
+        right = True if random() >= 0.3 else False
+        left = True if random() >= 0.3 else False
+        line = LineString(control_points)
+        line = multilinestrings_to_linestring(line)
+        prev_lane = LineString(individual.get("lanes")[idx - 1].get("control_points")) if idx != 0 else None
+        prev_width = int(individual.get("lanes")[idx - 1].get("width")) / 2 + offset if idx != 0 else 0
+        if left:
+            left_lines = [line.parallel_offset(width / 2 + offset + x, "left") for x in noise]
+            left_lines = [multilinestrings_to_linestring(x) for x in left_lines]
+            iterator = 1
+            while iterator < len(left_lines[0].coords):
+                left_line = choice(left_lines)
+                coords = b_spline(left_line.coords)
+                point = coords[iterator]
+                if abs(euclidean(point, coords[-1])) < 12:
+                    break
+                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
+                                               (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
+                    angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
+                                      coords[iterator - 1], point) - rotation + randint(-8, 8)
+                    car_positions.append((point, angle, idx))
+                iterator += 1
+        if right:
+            right_lines = [line.parallel_offset(width / 2 + offset + x, "right") for x in noise]
+            right_lines = [multilinestrings_to_linestring(x) for x in right_lines]
+            iterator = 1
+            while iterator < len(right_lines[0].coords):
+                right_line = choice(right_lines)
+                coords = right_line.coords[::-1]
+                coords = b_spline(coords)
+                point = coords[iterator]
+                if abs(euclidean(point, coords[-1])) < 12:
+                    break
+                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
+                                               (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
+                    angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
+                                      coords[iterator - 1], point) + 180 - rotation + randint(-8, 8)
+                    car_positions.append((point, angle, idx))
+                iterator += 1
+        lane["parked_left"] = left
+        lane["parked_right"] = right
+        lane["parked_rotation"] = rotation
+        lane["parked_offset"] = offset
+        lane["parked_max_distance"] = max_distance
+    parked_cars = list()
+    color = (round(uniform(0, 1), 2), round(uniform(0, 1), 2), round(uniform(0, 1), 2), round(uniform(1, 1.3), 2))
+    individual["parked_color"] = color
+    for position in car_positions:
+        if random() <= 0.4:
+            continue
+        parked_cars.append({"name": "golf", "position": (position[0][0], position[0][1]), "zRot": position[1],
+                            "color": color, "lane": position[2]})
+    individual["obstacles"].extend(parked_cars)
+
+
 def _add_ego_car(individual):
     """Adds the ego car to the criteria xml file. Movement mode can be assigned manually. Each control point is one
     waypoint.
@@ -128,80 +202,6 @@ def _add_ego_car(individual):
            "model": model,
            "color": "White"}
     individual.setdefault("participants", []).extend([ego])
-
-
-def _add_parked_cars(individual):
-    car_positions = list()
-    for idx, lane in enumerate(individual.get("lanes")):
-        control_points = lane.get("control_points")
-        if lane.get("type") == "intersection" or control_points[0] == control_points[-1]:
-            continue
-        width = lane.get("width")
-        rotations = [0, 45, 90]
-        rotation = choice(rotations)
-        noise = [x / 10 for x in range(-10, 10)]
-        if rotation == 45:
-            offset = 3.5
-            max_distance = 4
-        elif rotation == 90:
-            offset = 3
-            max_distance = 4.5
-        else:
-            offset = 2
-            max_distance = 5.5
-        right = True if random() >= 0.3 else False
-        left = True if random() >= 0.3 else False
-        line = LineString(control_points)
-        line = multilinestrings_to_linestring(line)
-        prev_lane = LineString(individual.get("lanes")[idx - 1].get("control_points")) if idx != 0 else None
-        prev_width = int(individual.get("lanes")[idx - 1].get("width")) / 2 + offset if idx != 0 else 0
-        if left:
-            left_lines = [line.parallel_offset(width / 2 + offset + x, "left") for x in noise]
-            left_lines = [multilinestrings_to_linestring(x) for x in left_lines]
-            iterator = 1
-            while iterator < len(left_lines[0].coords):
-                left_line = choice(left_lines)
-                coords = b_spline(left_line.coords)
-                point = coords[iterator]
-                if abs(euclidean(point, coords[-1])) < 12:
-                    break
-                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
-                                               (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
-                    angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
-                                      coords[iterator - 1], point) - rotation + randint(-8, 8)
-                    car_positions.append((point, angle, idx))
-                iterator += 1
-        if right:
-            right_lines = [line.parallel_offset(width / 2 + offset + x, "right") for x in noise]
-            right_lines = [multilinestrings_to_linestring(x) for x in right_lines]
-            iterator = 1
-            while iterator < len(right_lines[0].coords):
-                right_line = choice(right_lines)
-                coords = right_line.coords[::-1]
-                coords = b_spline(coords)
-                point = coords[iterator]
-                if abs(euclidean(point, coords[-1])) < 12:
-                    break
-                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
-                                               (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
-                    angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
-                                      coords[iterator - 1], point) + 180 - rotation + randint(-8, 8)
-                    car_positions.append((point, angle, idx))
-                iterator += 1
-        lane["parked_left"] = left
-        lane["parked_right"] = right
-        lane["parked_rotation"] = rotation
-        lane["parked_offset"] = offset
-        lane["parked_max_distance"] = max_distance
-    parked_cars = list()
-    color = (round(uniform(0, 1), 2), round(uniform(0, 1), 2), round(uniform(0, 1), 2), round(uniform(1, 1.3), 2))
-    individual["parked_color"] = color
-    for position in car_positions:
-        if random() <= 0.4:
-            continue
-        parked_cars.append({"name": "golf", "position": (position[0][0], position[0][1]), "zRot": position[1],
-                            "color": color, "lane": position[2]})
-    individual["obstacles"].extend(parked_cars)
 
 
 def _add_other_0(individual, lanes_start=None, lanes_end=None):
@@ -540,13 +540,18 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
         if sign_on_my_lane == "stopsign":
             obstacles.append({"name": "prioritysign", "position": my_position, "zRot": my_z_rot,
                               "intersection_id": INTERSECTION_ID})
+        elif sign_on_my_lane == "prioritysign":
+            obstacles.append({"name": "stopsign", "position": my_position, "zRot": my_z_rot,
+                              "intersection_id": INTERSECTION_ID})
         else:
             if num_lanes == 1:
                 obstacles.append({"name": "trafficlightsingle", "position": my_position, "zRot": my_z_rot,
-                                  "mode": my_mode, "sign": "priority", "intersection_id": INTERSECTION_ID})
+                                  "mode": my_mode, "sign": "priority" if pole_sign == "yield" else "yield",
+                                  "intersection_id": INTERSECTION_ID})
             else:
                 obstacles.append({"name": "trafficlightdouble", "position": my_position, "zRot": my_z_rot,
-                                  "mode": my_mode, "sign": "priority", "intersection_id": INTERSECTION_ID})
+                                  "mode": my_mode, "sign": "priority" if pole_sign == "yield" else "yield",
+                                  "intersection_id": INTERSECTION_ID})
 
     def my_direction(my_point, my_right_point):
         line = LineString([intersection_point, my_point])
@@ -576,17 +581,22 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 
     # Bottom direction.
     position, z_rot = my_direction(last_point, right_point)
+    pole_sign = "yield" if random() < 0.5 else "priority"
     if current_right_lanes == 1:
-        if current_left_lanes == 1:
-            obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot,
-                              "intersection_id": INTERSECTION_ID, "facingEgo": True, "lane_id": lane_id})
+        if current_left_lanes == 1 and random() < 0.5:
+            if random() < 0.5:
+                obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot,
+                                  "intersection_id": INTERSECTION_ID, "facingEgo": True, "lane_id": lane_id})
+            else:
+                obstacles.append({"name": "prioritysign", "position": position, "zRot": z_rot,
+                                  "intersection_id": INTERSECTION_ID, "facingEgo": True, "lane_id": lane_id})
         else:
             obstacles.append({"name": "trafficlightsingle", "position": position, "zRot": z_rot, "mode": mode,
-                              "sign": "yield", "oid": oid, "intersection_id": INTERSECTION_ID, "facingEgo": True,
+                              "sign": pole_sign, "oid": oid, "intersection_id": INTERSECTION_ID, "facingEgo": True,
                               "lane_id": lane_id})
     else:
         obstacles.append({"name": "trafficlightdouble", "position": position, "zRot": z_rot, "mode": mode,
-                          "sign": "yield", "oid": oid, "intersection_id": INTERSECTION_ID, "facingEgo": True,
+                          "sign": pole_sign, "oid": oid, "intersection_id": INTERSECTION_ID, "facingEgo": True,
                           "lane_id": lane_id})
     sign_on_my_lane = obstacles[0].get("name")
 
@@ -594,7 +604,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     if sign_on_my_lane.startswith("trafficlight") and mode == "manual":
         triggers = _handle_manual_mode(last_point, oid)
 
-    if sign_on_my_lane.startswith("trafficlight") and mode != "manual":
+    if sign_on_my_lane.startswith("trafficlight") and pole_sign == "yield":
         triggers.append(_add_stop_sign_triggers(last_point))
 
     if sign_on_my_lane.startswith("stop"):
@@ -621,14 +631,14 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
             else:
                 this_sign = "trafficlightdouble"
         else:
-            this_sign = "stopsign"
+            this_sign = sign_on_my_lane
         position, z_rot = my_direction(straight_point, left_point)
         obstacles.append({"name": this_sign, "position": position,
                           "zRot": z_rot, "intersection_id": INTERSECTION_ID})
         if sign_on_my_lane.startswith("trafficlight"):
             mode = "off" if mode == "manual" else mode
             obstacles[-1]["mode"] = mode
-            obstacles[-1]["sign"] = "yield"
+            obstacles[-1]["sign"] = pole_sign
 
     # Right direction.
     if number_of_ways == 4 or direction == "right" or layout == "right":
@@ -686,6 +696,7 @@ def _get_connected_lanes(lanes, ego_lanes, directions):
         return connected_lanes
 
 
+# Done.
 def _create_intersections_manual(individual):
     """Creates intersection "type" manually.
     :param individual: Individual of the population list.
@@ -754,7 +765,7 @@ def _create_intersections_manual(individual):
 
 class FuelConsumptionTestGenerator:
 
-    def __init__(self, files_name="urban", traffic=True, spline_degree=3, max_tries=20, population_size=1):
+    def __init__(self, files_name="urban", traffic=True, spline_degree=2, max_tries=20, population_size=1):
         self.FILES_NAME = files_name                  # File name for XML file series.
         self.TRAFFIC = traffic                        # Enable traffic or not.
         self.SPLINE_DEGREE = spline_degree            # Sharpness of curves.
@@ -777,6 +788,7 @@ class FuelConsumptionTestGenerator:
         print(colored("##################", "red", attrs=["bold"]))
         print(colored("##################", "yellow", attrs=["bold"]))
 
+    # Done.
     def _bspline(self, lanes):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
         :param lanes: List of lanes.
@@ -1016,10 +1028,11 @@ class FuelConsumptionTestGenerator:
         """Creates and returns an initial population."""
         startpop = list()
         i = 0
-        while len(startpop) < self.POPULATION_SIZE:
+        while len(startpop) < self.POPULATION_SIZE: 
             urban = self._create_urban_environment()
-            for key, value in urban.items():
-                print(key, value)
+            print(urban)
+            #for key, value in urban.items():
+            #    print(key, value)
             if urban is not None:
                 startpop.append({"lanes": urban.get("lanes"),
                                  "file_name": self.FILES_NAME,
@@ -1923,18 +1936,18 @@ class FuelConsumptionTestGenerator:
             yield
 
 # TODO Desired features:
-#       TODO Crossover
 #       TODO Test oracle: Out of map
 #       TODO Buggy traffic
 #       TODO Right turns are buggy
-#       TODO Traffic light color cant be determined correctly
-#       TODO Ego shouldn't stop at yield sign when other car spawns on opposite lane
 #       TODO Flashing == blinking
-#       TODO Fix Shapely errors
+#       TODO Make traffic participant 2 spawn earlier
+#       TODO Comments
+#       TODO Refactor
 
 # TODO May-have/Improvements:
 #       TODO Make all objects collidable
-
+#       TODO Fix Shapely errors
+#       TODO Traffic for standing at the traffic light or stop sign
 #       TODO Improve speed of car
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
 #       TODO Find more/other ways to save fuel by looking at the driving style.
@@ -1951,5 +1964,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Fix BNG errors and warnings
 #       TODO Parallel offset instead of width lines
 #       TODO Improve performance
-#       TODO Comments
-#       TODO Refactor
+#       TODO Crossover
+#       TODO Traffic light color cant be determined correctly
+#       TODO Ego shouldn't stop at yield sign when other car spawns on opposite lane

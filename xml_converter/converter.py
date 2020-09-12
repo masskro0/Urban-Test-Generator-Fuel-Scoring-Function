@@ -57,7 +57,8 @@ def _get_offset_nodes(road_segments, line, offset, direction):
     return nodes
 
 
-def b_spline(old_coords, samples=NUM_NODES):
+# Done.
+def b_spline(old_coords, samples=NUM_NODES, degree=2):
     """Calculate {@code samples} samples on a bspline. This is the road representation function.
     :param samples: Number of samples to return.
     :param old_coords: List of tuples.
@@ -65,7 +66,7 @@ def b_spline(old_coords, samples=NUM_NODES):
     """
     old_coords = asarray(old_coords)
     count = len(old_coords)
-    degree = clip(2, 0, count - 1)
+    degree = clip(degree, 0, count - 1)
     kv = concatenate(([0] * degree, arange(count - degree + 1), [count - degree] * degree))
     u = linspace(False, (count - degree), samples)
     splines = around(array(splev(u, (kv, old_coords.T, degree))).T, 3)
