@@ -17,7 +17,6 @@ from utils.utility_functions import convert_points_to_lines, get_angle, calc_wid
 from utils.validity_checks import intersection_check_width, intersection_check_last, intersection_check_all
 from utils.xml_creator import build_all_xml
 from xml_converter.converter import b_spline
-from utils.plotter import plotter
 
 MIN_DEGREES = 90
 MAX_DEGREES = 270
@@ -344,7 +343,6 @@ def _add_other_0(individual, lanes_start=None, lanes_end=None):
     return spawn_lanes, triggers
 
 
-# Done
 def _add_other_1(individual, spawn_lanes=None, end_lane=None):
     if spawn_lanes is None:
         spawn_lanes = list()
@@ -491,13 +489,11 @@ def _merge_lanes(population):
     return population
 
 
-# Done.
 def _add_stop_sign_triggers(last_point):
     trigger_point = {"position": last_point, "action": "stop", "tolerance": 2, "triggeredBy": "ego", "duration": 4}
     return {"triggerPoint": trigger_point}
 
 
-# Done.
 def _handle_manual_mode(last_point, oid):
     triggers = list()
     init_state = choice(["green", "red"])
@@ -514,7 +510,6 @@ def _handle_manual_mode(last_point, oid):
     return triggers
 
 
-# Done.
 def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, width, intersection, lane_id):
     global OID_INDEX
     global INTERSECTION_ID
@@ -586,7 +581,7 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     position, z_rot = my_direction(last_point, right_point)
     pole_sign = "yield" if random() < 0.5 else "priority"
     if current_right_lanes == 1:
-        if current_left_lanes == 1 and random() < 0.5:
+        if current_left_lanes == 1 and new_left_lanes == 1 and new_right_lanes == 1 and random() < 0.5:
             if random() < 0.5:
                 obstacles.append({"name": "stopsign", "position": position, "zRot": z_rot,
                                   "intersection_id": INTERSECTION_ID, "facingEgo": True, "lane_id": lane_id})
@@ -699,7 +694,6 @@ def _get_connected_lanes(lanes, ego_lanes, directions):
         return connected_lanes
 
 
-# Done.
 def _create_intersections_manual(individual):
     """Creates intersection "type" manually.
     :param individual: Individual of the population list.
@@ -791,7 +785,6 @@ class FuelConsumptionTestGenerator:
         print(colored("##################", "red", attrs=["bold"]))
         print(colored("##################", "yellow", attrs=["bold"]))
 
-    # Done.
     def _bspline(self, lanes):
         """Calculate {@code samples} samples on a bspline. This is the road representation function.
         :param lanes: List of lanes.
@@ -816,7 +809,6 @@ class FuelConsumptionTestGenerator:
                                  "width": lane.get("width")})
         return splined_list
 
-    # Done
     def _add_segment(self, last_point, penultimate_point=None):
         """Generates a new random point within a given range.
         :param last_point: Last point of the control point list as tuple.
@@ -869,11 +861,8 @@ class FuelConsumptionTestGenerator:
         intersection_probability = 0.25
         lines_of_roads = convert_points_to_lines(lanes)
         last_point = p2
-        xd = 0
         while (number_of_pieces <= self.MAX_NODES and tries <= self.MAX_TRIES) \
                 or len(lanes[lane_index].get("control_points")) == 1:
-            print("turn up", xd)
-            xd += 1
             control_points = lanes[lane_index].get("control_points")
             if intersection_possible and ((number_of_pieces == self.MAX_NODES - 1 and not one_intersection)
                                           or random() <= intersection_probability) and len(control_points) > 1:
@@ -945,7 +934,6 @@ class FuelConsumptionTestGenerator:
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
-    # Done
     def _create_intersection(self, last_point, penultimate_point):
         layout = None
         random_number = random()
@@ -1036,9 +1024,6 @@ class FuelConsumptionTestGenerator:
         i = 0
         while len(startpop) < self.POPULATION_SIZE: 
             urban = self._create_urban_environment()
-            print(urban)
-            #for key, value in urban.items():
-            #    print(key, value)
             if urban is not None:
                 startpop.append({"lanes": urban.get("lanes"),
                                  "file_name": self.FILES_NAME,
@@ -1054,7 +1039,6 @@ class FuelConsumptionTestGenerator:
                 i += 1
         return startpop
 
-    # Done
     def _mutation(self, individual):
         """Mutates several properties of an individual.
         :param individual: Individual of a population list.
@@ -1080,7 +1064,6 @@ class FuelConsumptionTestGenerator:
         child["fitness"] = 0
         return child
 
-    # Done
     def _mutate_points(self, individual):
         """Mutates the control points of each lane.
         :param individual: Individual with lanes.
@@ -1171,7 +1154,6 @@ class FuelConsumptionTestGenerator:
             lanes[i]["mutated"] = mutated
             i += 1
 
-    # Done
     def _mutate_num_lanes_and_width(self, individual):
         """Mutates the width and number of lanes for each lane.
         :param individual: Individual with lanes.
@@ -1208,7 +1190,6 @@ class FuelConsumptionTestGenerator:
                 if not intersection_check_width(width_lines, control_points_lines, individual["intersection_lanes"]):
                     individual["lanes"] = temp_lanes
 
-    # Done
     def _mutate_traffic_signs(self, individual):
         """Mutates the traffic signs and lights of an individual. Mutates position, rotation and the kind of obstacle.
         :param individual: Individual of the population list.
@@ -1279,7 +1260,6 @@ class FuelConsumptionTestGenerator:
                             break
                         tries += 1
 
-    # Done
     @staticmethod
     def _mutate_traffic_light_mode(individual):
         """Mutates the traffic light mode of traffic light for each intersection.
@@ -1322,7 +1302,6 @@ class FuelConsumptionTestGenerator:
                     individual["triggers"].extend(triggers)
                     individual["actions"][index] = action
 
-    # Done
     def _mutate_parked_cars(self, individual):
         """Mutates parked cars either car by car (position and rotation) or for a whole lane (rotation angle). Also
            mutates color.
@@ -1462,7 +1441,6 @@ class FuelConsumptionTestGenerator:
                 if obstacle.get("name") == "golf":
                     obstacle["color"] = color
 
-    # Done
     def _mutate_traffic(self, individual):
         """Mutates traffic. Each participant must be handled differently.
         :param individual: Individual of the population list.
@@ -1479,7 +1457,6 @@ class FuelConsumptionTestGenerator:
             else:
                 self._mutate_other_2(individual)
 
-    # Done
     def _mutate_other_0(self, individual):
         """Mutates participant 'other_0'.
         :param individual: Individual in the population list.
@@ -1578,7 +1555,6 @@ class FuelConsumptionTestGenerator:
                 if participant.get("id") == "other_0":
                     participant["color"] = choice(COLORS)
 
-    # Done
     def _mutate_other_1(self, individual):
         """Mutates the participant 'other_1'.
         :param individual: Individual of the population list.
@@ -1641,7 +1617,6 @@ class FuelConsumptionTestGenerator:
                             break
                         tries += 1
 
-    # Done
     def _mutate_other_2(self, individual):
         """Mutates the participant 'other_2'.
         :param individual: Individual of the population list.
@@ -1692,7 +1667,6 @@ class FuelConsumptionTestGenerator:
                 if participant.get("id") == "other_2":
                     participant["color"] = choice(COLORS)
 
-    # Done
     def _update(self, individual):
         """Updates obstacle positions, waypoints, trigger and spawn points, success point and initial state of vehicles
            after mutating the control points.
@@ -1736,7 +1710,6 @@ class FuelConsumptionTestGenerator:
         self._add_parked_cars_mutated(individual)
         return individual
 
-    # Done
     @staticmethod
     def _update_others(individual):
         """Method to update all participants except for the ego car.
@@ -1788,7 +1761,6 @@ class FuelConsumptionTestGenerator:
             if participant.get("id") == "other_2":
                 participant["color"] = color
 
-    # Done
     def _add_parked_cars_mutated(self, individual):
         car_positions = list()
         lane_indices = list()
@@ -1854,7 +1826,6 @@ class FuelConsumptionTestGenerator:
                                 "color": color, "lane": position[2]})
         individual["obstacles"].extend(parked_cars)
 
-    # Done
     def _choose_elite(self, population):
         """Chooses the test cases with the best fitness values.
         :param population: List of individuals.
@@ -1868,7 +1839,6 @@ class FuelConsumptionTestGenerator:
             i += 1
         return elite
 
-    # Done
     def genetic_algorithm(self):
         if len(self.population_list) == 0:
             self.population_list = self._create_start_population()
@@ -1915,7 +1885,6 @@ class FuelConsumptionTestGenerator:
         build_all_xml(temp_list)
         print(colored("Population finished.", "grey", attrs=['bold']))
 
-    # Done
     def get_test(self):
         """Returns the two first test files starting with "files_name".
         :return: Tuple of the path to the dbe and dbc file.
@@ -1930,7 +1899,6 @@ class FuelConsumptionTestGenerator:
             yield Path(matches[i + 1]), Path(matches[i])
             i += 2
 
-    # Done
     def on_test_finished(self, score):
         """This method is called after a test was finished. Also updates fitness value of an individual.
         :return: Void.
@@ -1949,6 +1917,10 @@ class FuelConsumptionTestGenerator:
 #       TODO Make traffic participant 2 spawn earlier
 #       TODO Comments
 #       TODO Refactor
+#       TODO golf tag -> parked_car
+#       TODO Rename files
+#       TODO XML failure criteria is actually read
+#       TODO Check if other participants fail (damage etc.)
 
 # TODO May-have/Improvements:
 #       TODO Make all objects collidable

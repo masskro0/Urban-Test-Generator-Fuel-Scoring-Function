@@ -57,7 +57,6 @@ def _get_offset_nodes(road_segments, line, offset, direction):
     return nodes
 
 
-# Done.
 def b_spline(old_coords, samples=NUM_NODES, degree=2):
     """Calculate {@code samples} samples on a bspline. This is the road representation function.
     :param samples: Number of samples to return.

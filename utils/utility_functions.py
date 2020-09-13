@@ -116,7 +116,6 @@ def get_width_lines(splined_lanes):
     return complete_width_list
 
 
-# Done
 def get_angle(a, b, c):
     """Returns the angle between three points (two lines so to say).
     :param a: First point.
@@ -128,7 +127,6 @@ def get_angle(a, b, c):
     return ang + 360 if ang < 0 else ang
 
 
-# Done
 def calc_width(left_lanes, right_lanes):
     """Calculates the width depending on the number of lanes. Width per lane can be 4 or 5.
     :param left_lanes: Number of left lanes.
@@ -138,7 +136,6 @@ def calc_width(left_lanes, right_lanes):
     return (left_lanes + right_lanes) * randint(4, 5)
 
 
-# Done
 def calc_min_max_angles(num_lanes):
     """Calculates the minimum and maximum angle depending on the number of lanes.
     :param num_lanes: Number of lanes.
@@ -147,7 +144,6 @@ def calc_min_max_angles(num_lanes):
     return MIN_DEGREES + (num_lanes - 2) * 25, MAX_DEGREES - (num_lanes - 2) * 25
 
 
-# Done
 def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right_lanes, lane_index):
     """Splits the intersection into lanes, assigns the right number of lanes and width to the lanes,
     determines the lanes that the ego car needs for its waypoints.
@@ -301,10 +297,11 @@ def calc_speed_waypoints(participants):
                     if i - 5 >= 0:
                         waypoints[i - 4]["speed"] = 0
                         waypoints[i - 5]["speed"] = 0
-                    if i - 8 >= 0:
+                    if i - 9 >= 0:
                         waypoints[i - 6]["speed"] = 0
                         waypoints[i - 7]["speed"] = 0
                         waypoints[i - 8]["speed"] = 0
+                        waypoints[i - 9]["speed"] = 0
                 p1 = waypoints[i - 1].get("position")
                 p3 = waypoints[i + 1].get("position")
                 angle = get_angle(p1, waypoints[i].get("position"), p3)
