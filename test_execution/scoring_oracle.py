@@ -131,6 +131,7 @@ class MisbehaviourObserver:
                         break
                     infraction_score += values[-(i+1)]
                     i += 1
+                infraction_score /= time_boundary
                 infraction_score *= 10
                 infraction_score = round(infraction_score)
                 if infraction_score > score_limit:
