@@ -286,9 +286,9 @@
         </lane>
     </lanes>
     <obstacles>
-        <trafficlightdouble facingEgo="True" mode="blinking" sign="yield" x="58.220000000000006" y="-7.7" zRot="360" />
-        <trafficlightdouble mode="blinking" sign="priority" x="57.94129117241095" y="7.8451405141856005" zRot="276" />
-        <trafficlightdouble mode="blinking" sign="yield" x="71.1" y="7.7" zRot="180" />
+        <trafficlightdouble facingEgo="True" mode="flashing" sign="yield" x="58.220000000000006" y="-7.7" zRot="360" />
+        <trafficlightdouble mode="flashing" sign="priority" x="57.94129117241095" y="7.8451405141856005" zRot="276" />
+        <trafficlightdouble mode="flashing" sign="yield" x="71.1" y="7.7" zRot="180" />
         <parkedCar color="(0.57, 0.62, 0.9, 1.21)" x="1.444" y="10.9" zRot="-51.0" />
         <parkedCar color="(0.57, 0.62, 0.9, 1.21)" x="1.444" y="-11.7" zRot="132.0" />
         <parkedCar color="(0.57, 0.62, 0.9, 1.21)" x="58.385" y="64.318" zRot="77.3262094910247" />

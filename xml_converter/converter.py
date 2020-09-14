@@ -351,8 +351,8 @@ class Converter:
                 traffic_light_coords = (
                     traffic_light_coords[0] + pole_coords[0], traffic_light_coords[1] + pole_coords[1],
                     traffic_light_coords[2] + pole_coords[2])
-                if mode is not None and mode == "blinking":
-                    self._add_blinking_traffic_lights(traffic_light_coords)
+                if mode is not None and mode == "flashing":
+                    self._add_flashing_traffic_lights(traffic_light_coords)
                 if mode is not None and mode == "manual":
                     self._add_traffic_lights(traffic_light_coords, oid, 0)
                 if mode is not None and mode == "off":
@@ -380,15 +380,15 @@ class Converter:
                 rot_matrix = _calc_rot_matrix(rad_x, rad_y, rad_z)
                 traffic_light1_coords = calc_coords_after_rot(traffic_light1_coords, pole_coords, rot_matrix)
                 traffic_light2_coords = calc_coords_after_rot(traffic_light2_coords, pole_coords, rot_matrix)
-                if mode is not None and (mode == "blinking" or mode == "manual"):
+                if mode is not None and (mode == "flashing" or mode == "manual"):
                     rot_matrix = _calc_rot_matrix(rad_x, rad_y, radians(-float(z_rot)))
                     light_pos_1 = (-0.25, 2.09, 5.48)
                     light_pos_2 = (-0.25, 5.72, 5.89)
                     light_pos_1 = calc_coords_after_rot(light_pos_1, pole_coords, rot_matrix)
                     light_pos_2 = calc_coords_after_rot(light_pos_2, pole_coords, rot_matrix)
-                    if mode == "blinking":
-                        self._add_blinking_traffic_lights(light_pos_1)
-                        self._add_blinking_traffic_lights(light_pos_2)
+                    if mode == "flashing":
+                        self._add_flashing_traffic_lights(light_pos_1)
+                        self._add_flashing_traffic_lights(light_pos_2)
                     else:
                         self._add_traffic_lights(light_pos_1, oid, 0)
                         self._add_traffic_lights(light_pos_2, oid, 1)
@@ -410,8 +410,8 @@ class Converter:
                 raise NotImplementedError("Error. Object type \"{}\" is not supported.".format(obstacle.tag))
             id_number += 1
 
-    def _add_blinking_traffic_lights(self, pos):
-        light = "   new PointLight(traffic_blinking_" + str(self.light_index) + "){\n" \
+    def _add_flashing_traffic_lights(self, pos):
+        light = "   new PointLight(traffic_flashing_" + str(self.light_index) + "){\n" \
                 "       radius = \"0.300000012\";\n" \
                 "       isEnabled = \"1\";\n" \
                 "       color = \"1 0.662744999 0 2\";\n" \
@@ -443,7 +443,7 @@ class Converter:
                 "       canSaveDynamicFields = \"1\";\n" \
                 "   };\n"
         self.light_content.append(light)
-        self.lights.append({"id": "traffic_blinking_{}".format(self.light_index),
+        self.lights.append({"id": "traffic_flashing_{}".format(self.light_index),
                             "position": (pos[0], pos[1], pos[2])})
         self.light_index += 1
 
@@ -873,7 +873,7 @@ class Converter:
                        "  local p2_" + str(idx) + " = Point3F(" + str(pos[0]) + ", " + str(pos[1]) \
                        + ", " + str(pos[2]) + ")\n"
 
-        # Add blinking behaviour to traffic light mode "blinking". The yellow light gets teleported each second.
+        # Add flashing behaviour to traffic light mode "flashing". The yellow light gets teleported each second.
         if len(self.lights) != 0:
             content += "  if time == math.floor(time) then\n" \
                        "    if time % 2 == 0 then\n"

@@ -564,8 +564,9 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
         my_position = vector.coords[0]
         return my_position, my_z_rot
 
-    modes = ["off", "blinking", "manual"]
+    modes = ["off", "flashing", "manual"]
     mode = choice(modes)
+    mode = "flashing"
     oid = None
     if mode == "manual":
         oid = "traffic_light_manual_" + str(OID_INDEX)
@@ -1232,9 +1233,9 @@ class FuelConsumptionTestGenerator:
                             obstacle["sign"] = "yield"
                         obstacle["name"] = "trafficlightsingle"
                         if obstacle.get("facingEgo") is not None:
-                            obstacle["mode"] = choice(["off", "blinking", "manual"])
+                            obstacle["mode"] = choice(["off", "flashing", "manual"])
                         else:
-                            obstacle["mode"] = choice(["off", "blinking"])
+                            obstacle["mode"] = choice(["off", "flashing"])
                         if obstacle["mode"] == "manual":
                             global OID_INDEX
                             oid = "traffic_light_manual_" + str(OID_INDEX)
@@ -1290,7 +1291,7 @@ class FuelConsumptionTestGenerator:
             else:
                 intersec_id = obstacle.get("intersection_id")
                 index += 1
-                mode = choice(["off", "blinking", "manual"])
+                mode = choice(["off", "flashing", "manual"])
                 obstacle["mode"] = mode
                 if mode == "manual":
                     mode = "off"
@@ -1913,7 +1914,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Test oracle: Out of map
 #       TODO Buggy traffic
 #       TODO Right turns are buggy
-#       TODO Flashing == blinking
 #       TODO Make traffic participant 2 spawn earlier
 #       TODO Comments
 #       TODO Refactor

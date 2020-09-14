@@ -698,9 +698,9 @@
         </lane>
     </lanes>
     <obstacles>
-        <trafficlightsingle facingEgo="True" mode="blinking" sign="yield" x="60.718907486770284" y="-66.01971325728407" zRot="267" />
-        <trafficlightsingle mode="blinking" sign="priority" x="77.71844446640101" y="-69.12494231082046" zRot="521" />
-        <trafficlightsingle mode="blinking" sign="priority" x="59.95079972128748" y="-82.0049501550765" zRot="362" />
+        <trafficlightsingle facingEgo="True" mode="flashing" sign="yield" x="60.718907486770284" y="-66.01971325728407" zRot="267" />
+        <trafficlightsingle mode="flashing" sign="priority" x="77.71844446640101" y="-69.12494231082046" zRot="521" />
+        <trafficlightsingle mode="flashing" sign="priority" x="59.95079972128748" y="-82.0049501550765" zRot="362" />
         <trafficlightsingle facingEgo="True" mode="off" sign="yield" x="123.8458817856355" y="-126.98000347769903" zRot="295" />
         <trafficlightsingle mode="off" sign="priority" x="138.96066864851065" y="-122.58080042402322" zRot="201" />
         <trafficlightsingle mode="off" sign="yield" x="142.31444528116495" y="-130.32739984078418" zRot="475" />

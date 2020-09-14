@@ -313,10 +313,10 @@
         </lane>
     </lanes>
     <obstacles>
-        <trafficlightdouble facingEgo="True" mode="blinking" sign="yield" x="-13.682463865993547" y="-100.23387165159079" zRot="216" />
-        <trafficlightdouble mode="blinking" sign="priority" x="-6.3998621308679535" y="-110.1466771055249" zRot="486" />
-        <trafficlightdouble mode="blinking" sign="yield" x="-18.74470527000168" y="-119.18575050218355" zRot="396" />
-        <trafficlightdouble mode="blinking" sign="priority" x="-27.868645496035665" y="-111.10593240532577" zRot="326" />
+        <trafficlightdouble facingEgo="True" mode="flashing" sign="yield" x="-13.682463865993547" y="-100.23387165159079" zRot="216" />
+        <trafficlightdouble mode="flashing" sign="priority" x="-6.3998621308679535" y="-110.1466771055249" zRot="486" />
+        <trafficlightdouble mode="flashing" sign="yield" x="-18.74470527000168" y="-119.18575050218355" zRot="396" />
+        <trafficlightdouble mode="flashing" sign="priority" x="-27.868645496035665" y="-111.10593240532577" zRot="326" />
         <parkedCar color="(0.66, 0.08, 0.87, 1.08)" x="9.737" y="9.396" zRot="318.9737656705545" />
         <parkedCar color="(0.66, 0.08, 0.87, 1.08)" x="14.751" y="9.788" zRot="322.9085827987341" />
         <parkedCar color="(0.66, 0.08, 0.87, 1.08)" x="19.353" y="9.168" zRot="306.7511059117627" />
