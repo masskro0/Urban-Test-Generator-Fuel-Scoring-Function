@@ -317,7 +317,7 @@ class Converter:
                 prioritysign = StaticObject(pos=pos, rot=rot, name=name_sign,
                                             scale=(1.2, 1.2, 1.2), shape='/levels/urban/art/objects/priority.dae')
                 self.scenario.add_object(prioritysign)
-            elif obstacle.tag == "golf":
+            elif obstacle.tag == "parkedCar":
                 rot = (rot[0], rot[1], 90 - rot[2])
                 name_car = "Golf_" + str(id_number)
                 golf = StaticObject(pos=pos, rot=rot, name=name_car,

@@ -95,7 +95,7 @@ def _add_parked_cars(individual):
     for position in car_positions:
         if random() <= 0.4:
             continue
-        parked_cars.append({"name": "golf", "position": (position[0][0], position[0][1]), "zRot": position[1],
+        parked_cars.append({"name": "parkedCar", "position": (position[0][0], position[0][1]), "zRot": position[1],
                             "color": color, "lane": position[2]})
     individual["obstacles"].extend(parked_cars)
 
@@ -1311,7 +1311,7 @@ class FuelConsumptionTestGenerator:
         num_cars = 0
         num_lanes = set()
         for obstacle in individual.get("obstacles"):
-            if obstacle.get("name") == "golf":
+            if obstacle.get("name") == "parkedCar":
                 num_cars += 1
                 num_lanes.add(obstacle.get("lane"))
         if num_cars == 0 or len(num_lanes) == 0:
@@ -1322,7 +1322,7 @@ class FuelConsumptionTestGenerator:
         for lane_index in num_lanes:
             if random() <= probability_lane:
                 for obstacle in individual.get("obstacles"):
-                    if obstacle.get("name") == "golf" and obstacle.get("lane") == lane_index:
+                    if obstacle.get("name") == "parkedCar" and obstacle.get("lane") == lane_index:
                         individual["obstacles"].remove(obstacle)
                 car_positions = list()
                 lane = individual.get("lanes")[lane_index]
@@ -1395,12 +1395,12 @@ class FuelConsumptionTestGenerator:
                     if random() <= 0.4:
                         continue
                     parked_cars.append(
-                        {"name": "golf", "position": (position[0][0], position[0][1]), "zRot": position[1],
+                        {"name": "parkedCar", "position": (position[0][0], position[0][1]), "zRot": position[1],
                          "color": None, "lane": position[2]})
                 individual["obstacles"].extend(parked_cars)
             else:
                 for idx, obstacle in enumerate(individual.get("obstacles")):
-                    if obstacle.get("name") == "golf" and obstacle.get("lane") == lane_index \
+                    if obstacle.get("name") == "parkedCar" and obstacle.get("lane") == lane_index \
                             and random() <= probability:
                         if random() <= probability_attr:
                             old_position = obstacle.get("position")
@@ -1438,7 +1438,7 @@ class FuelConsumptionTestGenerator:
                      round(uniform(1, 1.3), 2))
             individual["parked_color"] = color
             for obstacle in individual.get("obstacles"):
-                if obstacle.get("name") == "golf":
+                if obstacle.get("name") == "parkedCar":
                     obstacle["color"] = color
 
     def _mutate_traffic(self, individual):
@@ -1822,7 +1822,7 @@ class FuelConsumptionTestGenerator:
         for position in car_positions:
             if random() <= 0.4:
                 continue
-            parked_cars.append({"name": "golf", "position": (position[0][0], position[0][1]), "zRot": position[1],
+            parked_cars.append({"name": "parkedCar", "position": (position[0][0], position[0][1]), "zRot": position[1],
                                 "color": color, "lane": position[2]})
         individual["obstacles"].extend(parked_cars)
 
@@ -1917,10 +1917,11 @@ class FuelConsumptionTestGenerator:
 #       TODO Make traffic participant 2 spawn earlier
 #       TODO Comments
 #       TODO Refactor
-#       TODO golf tag -> parked_car
 #       TODO Rename files
 #       TODO XML failure criteria is actually read
 #       TODO Check if other participants fail (damage etc.)
+#       TODO Test setup.py
+#       TODO Retest experiments
 
 # TODO May-have/Improvements:
 #       TODO Make all objects collidable
