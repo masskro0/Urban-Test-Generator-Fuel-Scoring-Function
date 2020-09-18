@@ -1921,7 +1921,7 @@ class FuelConsumptionTestGenerator:
 #       TODO XML failure criteria is actually read
 #       TODO Check if other participants fail (damage etc.)
 #       TODO Test setup.py
-#       TODO Retest experiments
+#       TODO Retest experiments (especially with fuel consumption because of gear)
 
 # TODO May-have/Improvements:
 #       TODO Make all objects collidable
@@ -1929,8 +1929,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Traffic for standing at the traffic light or stop sign
 #       TODO Improve speed of car
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
-#       TODO Find more/other ways to save fuel by looking at the driving style.
-#        (engine brake before intersection&smooth braking, constant dist to car in front of ego)
 
 # TODO Future Work:
 #       TODO Roundabouts
@@ -1946,3 +1944,5 @@ class FuelConsumptionTestGenerator:
 #       TODO Crossover
 #       TODO Traffic light color cant be determined correctly
 #       TODO Ego shouldn't stop at yield sign when other car spawns on opposite lane
+#       TODO Find more/other ways to save fuel by looking at the driving style.
+#        (engine brake before intersection&smooth braking, constant dist to car in front of ego)

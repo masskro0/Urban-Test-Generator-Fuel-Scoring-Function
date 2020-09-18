@@ -2,7 +2,7 @@ from test_execution.engine_types import EngineType
 
 
 class MisbehaviourObserver:
-    def __init__(self, engine_type: EngineType = EngineType.PETROL):
+    def __init__(self, engine_type: EngineType = EngineType.PETROL, max_gear=6):
         """Class for observing faulty behavior of a car concerning fuel efficiency.
         :param engine_type: Engine/Fuel type of a car. Check the file engine_types.py for more information.
         """
@@ -17,6 +17,7 @@ class MisbehaviourObserver:
         self.score = 0
         self.prev_time = 0
         self.prev_time_called = 0
+        self.max_gear = max_gear
         self.cache = {"last_actions": list(), "values": list()}
 
     def get_results(self):
@@ -78,13 +79,14 @@ class MisbehaviourObserver:
                         break
                     i += 1
 
-    def _validate_rpm_infraction(self, rpm):
+    def _validate_rpm_infraction(self, rpm, gear):
         """Checks whether the rpm is above the allowed limit and logs the global position of the car.
         :param rpm: Current rpm of the vehicle.
+        :param gear: Current gear of the vehicle.
         :return: Void.
         """
         upper_limit = self.engine_type.get_rpm_shifting_sweetspots()['upper_limit'] + 100
-        if rpm > upper_limit:
+        if rpm > upper_limit and gear < self.max_gear:
             self.rpm_infractions += 1
             increase = 180
             if rpm >= upper_limit + increase * 9:
@@ -174,7 +176,7 @@ class MisbehaviourObserver:
             self._validate_accelerate_and_stop_infraction(electrics['throttle'], electrics['brake'])
             self._validate_brake_infraction(electrics['brake'])
             self._validate_engine_idle_infraction(electrics['wheelspeed'], electrics['running'], time)
-            self._validate_rpm_infraction(electrics['rpmTacho'])
+            self._validate_rpm_infraction(electrics['rpmTacho'], electrics['gear'])
             self._validate_throttle_infraction(electrics['throttle'])
             self.set_fuel_value(electrics['fuel'])
             self.prev_time_called = time
