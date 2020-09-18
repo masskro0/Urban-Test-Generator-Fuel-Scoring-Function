@@ -7,6 +7,9 @@ from utils.utility_functions import calc_speed_waypoints
 
 
 def main():
+    """Script for generating XML files for the curvy test case by using my XML interface.
+    :return: Void.
+    """
     dbe = DBEBuilder()
     dbe.set_tod(0)
     lanes = [{"width": 10, "left_lanes": 1, "right_lanes": 1}]
