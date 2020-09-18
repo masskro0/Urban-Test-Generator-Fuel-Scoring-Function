@@ -38,14 +38,14 @@ def create_tests(num_tests, collect, experiments):
         dbc = paths[1]
         temp = deepcopy(experiments)
         temp.append("default")
-        for experiment in temp:
-            destination_path = join(experiment, "test_case_" + str(time()))
+        for exp in temp:
+            destination_path = join(exp, "test_case_" + str(time()))
             if not exists(destination_path):
                 mkdir(destination_path)
             test_case_dir = join(destination_path, "\\test_case")
             if not exists(test_case_dir):
                 mkdir(test_case_dir)
-            if experiment != "default":
+            if exp != "default":
                 image_dir = join(destination_path, "images")
                 if not exists(image_dir):
                     mkdir(image_dir)
@@ -338,11 +338,11 @@ def visualize_results(experiment_folder, false_predictions, images):
                 dpi=200)
 
 
-def plot_confusion_matrix(prediction, expectation, experiment, save_path):
+def plot_confusion_matrix(prediction, expectation, experiment_name, save_path):
     """Plots a confusion matrix of which test cases passed or failed.
     :param prediction: List of states per test case with the predicted outcome.
     :param expectation: List of states per test case with the expected outcome.
-    :param experiment: Name of the experiment.
+    :param experiment_name: Name of the experiment.
     :param save_path: Path to store the image.
     :return: Void.
     """
@@ -359,14 +359,14 @@ def plot_confusion_matrix(prediction, expectation, experiment, save_path):
     box_labels = [f"{v1}\n{v2}" for v1, v2 in zip(group_counts, group_percentages)]
     box_labels = asarray(box_labels).reshape(2, 2)
     heatmap(cm, fmt="", annot=box_labels, xticklabels=["Success", "Fail"], yticklabels=["Success", "Fail"])
-    plt.title("Confusion Matrix of TLDS in Test Case \"{}\"".format(experiment))
+    plt.title("Confusion Matrix of TLDS in Test Case \"{}\"".format(experiment_name))
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.gcf().subplots_adjust(bottom=0.28)
     plt.gcf().subplots_adjust(right=1.05)
     plt.figtext(0.49, 0.01, stats_text, ha="center", fontsize=12,
                 bbox={"facecolor": "gray", "alpha": 0.5, "pad": 5})
-    plt.savefig(join(save_path, "cm_" + experiment + ".png"), dpi=200)
+    plt.savefig(join(save_path, "cm_" + experiment_name + ".png"), dpi=200)
 
 
 if __name__ == '__main__':
