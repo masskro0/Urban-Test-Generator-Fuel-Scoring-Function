@@ -86,7 +86,7 @@ def visualize_results(results):
 
     # Lists containing number of infractions for each test run for one profile.
     rpm_ind, throttle_ind, brake_ind, accelerate_and_stop_ind, engine_idle_ind, scores_ind, infractions_ind,\
-    consumed_fuel_ind = ([] for _ in range(8))
+        consumed_fuel_ind = ([] for _ in range(8))
 
     # Lists saving various information of all profiles over one test case.
     fuel_list, score_list, curvy_list, intersection_list, scores_all_tests, fuel_list_all, score_list_all, ind_data \

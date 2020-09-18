@@ -10,7 +10,7 @@ from test_execution.engine_types import EngineType
 from utils.utility_functions import get_magnitude_of_3d_vector
 
 
-def run_test_case(converter, dbc, dbe):
+def setup_test_case(converter):
     print(colored("Starting test case {}.".format(converter.scenario.name), "grey", attrs=['bold']))
     vehicles = converter.scenario.vehicles
     ego = None
@@ -26,6 +26,11 @@ def run_test_case(converter, dbc, dbe):
     ego.attach_sensor("timer", timer)
     damage = Damage()
     ego.attach_sensor("damage", damage)
+    return beamng, ego
+
+
+def run_test_case(converter, dbc, dbe):
+    beamng, ego = setup_test_case(converter)
     observer = MisbehaviourObserver()
     oracle = TestOracle(converter.scenario, dbc, dbe)
     tllabel = TrafficLightLabel(converter.get_traffic_lights_position(), converter.traffic_triggers)
@@ -44,21 +49,7 @@ def run_test_case(converter, dbc, dbe):
 
 
 def run_test_case_role_model(converter, dbc, dbe, engine_type=EngineType.PETROL):
-    print(colored("Starting test case {}.".format(converter.scenario.name), "grey", attrs=['bold']))
-    vehicles = converter.scenario.vehicles
-    ego = None
-    for vehicle in vehicles.keys():
-        if vehicle.vid == "ego":
-            ego = vehicle
-            break
-    assert ego is not None, "At least one vehicle must have vid \"ego\"."
-    beamng = BeamNGpy('localhost', 64286)
-    electrics = Electrics()
-    ego.attach_sensor('electrics', electrics)
-    timer = Timer()
-    ego.attach_sensor("timer", timer)
-    damage = Damage()
-    ego.attach_sensor("damage", damage)
+    beamng, ego = setup_test_case(converter)
     observer = MisbehaviourObserver()
     oracle = TestOracle(converter.scenario, dbc, dbe)
     tllabel = TrafficLightLabel(converter.get_traffic_lights_position(), converter.traffic_triggers)
