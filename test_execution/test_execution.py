@@ -44,7 +44,7 @@ def run_test_case(converter, dbc, dbe, engine_type=EngineType.PETROL, max_gear=6
     """
     beamng, ego = setup_test_case(converter)
     scoring_oracle = ScoringOracle(engine_type=engine_type, max_gear=max_gear)
-    test_oracle = TestOracle(converter.scenario, dbc, dbe)
+    test_oracle = TestOracle(dbc, dbe)
     tllabel = TrafficLightLabel(converter.get_traffic_lights_position(), converter.traffic_triggers)
     bng = beamng.open()
     bng.load_scenario(converter.scenario)
@@ -53,12 +53,13 @@ def run_test_case(converter, dbc, dbe, engine_type=EngineType.PETROL, max_gear=6
         ego.update_vehicle()
         sensors = bng.poll_sensors(ego)
         electrics = sensors['electrics']['values']
-        scoring_oracle.validate_oracles(electrics['rpmTacho'], electrics['gear'], electrics['throttle'], electrics['brake'],
-                                  electrics['wheelspeed'], electrics['running'], electrics['fuel'],
-                                  sensors["timer"]["time"])
-        label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state)
-        test_oracle.validate_test_case([{"id": "ego", "state": ego.state}], ego.state, sensors["timer"]["time"], label,
-                                  [{"id": "ego", "damage": sensors["damage"]["damage"]}])
+        scoring_oracle.validate_oracles(electrics['rpmTacho'], electrics['gear'], electrics['throttle'],
+                                        electrics['brake'], electrics['wheelspeed'], electrics['running'],
+                                        electrics['fuel'], sensors["timer"]["time"])
+        label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state["pos"], ego.state["dir"])
+        test_oracle.validate_test_case([{"id": "ego", "state": ego.state["pos"]}], ego.state["pos"], ego.state["dir"],
+                                       ego.state["vel"], sensors["timer"]["time"], label,
+                                       [{"id": "ego", "damage": sensors["damage"]["damage"]}])
     bng.close()
     return scoring_oracle.get_results()
 
@@ -74,7 +75,7 @@ def run_test_case_role_model(converter, dbc, dbe, engine_type=EngineType.PETROL,
     """
     beamng, ego = setup_test_case(converter)
     scoring_oracle = ScoringOracle(engine_type=engine_type, max_gear=max_gear)
-    test_oracle = TestOracle(converter.scenario, dbc, dbe)
+    test_oracle = TestOracle(dbc, dbe)
     tllabel = TrafficLightLabel(converter.get_traffic_lights_position(), converter.traffic_triggers)
     spots = engine_type.get_rpm_shifting_sweetspots()
     upper_limit = spots.get("upper_limit") - 100
@@ -101,11 +102,12 @@ def run_test_case_role_model(converter, dbc, dbe, engine_type=EngineType.PETROL,
             elif get_magnitude_of_3d_vector(ego.state["vel"]) * 3.6 > 15:
                 ego.control(gear=2)
         electrics = sensors['electrics']['values']
-        scoring_oracle.validate_oracles(electrics['rpmTacho'], electrics['gear'], electrics['throttle'], electrics['brake'],
-                                  electrics['wheelspeed'], electrics['running'], electrics['fuel'],
-                                  sensors["timer"]["time"])
-        label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state)
-        test_oracle.validate_test_case([{"id": "ego", "state": ego.state}], ego.state, time, label,
-                                  [{"id": "ego", "damage": sensors["damage"]["damage"]}])
+        scoring_oracle.validate_oracles(electrics['rpmTacho'], electrics['gear'], electrics['throttle'],
+                                        electrics['brake'], electrics['wheelspeed'], electrics['running'],
+                                        electrics['fuel'], sensors["timer"]["time"])
+        label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state["pos"], ego.state["dir"])
+        test_oracle.validate_test_case([{"id": "ego", "state": ego.state["pos"]}], ego.state["pos"], ego.state["dir"],
+                                       ego.state["vel"], time, label,
+                                       [{"id": "ego", "damage": sensors["damage"]["damage"]}])
     bng.close()
     return scoring_oracle.get_results()
