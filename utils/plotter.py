@@ -3,20 +3,19 @@
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as Etree
 from os.path import join
-from mpl_toolkits.axes_grid1 import Divider, Size
 
 
 def plotter(lanes, markersize=8, color="-og", marker=True, linewidth=None, title="Road Overview", show=True, dpi=200,
             save_path=None):
     """Plots every point and lines between them. Used to visualize a road network.
-    :param save_path:
-    :param dpi:
-    :param show:
-    :param title:
-    :param linewidth:
-    :param marker:
-    :param color:
-    :param markersize:
+    :param save_path: Path where the plot should be saved. If none is given, the images won't be saved.
+    :param dpi: Resolution of the image.
+    :param show: {@code True} shows the image.
+    :param title: Title of the image.
+    :param linewidth: Width of polylines.
+    :param marker: {@code True} to show the points.
+    :param color: Color of the polylines.
+    :param markersize: Size of the points.
     :param lanes: List of dicts containing multiple lanes.
     :return: Void.
     """
@@ -28,7 +27,7 @@ def plotter(lanes, markersize=8, color="-og", marker=True, linewidth=None, title
             x.append(point[0])
             y.append(point[1])
         plt.plot(x, y, color=color, marker="o" if marker else None, markersize=markersize,
-                 linewidth = lane.get("width") / 6 if linewidth is None else linewidth)
+                 linewidth=lane.get("width") / 6 if linewidth is None else linewidth)
     plt.axis('scaled')
     if title is not None and title != "":
         plt.title(title)
@@ -95,10 +94,19 @@ def plot_splined_list(splined_list):
 
 
 def plot_road_traffic_light(dbc, dbe, save_path=None, show=False):
+    """Plots a whole road network out of XML files. This includes ego-car position, success point, traffic lights and
+     signs and time of day.
+    :param dbc: Path to criteria XML file.
+    :param dbe: Path to environment XML file.
+    :param save_path: Path where the image should be saved.
+    :param show: {@code True} to show the image.
+    :return: Void.
+    """
     dbe_root = Etree.parse(dbe).getroot()
     dbc_root = Etree.parse(dbc).getroot()
     lanes = dbe_root.findall("lanes/lane")
     for lane in lanes:
+        # Plot lanes.
         x = list()
         y = list()
         segments = lane.findall("laneSegment")
@@ -112,22 +120,25 @@ def plot_road_traffic_light(dbc, dbe, save_path=None, show=False):
     if obstacles is None:
         obstacles = list()
     for obs in obstacles:
+        # Plot obstacles
         if obs.tag.startswith("trafficlight") or obs.tag.endswith("sign"):
             plt.plot(float(obs.attrib.get("x")), float(obs.attrib.get("y")), markersize=12, marker='.', color="peru",
                      label="Traffic Sign/Light")
     participants = dbc_root.findall("participants/participant")
     for par in participants:
+        # Plot ego-car position.
         if par.attrib.get("id") == "ego":
             init_state = par.find("initialState").attrib
             plt.plot(float(init_state.get("x")), float(init_state.get("y")), markersize=12,
                      marker=(3, 0, float(init_state.get("orientation")) - 90), color="r", label="Ego Car")
     success_points = dbc_root.findall("success/scPosition")
     for sp in success_points:
+        # Plot success states.
         if sp.attrib.get("participant") == "ego":
             plt.plot(float(sp.attrib.get("x")), float(sp.attrib.get("y")), markersize=12, marker='.', color="b",
                      label="Success Point")
     tod = abs((float(dbe_root.find("timeOfDay").text) - 0.5) * 2)
-    plt.gca().set_facecolor(str(tod))
+    plt.gca().set_facecolor(str(tod))  # Plot time of day.
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys(), loc="best")

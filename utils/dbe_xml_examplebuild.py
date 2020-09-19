@@ -3,7 +3,8 @@ an environment xml file.
 """
 
 from utils.dbe_xml_builder import DBEBuilder, save_xml
-import os
+from os.path import abspath, exists
+from os import mkdir, getcwd
 
 dbe = DBEBuilder()
 
@@ -28,10 +29,10 @@ obstacles = [cone, cylinder]
 
 dbe.add_obstacles(obstacles)
 
-scenario = os.getcwd() + "\\scenario"
-if not os.path.exists(scenario):
-    os.mkdir(scenario)
+scenario = getcwd() + "\\scenario"
+if not exists(scenario):
+    mkdir(scenario)
 
 dbe.set_tod(0)
 
-save_xml("exampleXML", dbe.root, "environment")
+save_xml("exampleXML", dbe.root, "environment", abspath("scenario"))

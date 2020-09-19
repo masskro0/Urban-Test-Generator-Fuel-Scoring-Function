@@ -28,7 +28,7 @@ def indent(elem, level=0):
 
 
 def save_xml(name, root, xml_type, destination_path=None):
-    """Creates and saves the XML file, and moves it to the scenario folder.
+    """Creates and saves the XML file, and moves it to the scenario folder or a given path.
     :param destination_path: Path where the XML file should be written to.
     :param xml_type: Environment or criteria.
     :param root: Root of the XML file.
@@ -67,8 +67,8 @@ class DBEBuilder:
 
     def add_obstacles(self, obstacle_list):
         """Adds obstacles to the XML files.
-        :param obstacle_list: List of obstacles. Each obstacle is a dict and must contain x and y position as well as
-                              obstacle specific attributes.
+        :param obstacle_list: List of obstacles. Each obstacle is a dict and must contain a position, name as well as
+         obstacle specific attributes.
         :return: Void.
         """
         obstacles = ElementTree.SubElement(self.root, "obstacles")

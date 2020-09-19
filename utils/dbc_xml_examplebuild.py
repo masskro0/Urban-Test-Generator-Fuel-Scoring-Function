@@ -4,7 +4,8 @@ a criteria xml file.
 
 from utils.dbc_xml_builder import DBCBuilder
 from utils.dbe_xml_builder import save_xml
-import os
+from os.path import exists, abspath
+from os import mkdir, getcwd
 
 dbc = DBCBuilder()
 
@@ -33,10 +34,10 @@ success_points = [{"id": participant_id,
                    "tolerance": waypoint2.get("tolerance")}]
 dbc.add_success_point(participant_id=participant_id, success_point=success_points[0])
 
-dbc.add_failure_conditions(participant_id, "offroad")
+dbc.add_failure_conditions(participant_id)
 
-scenario = os.getcwd() + "\\scenario"
-if not os.path.exists(scenario):
-    os.mkdir(scenario)
+scenario = getcwd() + "\\scenario"
+if not exists(scenario):
+    mkdir(scenario)
 
-save_xml("exampleXML", dbc.root, "criteria")
+save_xml("exampleXML", dbc.root, "criteria", abspath("scenario"))

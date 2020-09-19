@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ElementTree
 
 
 class DBCBuilder:
-
+    """Class to build a criteria XML file."""
     def __init__(self):
         # Build a tree structure.
         self.root = ElementTree.Element("criteria")
@@ -21,7 +21,7 @@ class DBCBuilder:
         self.failure = ElementTree.SubElement(self.root, "failure")
 
     def define_name(self, file_name):
-        """Defines the name of the test (not the file name).
+        """Defines the name of the test case (not the file name).
         :param file_name: Name of this test.
         return: Void
         """
@@ -30,7 +30,7 @@ class DBCBuilder:
 
     def environment_name(self, dbe_file_name):
         """Adds the corresponding environment XML file to this criteria XML file.
-        :param dbe_file_name: File name of the environment file as a String.
+        :param dbe_file_name: File name of the environment file as a string.
         :return: Void.
         """
         if not dbe_file_name.endswith(".dbe.xml"):
@@ -39,7 +39,7 @@ class DBCBuilder:
 
     def add_trigger_points(self, triggers):
         """Adds trigger points to the criteria XML file.
-        :param triggers: List of dict types. Must contain:
+        :param triggers: List of dict types. Wrapped in "triggerPoint" key and must contain:
                  position: Tuple with x and y coordinate,
                  tolerance: As int type,
                  action: String type telling which task should be performed when entered,
@@ -48,12 +48,14 @@ class DBCBuilder:
                Supported actions:
                  spawnAndStart: Spawns another vehicle and gives him a polyline that he should drive along. Needs
                   following elements:
-                    spawnPoint: Element containing,
+                    spawnPoint: Dict containing,
                       position: x and y coordinate,
                       orientation: Float type.
                   switchLights: Switches the lights of a traffic light when entered. This action needs the attributes:
                     initState: String type to tell the initial color,
                     switchTo: String type to define to which color should be switched to.
+                  stop: Forces vehicle to stop in front of intersection.
+                    duration: Currently not implemented. In the future, this tells how long the car must stop.
         :return: Void.
         """
         trigger_root = ElementTree.SubElement(self.root, "triggerPoints")
@@ -84,16 +86,14 @@ class DBCBuilder:
         :param participant: Dict which contains init_state, waypoints, participant_id and model. See the lines below
                             for more information:
                 init_state: Dict with initial states. Contains:
-                  x-coordinate: Int,
-                  y-coordinate Int,
-                  orientation Int.
+                  position: tuple of xy coordinates,
+                  orientation: Integer, orientation of the vehicle.
                 waypoints: Array with waypoints. One waypoint contains:
-                  x-coordinate: Int,
-                  y-coordinate: Int,
-                  tolerance: Int.
-                participant_id: unique ID of this participant as String.
-                model: BeamNG model car as String.
-                color: Color of the car as string type.
+                  position: tuple of xy coordinates,
+                  tolerance: Integer, sphere around the center.
+                participant_id: String, unique ID of the vehicle,
+                model: String, model of the car,
+                color: String, color of the car.
         :return: Void
         """
         participant_id = participant.get("id")
@@ -124,9 +124,8 @@ class DBCBuilder:
         """Point when reached a test was successfully finished.
         :param participant_id: ID of the participant as a string.
         :param success_point: Dict of a success state. Contains:
-                 x: Int,
-                 y: Int,
-                 tolerance: Int type which defines a circle.
+                 position: tuple with xy coordinates,
+                 tolerance: Int type which defines a sphere around the center.
         :return: Void.
         """
         position = success_point.get("position")
@@ -135,23 +134,24 @@ class DBCBuilder:
                                        str(success_point.get("tolerance"))))
 
     def add_failure_damage(self, participant_id):
-        """Adds damage observation as a test failure condition.
+        """Adds damage validation as a test failure condition.
         :param participant_id: Participant id (string).
         :return: Void.
         """
         ElementTree.SubElement(self.failure, 'scDamage participant="{}"'.format(participant_id))
 
     def add_failure_lane(self, participant_id, lane="offroad"):
-        """Adds lane following observation as a test failure condition.
+        """Adds validation for driving on the lane as a test failure condition.
         :param participant_id: participant id (string)
-        :param lane: on which lane should the test fail? (markings, leftLanes, rightLanes, offroad).
+        :param lane: on which lane should the test fail? (markings, leftLanes, rightLanes, offroad). No effect
+         currently.
         :return: Void.
         """
         ElementTree.SubElement(self.failure, 'scLane participant="{}" onLane="{}"'
                                .format(participant_id, lane))
 
     def add_failure_conditions(self, participant_id):
-        """Adds both lane following and damage observation as a test failure condition.
+        """Adds both lane and damage validation as a test failure condition.
         :param participant_id: participant id (string)
         :return: Void
         """
