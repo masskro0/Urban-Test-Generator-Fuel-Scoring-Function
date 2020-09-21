@@ -1921,6 +1921,8 @@ class FuelConsumptionTestGenerator:
 #       TODO XML failure criteria is actually read
 #       TODO Check if other participants fail (damage etc.)
 #       TODO Test setup.py
+#       TODO lanes -> roads
+#       TODO control_point_lines -> polylines
 #       TODO Retest experiments
 
 # TODO May-have/Improvements:

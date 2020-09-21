@@ -1,4 +1,4 @@
-"""This file offers methods to create xml files."""
+"""This file creates XML files by using the output provided by the test generator."""
 
 from utils.dbe_xml_builder import DBEBuilder
 from utils.dbc_xml_builder import DBCBuilder
@@ -6,11 +6,12 @@ from utils.dbe_xml_builder import save_xml
 
 
 def build_environment_xml(lanes, tod=0, file_name="fuelTesting", obstacles=None):
-    """Creates a environment (dbe) xml file.
+    """Creates a environment (dbe) XML file.
     :param tod: Time of day as integer.
     :param lanes: List of lanes.
     :param file_name: Name of this dbe file.
     :param obstacles: List of dicts containing obstacles.
+    :return: Void.
     """
     if obstacles is None:
         obstacles = list()
@@ -24,14 +25,13 @@ def build_environment_xml(lanes, tod=0, file_name="fuelTesting", obstacles=None)
 
 def build_criteria_xml(participants, ego_car, success_points, triggers=None, file_name="fuelTesting",
                        name="Fuel Efficiency Test"):
-    """Creates a dbc xml file. Failure, success and preconditions are controlled
-    manually for this test generation.
+    """Creates a dbc XML file. Failure, success and preconditions are controlled manually for this test generation.
     :param triggers: List of trigger points. Check the dbc_xml_builder.py to see how the list should look like.
     :param participants: List of dicts of car states. See the add_car method in dbc_xml_builder.py for more
         information.
     :param ego_car: The test subject as dict. Contains the same information as any other participant.
     :param success_points: List with points of success. Each one is a dict with x, y and tolerance.
-    :param file_name: Name of this dbc file. Should be the same as the environment file (laziness).
+    :param file_name: Name of this dbc file. Should be the same as the environment file.
     :param name: Self defined description name of this file.
     :return: Void.
     """
@@ -49,7 +49,7 @@ def build_criteria_xml(participants, ego_car, success_points, triggers=None, fil
 
 
 def build_xml(individual, iterator: int = 0):
-    """Builds an environment and criteria xml file out of a list of control points.
+    """Builds an environment and criteria XML file of the output of the test generator.
     :param individual: Individual containing obstacles (list), file_name (str), lanes (list), participants (list),
         success_point (dict)
     :param iterator: Unique index of a population.

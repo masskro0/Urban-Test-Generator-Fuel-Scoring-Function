@@ -5,8 +5,10 @@ from shapely.geometry import LineString, MultiLineString
 from math import degrees, atan2, sqrt
 from random import randint
 
-MIN_DEGREES = 90  # Minimum degree between three points.
-MAX_DEGREES = 270  # Maximum degree between three points.
+MIN_DEGREES = 90   # Minimum degree between three points
+MAX_DEGREES = 270  # Maximum degree between three points
+MIN_WIDTH = 4      # Minimum width of a lane
+MAX_WIDTH = 5      # Maximum width of a lane
 
 
 def multilinestrings_to_linestring(linestring):
@@ -24,8 +26,8 @@ def multilinestrings_to_linestring(linestring):
 
 
 def convert_points_to_lines(lanes):
-    """Turns a list of points into a list of LineStrings.
-    :param lanes: Lanes of an individual.
+    """Converts a list of points into a list of LineStrings.
+    :param lanes: List of lanes (dict type) with control_points key, which is a list containing 2D points.
     :return: List of LineStrings.
     """
     lanes_lines = list()
@@ -34,9 +36,8 @@ def convert_points_to_lines(lanes):
         lines = list()
         i = 0
         while i < (len(control_points) - 1):
-            p1 = (control_points[i][0], control_points[i][1])
-            p2 = (control_points[i + 1][0], control_points[i + 1][1])
-            line = LineString([p1, p2])
+            line = LineString([(control_points[i][0], control_points[i][1]),
+                               (control_points[i + 1][0], control_points[i + 1][1])])
             lines.append(line)
             i += 1
         lanes_lines.append(lines)
@@ -54,16 +55,16 @@ def get_resize_factor(length, width):
 
 def get_resize_factor_intersection(linestring_length, intersection_length):
     """Returns the resize factor to resize lines for an intersection.
-    :param linestring_length: Length of the current LineString as int.
-    :param intersection_length: Desired length as int.
+    :param linestring_length: Length of the current LineString.
+    :param intersection_length: Desired length of the intersection.
     :return: Resize factor as float.
     """
     return (linestring_length + intersection_length) / linestring_length if linestring_length != 0 else 0
 
 
 def get_width_lines(splined_lanes):
-    """Determines the width lines of the road by flipping the LineString
-     between two points by 90 degrees in both directions.
+    """Determines the width lines of the road by flipping the LineString between two points by 90 degrees in both
+     directions.
     :param splined_lanes: List of splined lanes.
     :return: List of LineStrings which represent the width of the road.
     """
@@ -80,13 +81,13 @@ def get_width_lines(splined_lanes):
             p2 = (control_points[i + 1][0], control_points[i + 1][1])
             line = LineString([p1, p2])
 
-            # Rotate counter-clockwise and resize to the half of the road length.
+            # Rotate counter-clockwise and resize.
             line_rot1 = affinity.rotate(line, 90, line.coords[0])
             line_rot1 = affinity.scale(line_rot1, xfact=get_resize_factor(line_rot1.length, width),
                                        yfact=get_resize_factor(line_rot1.length, width),
                                        origin=line_rot1.coords[0])
 
-            # Rotate clockwise and resize to the half of the road length.
+            # Rotate clockwise and resize.
             line_rot2 = affinity.rotate(line, -90, line.coords[0])
             line_rot2 = affinity.scale(line_rot2, xfact=get_resize_factor(line_rot2.length, width),
                                        yfact=get_resize_factor(line_rot2.length, width),
@@ -128,12 +129,12 @@ def get_angle(a, b, c):
 
 
 def calc_width(left_lanes, right_lanes):
-    """Calculates the width depending on the number of lanes. Width per lane can be 4 or 5.
+    """Calculates the width of the road depending on the number of lanes.
     :param left_lanes: Number of left lanes.
     :param right_lanes: Number of right lanes.
     :return: Total width.
     """
-    return (left_lanes + right_lanes) * randint(4, 5)
+    return (left_lanes + right_lanes) * randint(MIN_WIDTH, MAX_WIDTH)
 
 
 def calc_min_max_angles(num_lanes):
@@ -145,13 +146,13 @@ def calc_min_max_angles(num_lanes):
 
 
 def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right_lanes, lane_index):
-    """Splits the intersection into lanes, assigns the right number of lanes and width to the lanes,
+    """Splits the intersection into lanes, assigns the right number of lanes and width to the lanes and
     determines the lanes that the ego car needs for its waypoints.
     :param intersection: Dict after calling _create_intersection.
     :param last_point: Latest added point of the individual.
-    :param width: Width of the current lane.
-    :param left_lanes: Number of left lanes of the current lane.
-    :param right_lanes: Number of right lanes of the current lane.
+    :param width: Width of the current road.
+    :param left_lanes: Number of left lanes of the current road.
+    :param right_lanes: Number of right lanes of the current road.
     :param lane_index: Current lane index.
     :return: New lanes, lanes for the ego car, latest added point, number of left/right lanes of the lane which
     should receive new points, lane indices for this intersection as list type, current lane index.
@@ -244,7 +245,7 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
 def get_intersection_lines(last_point, intersection):
     """Creates and returns two LineStrings of a given intersection.
     :param last_point: Last point which was added as a tuple (x, y).
-    :param intersection: Intersection which was created using the function _create_intersection().
+    :param intersection: Intersection which was created by the function _create_intersection().
     :return: Two LineStrings representing the new intersection.
     """
     number_of_ways = intersection.get("number_of_ways")
@@ -276,8 +277,7 @@ def get_intersection_lines(last_point, intersection):
 
 
 def calc_speed_waypoints(participants):
-    """
-    Calculates speed for each waypoint.
+    """Determines speed for each waypoint.
     :param participants: List of participants.
     :return: Void.
     """
@@ -290,6 +290,8 @@ def calc_speed_waypoints(participants):
         while i < len(waypoints):
             if 1 < i < len(waypoints) - 1:
                 if int(waypoints[i].get("lane")) != current_index:
+                    # A new road means that the car must stop. This must be done several waypoints before otherwise
+                    # the car would enter the area, e.g. intersection.
                     current_index = int(waypoints[i].get("lane"))
                     waypoints[i - 1]["speed"] = 0
                     waypoints[i - 2]["speed"] = 0
@@ -302,9 +304,11 @@ def calc_speed_waypoints(participants):
                         waypoints[i - 7]["speed"] = 0
                         waypoints[i - 8]["speed"] = 0
                         waypoints[i - 9]["speed"] = 0
-                p1 = waypoints[i - 1].get("position")
-                p3 = waypoints[i + 1].get("position")
-                angle = get_angle(p1, waypoints[i].get("position"), p3)
+                p0 = waypoints[i - 1].get("position")
+                p1 = waypoints[i + 1].get("position")
+                angle = get_angle(p0, waypoints[i].get("position"), p1)
+
+                # Determines the speed dependent on the angle.
                 if 170 <= angle <= 190:
                     speed = 13.8
                 elif 150 <= angle < 170 or 190 > angle >= 210:
@@ -315,6 +319,8 @@ def calc_speed_waypoints(participants):
                     speed = 6
                 else:
                     speed = 4
+
+                # Smooth out the speed of the previous waypoint.
                 waypoints[i - 1]["speed"] = 0 if waypoints[i - 1].get("speed") == 0 else \
                     (speed + float(waypoints[i - 1].get("speed"))) / 2
                 waypoints[i]["speed"] = speed
@@ -325,4 +331,8 @@ def calc_speed_waypoints(participants):
 
 
 def get_magnitude_of_3d_vector(vector):
+    """Gets the magnitude of a three-dimensional vector, e.g. the total velocity of a 3D vector.
+    :param vector: 3D vector.
+    :return: Magnitude of the vector as a float.
+    """
     return sqrt(vector[0] ** 2 + vector[1] ** 2 + vector[2] ** 2)
