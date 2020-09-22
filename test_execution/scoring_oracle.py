@@ -44,10 +44,10 @@ class ScoringOracle:
         :param gear: Current gear of the vehicle.
         :return: Void.
         """
-        upper_limit = self.engine_type.get_rpm_shifting_sweetspots()['upper_limit'] + 100
+        upper_limit = self.engine_type.get_rpm_shifting_sweetspots()['upper_limit'] + 200
         if rpm > upper_limit and gear < self.max_gear:
             self.rpm_infractions += 1
-            rpm_range = 180      # Range between two penalty points.
+            rpm_range = 200      # Range between two penalty points.
             if rpm >= upper_limit + rpm_range * 9:
                 self.score += 9
             else:

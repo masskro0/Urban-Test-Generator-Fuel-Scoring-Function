@@ -354,15 +354,16 @@ class TestOracle:
             p0 = (ego_position[0] + ego_direction[0], ego_position[1] + ego_direction[1])
             p1 = (ego_position[0], ego_position[1])
             angle = get_angle(traffic_sign_pos, p1, p0)
+            print(angle)
             distance_sign = euclidean(traffic_sign_pos, p1)
             vel = get_magnitude_of_3d_vector(ego_velocity) * 3.6
             sign = self.ego_signs[self.sign_index]
             if sign.get("kind").startswith("stop"):
                 # Stop sign traffic rule validation.
-                if distance_sign < 10 and vel < 1:
+                if distance_sign < 10 and vel < 0.5:
                     self.still_standing += timer - self.prev_time
                     self.prev_time = timer
-                if distance_sign < 10 and angle > 65:
+                if distance_sign < 10 and angle > 80:
                     if self.still_standing < 3:
                         self.state = TestCaseState.FAILED
                         print(colored("TEST FAILED. \"ego\" DIDN'T STOP AT A STOP SIGN.", "red", attrs=['bold']))
@@ -375,22 +376,22 @@ class TestOracle:
                 # Validate priority sign rules.
                 distance_limit = 20 if sign.get("kind").startswith("trafficlight") else 10
                 if distance_sign < distance_limit:
-                    if vel < 4:
+                    if vel < 0.5:
                         self.state = TestCaseState.FAILED
                         print(colored("TEST FAILED. \"ego\" STOPPED AT A PRIORITY SIGN.", "red", attrs=['bold']))
-                    elif angle > 65:
+                    elif angle > 80:
                         self.sign_index += 1
             elif sign.get("kind").startswith("trafficlight") and sign.get("mode") == "manual":
                 # Validate traffic light rules.
                 if distance_sign < 20:
-                    if angle > 65:
-                        if label == "red" and vel >= 1:
+                    if angle > 80:
+                        if label == "red" and vel >= 0.5:
                             self.state = TestCaseState.FAILED
                             print(colored("TEST FAILED. \"ego\" DIDN'T STOP AT A RED TRAFFIC LIGHT.", "red",
                                           attrs=['bold']))
                         else:
                             self.sign_index += 1
-                    elif label == "green" and vel < 4:
+                    elif label == "green" and vel < 0.5:
                         self.state = TestCaseState.FAILED
                         print(colored("TEST FAILED. \"ego\" STOPPED AT A GREEN TRAFFIC LIGHT.", "red",
                                       attrs=['bold']))
