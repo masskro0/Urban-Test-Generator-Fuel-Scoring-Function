@@ -66,7 +66,7 @@ class ScoringOracle:
         upper_limit = 0.6
         if throttle >= upper_limit:
             self.throttle_infractions += 1
-            interval = 0.04
+            interval = 0.03
             if throttle >= upper_limit + 9 * interval:
                 self.score += 9
             else:
