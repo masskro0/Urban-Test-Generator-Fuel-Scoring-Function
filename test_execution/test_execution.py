@@ -57,7 +57,7 @@ def run_test_case(converter, dbc, dbe, engine_type=EngineType.PETROL, max_gear=6
                                         electrics['brake'], electrics['wheelspeed'], electrics['running'],
                                         electrics['fuel'], sensors["timer"]["time"])
         label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state["pos"], ego.state["dir"])
-        test_oracle.validate_test_case([{"id": "ego", "state": ego.state["pos"]}], ego.state["pos"], ego.state["dir"],
+        test_oracle.validate_test_case([{"id": "ego", "pos": ego.state["pos"]}], ego.state["pos"], ego.state["dir"],
                                        ego.state["vel"], sensors["timer"]["time"], label,
                                        [{"id": "ego", "damage": sensors["damage"]["damage"]}])
     bng.close()
@@ -106,7 +106,7 @@ def run_test_case_role_model(converter, dbc, dbe, engine_type=EngineType.PETROL,
                                         electrics['brake'], electrics['wheelspeed'], electrics['running'],
                                         electrics['fuel'], sensors["timer"]["time"])
         label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state["pos"], ego.state["dir"])
-        test_oracle.validate_test_case([{"id": "ego", "state": ego.state["pos"]}], ego.state["pos"], ego.state["dir"],
+        test_oracle.validate_test_case([{"id": "ego", "pos": ego.state["pos"]}], ego.state["pos"], ego.state["dir"],
                                        ego.state["vel"], time, label,
                                        [{"id": "ego", "damage": sensors["damage"]["damage"]}])
     bng.close()

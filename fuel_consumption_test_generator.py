@@ -100,7 +100,7 @@ def _add_parked_cars(individual):
     individual["obstacles"].extend(parked_cars)
 
 
-def _add_ego_car(individual):
+def _add_ego_car(individual, add_ego_car=True):
     """Adds the ego car to the criteria xml file. Movement mode can be assigned manually. Each control point is one
     waypoint.
     :param individual: Individual of the population.
@@ -108,91 +108,93 @@ def _add_ego_car(individual):
     """
     samples = 100
     lanes = individual.get("lanes")
-    ego_lanes = individual.get("ego_lanes")
-    directions = individual.get("directions")
     waypoints = list()
-    lines = list()
-    ego_index = 0
-    for idx, lane in enumerate(ego_lanes):
-        temp_points = lanes[lane].get("control_points")
-        temp_points = LineString(temp_points)
-        if temp_points.coords[0] == temp_points.coords[-1]:
-            continue
-        left_lanes = lanes[lane].get("left_lanes")
-        right_lanes = lanes[lane].get("right_lanes")
-        width = lanes[lane].get("width")
-        width_per_lane = width / (left_lanes + right_lanes)
-        left = False
-        if idx + 1 < len(ego_lanes) and ego_lanes[idx + 1] - ego_lanes[idx] != 1:
-            if directions[ego_index] == "left" and right_lanes > 1:
-                left = True
-            ego_index += 1
-        if left:
-            offset = right_lanes - left_lanes - 1
-            offset = offset / 2 * width_per_lane
-            temp_points = temp_points.parallel_offset(offset, "left")
-            temp_points = multilinestrings_to_linestring(temp_points)
-            if offset < 0:
+    if add_ego_car:
+        ego_lanes = individual.get("ego_lanes")
+        directions = individual.get("directions")
+        lines = list()
+        ego_index = 0
+        for idx, lane in enumerate(ego_lanes):
+            temp_points = lanes[lane].get("control_points")
+            temp_points = LineString(temp_points)
+            if temp_points.coords[0] == temp_points.coords[-1]:
+                continue
+            left_lanes = lanes[lane].get("left_lanes")
+            right_lanes = lanes[lane].get("right_lanes")
+            width = lanes[lane].get("width")
+            width_per_lane = width / (left_lanes + right_lanes)
+            left = False
+            if idx + 1 < len(ego_lanes) and ego_lanes[idx + 1] - ego_lanes[idx] != 1:
+                if directions[ego_index] == "left" and right_lanes > 1:
+                    left = True
+                ego_index += 1
+            if left:
+                offset = right_lanes - left_lanes - 1
+                offset = offset / 2 * width_per_lane
+                temp_points = temp_points.parallel_offset(offset, "left")
+                temp_points = multilinestrings_to_linestring(temp_points)
+                if offset < 0:
+                    temp_points.coords = temp_points.coords[::-1]
+            else:
+                offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
+                temp_points = temp_points.parallel_offset(offset, "right")
+                temp_points = multilinestrings_to_linestring(temp_points)
                 temp_points.coords = temp_points.coords[::-1]
-        else:
-            offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
-            temp_points = temp_points.parallel_offset(offset, "right")
-            temp_points = multilinestrings_to_linestring(temp_points)
-            temp_points.coords = temp_points.coords[::-1]
-        temp_points.coords = b_spline(temp_points, samples).tolist()
-        lines.append(temp_points)
+            temp_points.coords = b_spline(temp_points, samples).tolist()
+            lines.append(temp_points)
 
-    ego_index = 0
-    same_lane = 0
-    action_index = 0
-    actions = individual.get("actions")
-    for idx, lane in enumerate(lines):
-        control_points = list(lines[idx].coords)
-        opposite_dir = False
-        deleted_points = list()
-        lane_change = False
-        stop_flag = False
-        if idx != 0 and ego_lanes[idx] - ego_lanes[idx - 1] != 1:
-            if actions[action_index] == "stop":
-                same_lane += 1
-                stop_flag = True
-            action_index += 1
-            opposite_dir = True
-        if idx + 1 < len(ego_lanes) and ego_lanes[idx + 1] - ego_lanes[idx] != 1:
-            intersec_point = lines[idx].intersection(lines[idx + 1])
-            if isinstance(intersec_point, MultiPoint):
-                intersec_point = Point((intersec_point[0]))
-            lane_change = True
-            index = len(control_points) // 2
-            deleted_points = control_points[index:]
-            control_points = control_points[:index]
-            if directions[ego_index] == "right":
-                control_points.append((intersec_point.x, intersec_point.y))
-            ego_index += 1
-        iterator = 0
-        while iterator < len(control_points):
-            if len(waypoints) == 0 or (euclidean(control_points[iterator], waypoints[-1].get("position")) >= 1.5 and
-                                       (not opposite_dir
-                                        or euclidean(control_points[0], control_points[iterator]) > 4)):
-                waypoint = {"position": control_points[iterator],
-                            "tolerance": 2,
-                            "movementMode": "_BEAMNG",
-                            "lane": same_lane}
-                waypoints.append(waypoint)
-            iterator += 1
-        del waypoints[-1]
-        if lane_change:
+        ego_index = 0
+        same_lane = 0
+        action_index = 0
+        actions = individual.get("actions")
+        for idx, lane in enumerate(lines):
+            control_points = list(lines[idx].coords)
+            opposite_dir = False
+            deleted_points = list()
+            lane_change = False
+            stop_flag = False
+            if idx != 0 and ego_lanes[idx] - ego_lanes[idx - 1] != 1:
+                if actions[action_index] == "stop":
+                    same_lane += 1
+                    stop_flag = True
+                action_index += 1
+                opposite_dir = True
+            if idx + 1 < len(ego_lanes) and ego_lanes[idx + 1] - ego_lanes[idx] != 1:
+                intersec_point = lines[idx].intersection(lines[idx + 1])
+                if isinstance(intersec_point, MultiPoint):
+                    intersec_point = Point((intersec_point[0]))
+                lane_change = True
+                index = len(control_points) // 2
+                deleted_points = control_points[index:]
+                control_points = control_points[:index]
+                if directions[ego_index] == "right":
+                    control_points.append((intersec_point.x, intersec_point.y))
+                ego_index += 1
             iterator = 0
-            while iterator < len(deleted_points):
-                if len(waypoints) == 0 or euclidean(deleted_points[iterator], waypoints[-1].get("position")) >= 1.5:
-                    waypoint = {"position": deleted_points[iterator],
+            while iterator < len(control_points):
+                if len(waypoints) == 0 or (euclidean(control_points[iterator], waypoints[-1].get("position")) >= 1.5
+                                           and (not opposite_dir
+                                            or euclidean(control_points[0], control_points[iterator]) > 4)):
+                    waypoint = {"position": control_points[iterator],
                                 "tolerance": 2,
-                                "lane": same_lane + 1 if stop_flag else same_lane}
+                                "movementMode": "_BEAMNG",
+                                "lane": same_lane}
                     waypoints.append(waypoint)
                 iterator += 1
             del waypoints[-1]
+            if lane_change:
+                iterator = 0
+                while iterator < len(deleted_points):
+                    if len(waypoints) == 0 \
+                            or euclidean(deleted_points[iterator], waypoints[-1].get("position")) >= 1.5:
+                        waypoint = {"position": deleted_points[iterator],
+                                    "tolerance": 2,
+                                    "lane": same_lane + 1 if stop_flag else same_lane}
+                        waypoints.append(waypoint)
+                    iterator += 1
+                del waypoints[-1]
 
-    init_state = {"position": waypoints[0].get("position"),
+    init_state = {"position": waypoints[0].get("position") if add_ego_car else lanes[0].get("control_points")[0],
                   "orientation": 0}
     model = "ETK800"
     ego = {"id": "ego",
@@ -650,28 +652,31 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
     return obstacles, triggers, action
 
 
-def _preparation(population, traffic):
+def _preparation(population, traffic=True, add_ego_car=True, add_parked_cars=True):
     for individual in population:
-        _add_parked_cars(individual)
-        _add_ego_car(individual)
+        if add_parked_cars:
+            _add_parked_cars(individual)
+        _add_ego_car(individual, add_ego_car)
         if traffic:
             _add_other_participants(individual)
-        calc_speed_waypoints(individual["participants"])
+        if traffic or add_ego_car:
+            calc_speed_waypoints(individual["participants"])
 
 
 class FuelConsumptionTestGenerator:
 
-    def __init__(self, files_name="urban", traffic=True, spline_degree=2, max_tries=20, population_size=1):
+    def __init__(self, files_name="urban", traffic=True, spline_degree=2, max_tries=20, population_size=1,
+                 add_ego=True):
         self.FILES_NAME = files_name                  # File name for XML file series.
         self.TRAFFIC = traffic                        # Enable traffic or not.
         self.SPLINE_DEGREE = spline_degree            # Sharpness of curves.
         self.MAX_TRIES = max_tries                    # Maximum number of invalid generated points/segments.
         self.POPULATION_SIZE = population_size        # Minimum number of generated roads for each generation.
-        self.NUMBER_ELITES = 2          # Number of best kept test cases.
-        self.MIN_SEGMENT_LENGTH = 10    # Minimum length of a road segment.
-        self.MAX_SEGMENT_LENGTH = 30    # Maximum length of a road segment.
-        self.MIN_NODES = 6              # Minimum number of control points for each road.
-        self.MAX_NODES = 16             # Maximum number of control points for each road.
+        self.NUMBER_ELITES = 2                        # Number of best kept test cases.
+        self.MIN_SEGMENT_LENGTH = 10                  # Minimum length of a road segment.
+        self.MAX_SEGMENT_LENGTH = 30                  # Maximum length of a road segment.
+        self.MIN_NODES = 6                            # Minimum number of control points for each road.
+        self.MAX_NODES = 16                           # Maximum number of control points for each road.
         self.population_list = list()
         self.intersection_length = 50
         self.opposite_lane = 30
@@ -680,6 +685,7 @@ class FuelConsumptionTestGenerator:
         self.MAX_RIGHT_LANES = 2
         self.MAX_WIDTH = 5
         self.mutation_probability = 0.5  # I have eight mutatable properties.
+        self.ADD_EGO_CAR = add_ego
         print(colored("##################", attrs=["bold"]))
         print(colored("##################", "red", attrs=["bold"]))
         print(colored("##################", "yellow", attrs=["bold"]))
@@ -972,7 +978,6 @@ class FuelConsumptionTestGenerator:
             yield
 
 # TODO Desired features:
-#       TODO Test oracle: Out of map
 #       TODO Buggy traffic
 #       TODO Right turns are buggy
 #       TODO Make traffic participant 2 spawn earlier
@@ -984,17 +989,18 @@ class FuelConsumptionTestGenerator:
 #       TODO Test setup.py
 #       TODO lanes -> roads
 #       TODO control_point_lines -> polylines
+#       TODO Test without ego car
 #       TODO Retest experiments
 #       TODO ReadMe
+#       TODO Remove TODOS
 
-# TODO May-have/Improvements:
+# TODO Future Work:
 #       TODO Make all objects collidable
 #       TODO Fix Shapely errors
 #       TODO Traffic for standing at the traffic light or stop sign
 #       TODO Improve speed of car
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
-
-# TODO Future Work:
+#       TODO Test oracle: Out of map
 #       TODO Roundabouts
 #       TODO Add weather presets
 #       TODO Converter:
