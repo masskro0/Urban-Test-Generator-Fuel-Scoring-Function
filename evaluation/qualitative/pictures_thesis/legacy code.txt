@@ -1,0 +1,199 @@
+ls = [(1, 0), (35, 60), (70, -20), (115, 30), (160, -70), (185, 40)]
+x = [i[0] for i in ls]
+y = [i[1] for i in ls]
+plt.figure(dpi=200)
+plt.subplot(2, 2, 1)
+plt.plot(x, y, 'black', linewidth=3, label="Data Points")
+bs = b_spline(ls, degree=2, samples=100)
+plt.plot([i[0] for i in bs], [i[1] for i in bs], "blue", linewidth=3, label="Spline Curve")
+plt.title('Degree 2, 6 Points')
+plt.legend()
+
+plt.subplot(2, 2, 2)
+plt.plot(x, y, 'black', linewidth=3, label="Data Points")
+bs = b_spline(ls, degree=3, samples=100)
+plt.plot([i[0] for i in bs], [i[1] for i in bs], "blue", linewidth=3, label="Spline Curve")
+plt.title('Degree 3, 6 Points')
+plt.legend()
+
+ls = [(1, 0), (17.5, 30), (35, 60), (52.5, 20), (70, -20), (92.5, 5), (115, 30), (137.5, -20), (160, -70),
+	  (172.5, -15), (185, 40)]
+x = [i[0] for i in ls]
+y = [i[1] for i in ls]
+bs = b_spline(ls, degree=2, samples=100)
+plt.subplot(2, 2, 3)
+plt.plot(x, y, 'black', linewidth=3, label="Data Points")
+plt.plot([i[0] for i in bs], [i[1] for i in bs], "blue", linewidth=3, label="Spline Curve")
+plt.title('Degree 2, 12 Points')
+plt.legend()
+plt.subplot(2, 2, 4)
+plt.plot(x, y, 'black', linewidth=3, label="Data Points")
+bs = b_spline(ls, degree=3, samples=100)
+plt.plot([i[0] for i in bs], [i[1] for i in bs], "blue", linewidth=3, label="Spline Curve")
+plt.title('Degree 3, 12 Points')
+plt.legend()
+plt.tight_layout()
+plt.savefig("C:\\Users\\MaSSK\\Desktop\\splines.png", dpi=200)
+
+
+
+
+ls = [(1, 0), (35, 60), (70, -20), (115, 30), (160, -70), (185, 40), (120, -40)]
+x = [i[0] for i in ls]
+y = [i[1] for i in ls]
+plt.figure(dpi=200)
+plt.subplot(2, 2, 1)
+plt.plot(x, y, 'black', marker="o", markersize=6, linewidth=0, label="Old Points")
+plt.plot(120, -40, 'blue', marker="o", markersize=6, linewidth=0, label="New Point")
+plt.title('Control Points Only')
+plt.legend()
+
+plt.subplot(2, 2, 2)
+ls = [(1, 0), (35, 60), (70, -20), (115, 30), (160, -70), (185, 40)]
+x = [i[0] for i in ls]
+y = [i[1] for i in ls]
+plt.plot(x, y, 'black', marker="o", markersize=6, linewidth=2, label="Old Points")
+plt.plot([185, 120], [40, -40], 'blue', marker="o", markersize=6, linewidth=2, label="New Point")
+plt.plot(185, 40, 'black', marker="o", markersize=6, linewidth=0)
+plt.title('Create Polylines')
+plt.legend()
+
+plt.subplot(2, 2, 3)
+ls = [(1, 0), (35, 60), (70, -20), (115, 30), (160, -70), (185, 40)]
+x = [i[0] for i in ls]
+y = [i[1] for i in ls]
+plt.plot(x, y, 'black', marker="o", markersize=6, linewidth=2, label="Old Points")
+plt.plot([1, 35], [0, 60], 'green', marker="o", markersize=0, linewidth=2)
+plt.plot([185, 120], [40, -40], 'blue', marker="o", markersize=6, linewidth=2, label="New Point")
+plt.plot(185, 40, 'black', marker="o", markersize=6, linewidth=0)
+plt.title('Intersection Check (Valid)')
+plt.legend()
+
+plt.subplot(2, 2, 4)
+ls = [(1, 0), (35, 60), (70, -20), (115, 30), (160, -70), (185, 40)]
+x = [i[0] for i in ls]
+y = [i[1] for i in ls]
+plt.plot(x, y, 'black', marker="o", markersize=6, linewidth=2, label="Old Points")
+plt.plot([115, 160], [30, -70], 'red', marker="o", markersize=0, linewidth=2)
+plt.plot([185, 120], [40, -40], 'blue', marker="o", markersize=6, linewidth=2, label="New Point")
+plt.plot(185, 40, 'black', marker="o", markersize=6, linewidth=0)
+plt.title('Intersection Check (Invalid)')
+plt.legend()
+
+
+
+
+ls = [(1, 0), (35, 60), (70, -20), (115, 30), (160, -70), (195, 40)]
+x = [i[0] for i in ls]
+y = [i[1] for i in ls]
+plt.figure(figsize=(9, 10))
+plt.subplot(3, 2, 1)
+plt.plot(x, y, 'black', marker="o", markersize=6, linewidth=0, label="Old Points")
+plt.plot(165, 0, 'blue', marker="o", markersize=6, linewidth=0, label="New Point")
+plt.title('Control Points Only')
+plt.legend(loc="lower left")
+
+plt.subplot(3, 2, 2)
+ls = [(1, 0), (35, 60), (70, -20), (115, 30), (160, -70), (195, 40), (165, 0)]
+bs = b_spline(ls, 20)
+plt.plot([i[0] for i in bs], [i[1] for i in bs], 'black', marker="o", markersize=5, linewidth=0, label="Splines")
+plt.plot(165, 0, 'blue', marker="o", markersize=5, linewidth=0, label="New Point")
+plt.title('Interpolate Control Points')
+plt.legend(loc="lower left")
+
+plt.subplot(3, 2, 3)
+control_points_lines = convert_points_to_lines([{"width": 8, "control_points": bs}])
+i = 0
+while i < len(control_points_lines[0]):
+	x, y = control_points_lines[0][i].xy
+	plt.plot(x, y, 'black', markersize=0, label="Polylines" if i == 0 else "")
+	i += 1
+plt.plot([i[0] for i in bs], [i[1] for i in bs], 'black', marker="o", markersize=5, linewidth=0, label="Splines")
+plt.plot(165, 0, 'blue', marker="o", markersize=5, linewidth=0, label="New Point")
+plt.title('Create Polylines')
+plt.legend(loc="lower left")
+
+plt.subplot(3, 2, 4)
+width_lines = get_width_lines([{"width": 8, "control_points": bs}])
+i = 0
+while i < len(control_points_lines[0]):
+	x, y = control_points_lines[0][i].xy
+	plt.plot(x, y, 'black', markersize=0, label="Polylines" if i == 0 else "")
+	i += 1
+i = 0
+while i < len(width_lines[0]):
+	x, y = width_lines[0][i].xy
+	plt.plot(x, y, 'grey', markersize=0, label="Width Lines" if i == 0 else "")
+	i += 1
+plt.plot([i[0] for i in bs], [i[1] for i in bs], 'black', marker="o", markersize=5, linewidth=0, label="Splines")
+plt.plot(165, 0, 'blue', marker="o", markersize=5, linewidth=0, label="New Point")
+plt.title('Create Width Lines')
+plt.legend(loc="lower left")
+
+plt.subplot(3, 2, 5)
+width_lines = get_width_lines([{"width": 8, "control_points": bs}])
+i = 0
+while i < len(control_points_lines[0]):
+	x, y = control_points_lines[0][i].xy
+	plt.plot(x, y, 'black', markersize=0, label="Polylines" if i == 0 else "")
+	i += 1
+i = 0
+while i < len(width_lines[0]):
+	x, y = width_lines[0][i].xy
+	plt.plot(x, y, color='grey' if i != 4 else "green", markersize=0, label="Width Lines" if i == 0 else "")
+	i += 1
+plt.plot([i[0] for i in bs], [i[1] for i in bs], 'black', marker="o", markersize=5, linewidth=0, label="Splines")
+plt.plot([bs[0][0], bs[1][0]], [bs[0][1], bs[1][1]], 'darkgreen', markersize=0, linewidth=2)
+plt.plot(165, 0, 'blue', marker="o", markersize=5, linewidth=0, label="New Point")
+plt.title('Intersection Checking (Valid)')
+plt.legend(loc="lower left")
+
+plt.subplot(3, 2, 6)
+width_lines = get_width_lines([{"width": 8, "control_points": bs}])
+i = 0
+while i < len(control_points_lines[0]):
+	x, y = control_points_lines[0][i].xy
+	plt.plot(x, y, 'black', markersize=0, label="Polylines" if i == 0 else "")
+	i += 1
+i = 0
+while i < len(width_lines[0]):
+	x, y = width_lines[0][i].xy
+	plt.plot(x, y, color='grey' if i < len(width_lines[0]) - 1 else "red", markersize=0,
+			 label="Width Lines" if i == 0 else "")
+	i += 1
+plt.plot([i[0] for i in bs], [i[1] for i in bs], 'black', marker="o", markersize=5, linewidth=0, label="Splines")
+plt.plot([bs[-5][0], bs[-4][0]], [bs[-5][1], bs[-4][1]], 'darkred', markersize=0, linewidth=2)
+plt.plot(165, 0, 'blue', marker="o", markersize=5, linewidth=0, label="New Point")
+plt.title('Intersection Checking (Invalid)')
+plt.legend(loc="lower left")
+
+plt.tight_layout()
+#plt.show()
+plt.savefig("C:\\Users\\MaSSK\\Desktop\\width_intersection.png", dpi=200)
+	
+	
+ls = [{'control_points': [(1, 0), (30, 0), (45, 0), (54, 9), (68, 25), (91, 11), (105, 27), (128, 22), (147, 21)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(147, 21), (166.97235658665022, 19.948823337544724)], 'width': 8, 'left_lanes': 1, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(166.97235658665022, 19.948823337544724), (179.90252955761486, -28.3503549881881)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(166.97235658665022, 19.948823337544724), (154.04218361568564, 68.24800166327762)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(154.04218361568564, 68.24800166327762), (139, 71), (121, 60), (100, 63), (91, 76)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}, {'control_points': [(91, 76), (79.61580042339384, 92.44384383287559)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(79.61580042339384, 92.44384383287559), (56.224423345344746, 112.14099834798435)], 'width': 12, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(79.61580042339384, 92.44384383287559), (33.15760822745435, 73.9604356545891)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(33.15760822745435, 73.9604356545891), (18, 92)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 100, 'type': 'normal'}, {'control_points': [(18, 92), (5.133981530524132, 107.31226856945455)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(5.133981530524132, 107.31226856945455), (-12.170670608737893, 131.89789947895406)], 'width': 12, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(5.133981530524132, 107.31226856945455), (48.8487093472357, 131.58205579371395)], 'width': 15, 'left_lanes': 1, 'right_lanes': 2, 'samples': 25, 'type': 'intersection'}, {'control_points': [(5.133981530524132, 107.31226856945455), (-38.997654512188056, 83.80910494849525)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 25, 'type': 'intersection'}, {'control_points': [(-38.997654512188056, 83.80910494849525), (-57, 79)], 'width': 15, 'left_lanes': 2, 'right_lanes': 1, 'samples': 100, 'type': 'normal'}]
+plotter(ls, markersize=6, color=None, linewidth=2, title="Example Road Network",
+		save_path="C:\\Users\\MaSSK\\Desktop\\example_road_network.png", dpi=200, show=False)
+		
+		
+		
+import xml.etree.ElementTree as Etree
+from os.path import join, dirname
+from glob import glob
+from utils.dbe_xml_builder import save_xml
+
+
+folders = glob(join("evaluation", "traffic_lights", "random", "test_case_*", "test_case", "*.dbe.xml"))
+for f in folders:
+    dbe_root = Etree.parse(f).getroot()
+    obstacles = dbe_root.find("obstacles")
+    parent_map = dict((c, p) for p in obstacles.getiterator() for c in p)
+    for elem in list(obstacles.getiterator('golf')):
+        parent = parent_map[elem]
+        elem.tag = "parkedCar"
+    name = f.split("\\")[-1].split(".")[0]
+    path = dirname(f)
+    save_xml(name, dbe_root, "environment", path)
+
+
