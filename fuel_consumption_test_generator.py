@@ -978,7 +978,6 @@ class FuelConsumptionTestGenerator:
             yield
 
 # TODO Desired features:
-#       TODO Test oracle: Out of map
 #       TODO Buggy traffic
 #       TODO Right turns are buggy
 #       TODO Make traffic participant 2 spawn earlier
@@ -992,15 +991,15 @@ class FuelConsumptionTestGenerator:
 #       TODO control_point_lines -> polylines
 #       TODO Test without ego car
 #       TODO Retest experiments
+#       TODO Remove TODOS
 
-# TODO May-have/Improvements:
+# TODO Future Work:
 #       TODO Make all objects collidable
 #       TODO Fix Shapely errors
 #       TODO Traffic for standing at the traffic light or stop sign
 #       TODO Improve speed of car
 #       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
-
-# TODO Future Work:
+#       TODO Test oracle: Out of map
 #       TODO Roundabouts
 #       TODO Add weather presets
 #       TODO Converter:

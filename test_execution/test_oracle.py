@@ -354,7 +354,6 @@ class TestOracle:
             p0 = (ego_position[0] + ego_direction[0], ego_position[1] + ego_direction[1])
             p1 = (ego_position[0], ego_position[1])
             angle = get_angle(traffic_sign_pos, p1, p0)
-            print(angle)
             distance_sign = euclidean(traffic_sign_pos, p1)
             vel = get_magnitude_of_3d_vector(ego_velocity) * 3.6
             sign = self.ego_signs[self.sign_index]
