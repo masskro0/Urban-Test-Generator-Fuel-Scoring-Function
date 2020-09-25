@@ -904,12 +904,11 @@ class PrefabCreator:
                        "  if triggered_stop_" + str(idx) + " == 1 then\n" \
                        "    ego_time_" + str(idx) + " = ego_time_" + str(idx) + " + raceTickTime\n" \
                        "  end\n"
-            lines = None
+            lines = list()
             for entry in self.lines:
                 if entry.get("vid") == "ego":
                     lines = entry.get("lines")
                     break
-            assert lines is not None, "Missing line of vehicle \"ego\"."
             content += '    if ego_time_' + str(idx) + ' == 7 then\n' \
                        '      local vehicleName = \"ego\"\n'\
                        '      local arg = {line = {\n                 '

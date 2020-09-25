@@ -568,7 +568,6 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 
     modes = ["off", "flashing", "manual"]
     mode = choice(modes)
-    mode = "flashing"
     oid = None
     if mode == "manual":
         oid = "traffic_light_manual_" + str(OID_INDEX)
@@ -948,7 +947,7 @@ class FuelConsumptionTestGenerator:
         self.population_list = self._create_start_population()
         temp_list = deepcopy(self.population_list)
         temp_list = self._spline_population(temp_list)
-        _preparation(temp_list, self.TRAFFIC)
+        _preparation(population=temp_list, traffic=self.TRAFFIC, add_ego_car=self.ADD_EGO_CAR)
         temp_list = _merge_lanes(temp_list)
         build_all_xml(temp_list)
         print(colored("Population finished.", "grey", attrs=['bold']))
@@ -980,7 +979,6 @@ class FuelConsumptionTestGenerator:
 # TODO Desired features:
 #       TODO Buggy traffic
 #       TODO Right turns are buggy
-#       TODO Make traffic participant 2 spawn earlier
 #       TODO Comments
 #       TODO Refactor
 #       TODO Rename files
@@ -995,6 +993,7 @@ class FuelConsumptionTestGenerator:
 #       TODO Remove TODOS
 
 # TODO Future Work:
+#       TODO Make traffic participant 2 spawn earlier
 #       TODO Make all objects collidable
 #       TODO Fix Shapely errors
 #       TODO Traffic for standing at the traffic light or stop sign
