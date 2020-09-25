@@ -96,7 +96,7 @@ def collect_images(destination_path, min_distance=None, max_distance=None):
 
     # Class to get traffic light state.
     tllabel = TrafficLightLabel(converter.get_traffic_lights_position(), converter.traffic_triggers)
-    oracle = TestOracle(converter.scenario, xml_files[0], xml_files[1])
+    oracle = TestOracle(xml_files[0], xml_files[1])
     bng = beamng.open()
     bng.load_scenario(converter.scenario)
     if converter.weather is not None:
@@ -106,7 +106,7 @@ def collect_images(destination_path, min_distance=None, max_distance=None):
     while oracle.state == TestCaseState.OK:
         sensors = bng.poll_sensors(ego)
         ego.update_vehicle()
-        label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state)
+        label = tllabel.get_traffic_light_label(sensors["timer"]["time"], ego.state["pos"], ego.state["dir"])
         if traffic_light_pos is not None:
             p0 = (ego.state["pos"][0], ego.state["pos"][1])
             distance_light = euclidean(traffic_light_pos, p0)
@@ -129,6 +129,7 @@ def collect_images(destination_path, min_distance=None, max_distance=None):
 
             # Angle between ego-car direction vector and traffic light.
             angle = get_angle(traffic_light_pos, p0, p1)
+            print(distance_light, angle, label)
             if min_distance <= distance_light <= max_distance \
                     and (0 <= angle <= fov / 2 or 360 - fov / 2 <= angle <= 360) and label is not None:
                 # Is distance between ego-car and traffic light within the allowed range, the traffic light in the
@@ -138,7 +139,8 @@ def collect_images(destination_path, min_distance=None, max_distance=None):
                 filename = label + '_{}.png'.format(time())
                 file_path = join(image_dir, filename)
                 img.save(file_path)
-        oracle.validate_test_case([{"id": "ego", "state": ego.state}], ego.state, sensors["timer"]["time"], label,
+        oracle.validate_test_case([{"id": "ego", "pos": ego.state["pos"]}], ego.state["pos"], ego.state["dir"],
+                                  ego.state["vel"], sensors["timer"]["time"], label,
                                   [{"id": "ego", "damage": sensors["damage"]["damage"]}])
     bng.close()
 
@@ -373,7 +375,9 @@ if __name__ == '__main__':
     experiment_names = ["15m", "45m", "cloudy", "daylight", "nighttime", "random"]
     # create_tests(1, True, experiment_names)
     for experiment in experiment_names:
-        # collect_images_existing_tests(join(experiment, "test_case_*"))
+        if experiment != "random":
+            continue
+        collect_images_existing_tests(join(experiment, "test_case_*"))
         predict_all_images(join(experiment, "test_case_*"))
 
     """Example of how to generate a confusion matrix. You need to check manually, which test cases should have passed

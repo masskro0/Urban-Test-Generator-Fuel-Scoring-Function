@@ -78,7 +78,7 @@ class TrafficLightLabel:
                 return None
             if self.traffic_light_list[self.traffic_index].get("mode") == "off":
                 self.label = "off"
-            elif self.traffic_light_list[self.traffic_index].get("mode") == "blinking":
+            elif self.traffic_light_list[self.traffic_index].get("mode") == "flashing":
                 if floor(time) % 2 == 0:
                     # Every even second, the traffic light is off.
                     self.label = "off"
@@ -379,18 +379,10 @@ class TestOracle:
                 distance_limit = 20 if sign.get("kind").startswith("trafficlight") else 10
                 if distance_sign < distance_limit:
                     if vel < 0.5:
-                        if self.prev_time == 0:
-                            self.prev_time = timer
-                        else:
-                            self.still_standing += timer - self.prev_time
-                            self.prev_time = timer
-                        if self.still_standing > 2:
-                            self.state = TestCaseState.FAILED
-                            print(colored("TEST FAILED. \"ego\" STOPPED AT A PRIORITY SIGN.", "red", attrs=['bold']))
+                        self.state = TestCaseState.FAILED
+                        print(colored("TEST FAILED. \"ego\" STOPPED AT A PRIORITY SIGN.", "red", attrs=['bold']))
                     elif angle > 80:
                         self.sign_index += 1
-                        self.still_standing = 0
-                        self.prev_time = 0
             elif sign.get("kind").startswith("trafficlight") and sign.get("mode") == "manual":
                 # Validate traffic light rules.
                 if distance_sign < 20:
