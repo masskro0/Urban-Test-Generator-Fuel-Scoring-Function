@@ -232,7 +232,6 @@ class TestCaseState(Enum):
 
 class TestOracle:
     """Class for verifying test specific oracles. They determine whether a test case has failed or not."""
-    # TODO Test oracle: out of street
     def __init__(self, dbc, dbe):
         self.state = TestCaseState.OK           # Current test case state.
         self.dbc_root = parse(dbc).getroot()    # Root of the criteria XML file.
@@ -245,7 +244,7 @@ class TestOracle:
         self.ego_signs = list()                 # List of traffic lights/signs which the ego-car must pass by.
         self._get_ego_signs()
         self.sign_index = 0                     # Index to iterate over the ego_signs list.
-        self.still_standing = 0                 # Time variable to determine how long the ego-car has been not moving.
+        self.still_standing = 0                 # Time variable to determine how long the ego-car has been not moving..
         self.prev_time = 0                      # Previous recorded simulation time.
 
     def _get_success_states(self):
@@ -360,14 +359,18 @@ class TestOracle:
             if sign.get("kind").startswith("stop"):
                 # Stop sign traffic rule validation.
                 if distance_sign < 10 and vel < 0.5:
-                    self.still_standing += timer - self.prev_time
-                    self.prev_time = timer
+                    if self.prev_time == 0:
+                        self.prev_time = timer
+                    else:
+                        self.still_standing += timer - self.prev_time
+                        self.prev_time = timer
                 if distance_sign < 10 and angle > 80:
                     if self.still_standing < 3:
                         self.state = TestCaseState.FAILED
                         print(colored("TEST FAILED. \"ego\" DIDN'T STOP AT A STOP SIGN.", "red", attrs=['bold']))
                     else:
                         self.still_standing = 0
+                        self.prev_time = 0
                         self.sign_index += 1
             elif sign.get("kind").startswith("priority") or (sign.get("kind").startswith("trafficlight")
                                                              and sign.get("mode") != "manual"
@@ -376,10 +379,18 @@ class TestOracle:
                 distance_limit = 20 if sign.get("kind").startswith("trafficlight") else 10
                 if distance_sign < distance_limit:
                     if vel < 0.5:
-                        self.state = TestCaseState.FAILED
-                        print(colored("TEST FAILED. \"ego\" STOPPED AT A PRIORITY SIGN.", "red", attrs=['bold']))
+                        if self.prev_time == 0:
+                            self.prev_time = timer
+                        else:
+                            self.still_standing += timer - self.prev_time
+                            self.prev_time = timer
+                        if self.still_standing > 2:
+                            self.state = TestCaseState.FAILED
+                            print(colored("TEST FAILED. \"ego\" STOPPED AT A PRIORITY SIGN.", "red", attrs=['bold']))
                     elif angle > 80:
                         self.sign_index += 1
+                        self.still_standing = 0
+                        self.prev_time = 0
             elif sign.get("kind").startswith("trafficlight") and sign.get("mode") == "manual":
                 # Validate traffic light rules.
                 if distance_sign < 20:
@@ -390,9 +401,17 @@ class TestOracle:
                                           attrs=['bold']))
                         else:
                             self.sign_index += 1
+                            self.still_standing = 0
+                            self.prev_time = 0
                     elif label == "green" and vel < 0.5:
-                        self.state = TestCaseState.FAILED
-                        print(colored("TEST FAILED. \"ego\" STOPPED AT A GREEN TRAFFIC LIGHT.", "red",
+                        if self.prev_time == 0:
+                            self.prev_time = timer
+                        else:
+                            self.still_standing += timer - self.prev_time
+                            self.prev_time = timer
+                        if self.still_standing > 2:
+                            self.state = TestCaseState.FAILED
+                            print(colored("TEST FAILED. \"ego\" STOPPED AT A GREEN TRAFFIC LIGHT.", "red",
                                       attrs=['bold']))
 
     def validate_test_case(self, states, ego_position, ego_direction, ego_velocity, timer, label, damage_states):
