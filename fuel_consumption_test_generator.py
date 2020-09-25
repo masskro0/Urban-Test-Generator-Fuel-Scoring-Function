@@ -16,7 +16,7 @@ from utils.utility_functions import convert_points_to_lines, get_angle, calc_wid
     get_resize_factor_intersection, multilinestrings_to_linestring, calc_speed_waypoints
 from utils.validity_checks import intersection_check_width, intersection_check_last
 from utils.xml_creator import build_all_xml
-from xml_converter.converter import b_spline
+from xml_converter.prefab_creator import b_spline
 
 MIN_DEGREES = 90
 MAX_DEGREES = 270
