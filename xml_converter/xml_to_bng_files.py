@@ -1,4 +1,4 @@
-"""This class converts xml files to beamng json and prefab files."""
+"""This class converts XML files to BeamNG json and prefab files."""
 
 from pathlib import Path
 from glob import glob
@@ -10,7 +10,7 @@ from beamngpy.beamngcommon import ENV
 from json import dump
 import xml.etree.ElementTree as Etree
 
-from xml_converter.converter import Converter
+from xml_converter.prefab_creator import PrefabCreator
 
 
 def get_next_test(files_name):
@@ -104,7 +104,7 @@ def convert_test(dbc, dbe, move_files=True):
         participants.append(participant.attrib)
     assert len(participants) > 0, "Please add participants to your test case. Check the example for reference."
     create_json_file(index, participants, author, tod)
-    converter = Converter(dbc_root, dbe_root, index)
+    converter = PrefabCreator(dbc_root, dbe_root, index)
     converter.add_to_prefab()
     if move_files:
         matches = glob("urban_*")

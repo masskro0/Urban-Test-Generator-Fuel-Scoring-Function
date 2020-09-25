@@ -1,4 +1,4 @@
-"""This module creates BNG files from XML files."""
+"""This module creates BNG Prefab files from XML files."""
 
 from beamngpy import BeamNGpy, Scenario, Road, StaticObject, Vehicle
 from beamngpy.beamngcommon import ENV
@@ -11,7 +11,7 @@ from re import findall
 
 from utils.utility_functions import multilinestrings_to_linestring
 
-NUM_NODES = 100
+NUM_NODES = 100     # Number of interpolation samples
 
 
 def _calc_rot_matrix(rad_x, rad_y, rad_z):
@@ -29,11 +29,17 @@ def _calc_rot_matrix(rad_x, rad_y, rad_z):
     return rot_matrix
 
 
-def _get_nodes(divider_line, road_segments, fac, width=0.2):
-
+def _get_nodes(linestring, road_segments, fac, width=0.2):
+    """Takes a LineString and creates a list with node coordinates and width parameter.
+    :param linestring: Linestring of the road.
+    :param road_segments: List of road segments.
+    :param fac: Skips every x nodes of the road_segments list.
+    :param width: Width of the road.
+    :return: List with node coordinates and width.
+    """
     nodes = list()
     i = 0
-    while i < len(list(divider_line.coords)):
+    while i < len(list(linestring.coords)):
         index = int(round(fac * i))
         if index >= len(road_segments):
             index = len(road_segments) - 1
@@ -42,12 +48,19 @@ def _get_nodes(divider_line, road_segments, fac, width=0.2):
             z = 0.01
         else:
             z = (int(z))
-        nodes.append((list(divider_line.coords)[i][0], list(divider_line.coords)[i][1], z, width))
+        nodes.append((list(linestring.coords)[i][0], list(linestring.coords)[i][1], z, width))
         i += 1
     return nodes
 
 
 def _get_offset_nodes(road_segments, line, offset, direction):
+    """Creates a offset linestring and returns the nodes of it.
+    :param road_segments: List of road segments.
+    :param line: Calculate the offset linestring of this line.
+    :param offset: The amount of offset which should be applied.
+    :param direction: Left or right as a string.
+    :return: List of nodes of the offset line.
+    """
     outer_line = line.parallel_offset(offset, direction)
     outer_line = multilinestrings_to_linestring(outer_line)
     fac = len(road_segments) / len(list(outer_line.coords))
@@ -61,6 +74,8 @@ def b_spline(old_coords, samples=NUM_NODES, degree=2):
     """Calculate {@code samples} samples on a bspline. This is the road representation function.
     :param samples: Number of samples to return.
     :param old_coords: List of tuples.
+    :param degree: Degree of the spline curve. 2 is the lowest with the best interpolation. Higher degrees has worse
+     interpolation.
     :return: Array with samples, representing a bspline of the given control points of the lanes.
     """
     old_coords = asarray(old_coords)
@@ -72,9 +87,14 @@ def b_spline(old_coords, samples=NUM_NODES, degree=2):
     return splines
 
 
-class Converter:
-
+class PrefabCreator:
+    """This class provides functions to generate Prefab files for BeamNG out of XML files."""
     def __init__(self, dbc_root, dbe_root, index):
+        """Initialize class specific variables.
+        :param dbc_root: Root tag of the criteria XML file.
+        :param dbe_root: Root tag of the environment XML file.
+        :param index: Unique identifier for the test case.
+        """
         self.dbc_root = dbc_root
         self.dbe_root = dbe_root
         self.index = index
@@ -87,11 +107,17 @@ class Converter:
         self.traffic_triggers = list()
         self.weather = None
 
-    def _init_prefab(self):
+    def _init(self):
+        """Creates BeamNG and Scenario object.
+        :return: Void.
+        """
         self.bng = BeamNGpy('localhost', 64255)
         self.scenario = Scenario('urban', 'urban_{}'.format(self.index))
 
     def _finalize_prefab(self):
+        """Calls several methods to add information to the Prefab file.
+        :return: Void.
+        """
         self.bng.user = None
         self.scenario.make(self.bng)
         self._get_weather()
@@ -103,24 +129,36 @@ class Converter:
         self._get_traffic_triggers()
 
     def _get_weather(self):
+        """Stores the weather of the environment file to the class variable.
+        :return: Void.
+        """
         weather = self.dbe_root.find("weather")
         if weather is not None:
             self.weather = weather.text
 
     def add_to_prefab(self):
-        self._init_prefab()
+        """Method to create a valid Prefab file.
+        :return: Void.
+        """
+        self._init()
         self._add_lanes()
         self._add_obstacles()
         self._add_participants()
         self._finalize_prefab()
 
     def _get_traffic_triggers(self):
+        """Stores traffic light trigger points in a class specific list variable.
+        :return: Void.
+        """
         trigger_points = self.dbc_root.findall("triggerPoints/triggerPoint")
         for trigger in trigger_points:
             if trigger.attrib.get("action") == "switchLights":
                 self.traffic_triggers.append(trigger.attrib)
 
     def get_traffic_lights_position(self):
+        """Gets all traffic lights that the ego-car faces.
+        :return: List of traffic light attributes.
+        """
         obstacles = self.dbe_root.find("obstacles")
         if obstacles is None:
             obstacles = list()
@@ -132,10 +170,16 @@ class Converter:
         return traffic_light_positions
 
     def _get_success_point(self):
+        """Stores all success points in a class specific list.
+        :return: Void.
+        """
         success_points = self.dbc_root.findall("success/scPosition")
         self.success_point = (float(success_points[0].get("x")), float(success_points[0].get("y")))
 
     def _add_lanes(self):
+        """Adds roads and road markings to the prefab file.
+        :return: Void.
+        """
         lanes = self.dbe_root.findall("lanes/lane")
         rid = 0
         for lane in lanes:
@@ -145,6 +189,11 @@ class Converter:
             rid += 1
 
     def _add_road(self, lane, rid):
+        """Adds a single road to the Prefab file.
+        :param lane: Road with road segments.
+        :param rid: Road ID (Integer).
+        :return: Void.
+        """
         road = Road(material='road_rubber_sticky', rid='road_{}'.format(rid), interpolate=False, texture_length=2.5,
                     drivability=1)
         nodes = list()
@@ -155,13 +204,18 @@ class Converter:
             d = segment.attrib
             width = float(d.get("width"))
             tuples.append((float(d.get("x")), float(d.get("y"))))
-        tuples = b_spline(tuples)
+        tuples = b_spline(tuples)       # Interpolate nodes
         for coords in tuples:
             nodes.append((coords[0], coords[1], 0.01, width))
         road.nodes.extend(nodes)
-        self.scenario.add_road(road)
+        self.scenario.add_road(road)        # Add to Prefab
 
     def _add_lane_markings(self, lane, rid):
+        """Add road markings to the Prefab file.
+        :param lane: Road of the XML file.
+        :param rid: Road ID (Integer).
+        :return: Void.
+        """
         linestring_nodes = list()
         widths = list()
         road_segments = lane.findall("laneSegment")
@@ -196,6 +250,14 @@ class Converter:
                                           int(road_segments[0].attrib.get("width")), "right")
 
     def _add_outer_marking(self, road_segments, rid, line, offset, direction):
+        """
+        :param road_segments:
+        :param rid:
+        :param line:
+        :param offset:
+        :param direction:
+        :return:
+        """
         nodes = _get_offset_nodes(road_segments, line, offset, direction)
         road = Road(material='line_white', rid='road_{}_{}_line'.format(rid, direction), interpolate=False,
                     texture_length=16, drivability=-1)
