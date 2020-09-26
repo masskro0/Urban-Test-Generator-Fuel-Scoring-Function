@@ -250,13 +250,13 @@ class PrefabCreator:
                                           int(road_segments[0].attrib.get("width")), "right")
 
     def _add_outer_marking(self, road_segments, rid, line, offset, direction):
-        """
-        :param road_segments:
-        :param rid:
-        :param line:
-        :param offset:
-        :param direction:
-        :return:
+        """Adds one road line marking on one side.
+        :param road_segments: List with road segments.
+        :param rid: Road ID as String.
+        :param line: Center line of the road as LineString.
+        :param offset: Distance to shift the line to the side as Float.
+        :param direction: "left" or "right", where to draw the line.
+        :return: Void.
         """
         nodes = _get_offset_nodes(road_segments, line, offset, direction)
         road = Road(material='line_white', rid='road_{}_{}_line'.format(rid, direction), interpolate=False,
@@ -265,6 +265,14 @@ class PrefabCreator:
         self.scenario.add_road(road)
 
     def _add_yellow_divider_line(self, road_segments, rid, line, left_lanes, right_lanes):
+        """Adds the yellow divider line between two opposite lanes.
+        :param road_segments: List of road segments.
+        :param rid: Road ID as String.
+        :param line: Center line of the road as LineString.
+        :param left_lanes: Number of left lanes.
+        :param right_lanes: Number of right lanes.
+        :return: Void.
+        """
         mid = int(road_segments[0].attrib.get("width")) / 2
         lane_width = int(road_segments[0].attrib.get("width")) / (left_lanes + right_lanes)
         nodes = []
@@ -289,6 +297,16 @@ class PrefabCreator:
         self.scenario.add_road(road)
 
     def _add_separator_lines(self, road_segments, rid, line, left_lanes, right_lanes, width, direction):
+        """Add white separator lines between all lanes of one direction.
+        :param road_segments: List of road segments.
+        :param rid: Road ID as String.
+        :param line: Center line of the road as LineString.
+        :param left_lanes: Number of left lanes.
+        :param right_lanes: Number of right lanes.
+        :param width: Total width of the road.
+        :param direction: "left" or "right", where to draw the lines..
+        :return: Void.
+        """
         separators = left_lanes - 1 if direction == "left" else right_lanes - 1
         width_per_lane = width / (left_lanes + right_lanes)
         iterator = 1
