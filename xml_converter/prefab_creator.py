@@ -95,17 +95,17 @@ class PrefabCreator:
         :param dbe_root: Root tag of the environment XML file.
         :param index: Unique identifier for the test case.
         """
-        self.dbc_root = dbc_root
-        self.dbe_root = dbe_root
-        self.index = index
-        self.lines = list()
-        self.lights = list()
-        self.light_content = list()
-        self.traffic_lights = list()
-        self.light_index = 0
-        self.success_point = None
-        self.traffic_triggers = list()
-        self.weather = None
+        self.dbc_root = dbc_root        # Root tag of the criteria XML file.
+        self.dbe_root = dbe_root        # Root tag of the environment XML file.
+        self.index = index              # Unique identifier of the simulation file as Integer.
+        self.lines = list()             # List of waypoints and speed values for each participant.
+        self.lights = list()            # List of dicts with "id" and "pos" (position) of traffic lights.
+        self.light_content = list()     # List containing Strings for adding traffic lights to the Prefab file.
+        self.traffic_lights = list()    # Similar to self.lines list, but different format.
+        self.light_index = 0            # Unique identifier for traffic lights.
+        self.success_point = None       # Success point coordinates.
+        self.traffic_triggers = list()  # List containing trigger points for switching traffic lights.
+        self.weather = None             # Weather preset.
 
     def _init(self):
         """Creates BeamNG and Scenario object.
@@ -323,6 +323,9 @@ class PrefabCreator:
             iterator += 1
 
     def _change_object_options(self):
+        """Changes several values inside the Prefab file because they can't be set/modified in another way.
+        :return: Void.
+        """
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
         prefab_file = open(prefab_path, "r")
         original_content = prefab_file.readlines()
@@ -351,13 +354,27 @@ class PrefabCreator:
         prefab_file.close()
 
     def _add_obstacles(self):
+        """Adds obstacles to the Prefab file.
+        :return: Void.
+        """
 
         def calc_coords_after_rot(coords, ref_coords, my_rot_matrix):
+            """Calculates the coordinates of objects after rotation, e.g. traffic lights are attached on a horizontal
+             pole and the lights have a different position dependent on the rotation of the vertical pole.
+            :param coords: Coordinates of the object when rotation is zero.
+            :param ref_coords: Position of the rotation origin.
+            :param my_rot_matrix: Rotation matrix, e.g. by calling calc_coords_after_rot() method.
+            :return: Coordinates after rotation.
+            """
             coords = dot(my_rot_matrix, coords)
             coords = (coords[0] + ref_coords[0], coords[1] + ref_coords[1], coords[2] + ref_coords[2])
             return coords
 
         def add_sign_to_traffic_light(my_sign):
+            """Attaches a traffic sign on the pole of a traffic light and adds it to the Prefab file.
+            :param my_sign: Sign to attach as String.
+            :return: Void.
+            """
             sign_name = my_sign + "_traffic_light_" + str(id_number)
             my_shape = '/levels/urban/art/objects/' + my_sign + '_without_pole.dae'
             sign_coords = (0, 0.12, 0.66)
@@ -370,7 +387,7 @@ class PrefabCreator:
         obstacles = self.dbe_root.find("obstacles")
         if obstacles is None:
             obstacles = list()
-        id_number = 0
+        id_number = 0   # Unique ID of the obstacle.
         first_golf = True
         for obstacle in obstacles:
             obstacle_attr = obstacle.attrib
@@ -384,7 +401,7 @@ class PrefabCreator:
             rot = (float(x_rot), float(y_rot), float(z_rot))
             sign = obstacle_attr.get("sign")
             mode = obstacle_attr.get("mode")
-            oid = obstacle_attr.get("oid")
+            oid = obstacle_attr.get("oid")      # Unique traffic light ID.
             if obstacle.tag == "stopsign":
                 rot = (rot[0], rot[1], 90 - rot[2])
                 name_sign = "stopsign_" + str(id_number)
@@ -404,6 +421,7 @@ class PrefabCreator:
                                     scale=(1.2, 1.2, 1.2), shape='/vehicles/87Golf/87Golf.dae')
                 self.scenario.add_object(golf)
                 if first_golf:
+                    # Set the color of all cars to first one by overwriting the color properties of materials.cs.
                     color = findall("\d+\.\d+", obstacle_attr.get("color"))
                     materials_path = join(ENV['BNG_HOME'], "levels", "urban", "art", "objects", "materials.cs")
                     materials = open(materials_path, "r")
@@ -426,7 +444,7 @@ class PrefabCreator:
                 rad_z = radians(rot[2])
                 pole_coords = (pos[0], pos[1], pos[2])
                 rot_matrix = _calc_rot_matrix(rad_x, rad_y, rad_z)
-                traffic_light_coords = (0, 0, 4.62)  # x y z coordinates when pole is placed at (0,0,0)
+                traffic_light_coords = (0, 0, 4.62)  # x y z coordinates when pole is placed at (0,0,0).
                 traffic_light_coords = dot(rot_matrix, traffic_light_coords)
                 traffic_light_coords = (
                     traffic_light_coords[0] + pole_coords[0], traffic_light_coords[1] + pole_coords[1],
@@ -491,6 +509,10 @@ class PrefabCreator:
             id_number += 1
 
     def _add_flashing_traffic_lights(self, pos):
+        """Adds flashing behaviour to the traffic light.
+        :param pos: Position of the traffic light (not the pole!).
+        :return: Void.
+        """
         light = "   new PointLight(traffic_flashing_" + str(self.light_index) + "){\n" \
                 "       radius = \"0.300000012\";\n" \
                 "       isEnabled = \"1\";\n" \
@@ -528,6 +550,13 @@ class PrefabCreator:
         self.light_index += 1
 
     def _add_traffic_lights(self, pos, oid, index):
+        """Adds traffic lights and their light objects to the prefab file. Z-position is -33 to make it invisible at
+         simulation start.
+        :param pos: Position of the traffic light (not the pole!).
+        :param oid: Object ID as String.
+        :param index: Unique ID as Integer.
+        :return: Void.
+        """
         green = "   new PointLight(" + oid + "_green_" + str(index) + "){\n" \
                 "       radius = \"0.300000012\";\n" \
                 "       isEnabled = \"1\";\n" \
@@ -629,6 +658,9 @@ class PrefabCreator:
                             {"id": oid + "_red_" + str(index), "position": (pos[0], pos[1], pos[2] + 0.5)}])
 
     def _add_lights_to_prefab(self):
+        """Writes traffic light content to the Prefab file.
+        :return: Void.
+        """
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
         prefab_file = open(prefab_path, "r")
         original_content = prefab_file.readlines()
@@ -641,6 +673,9 @@ class PrefabCreator:
         prefab_file.close()
 
     def _add_participants(self):
+        """Writes participant content to the Prefab file.
+        :return: Void.
+        """
         participants = self.dbc_root.findall("participants/participant")
         for participant in participants:
             attr = participant.attrib
@@ -651,7 +686,7 @@ class PrefabCreator:
             init_state = participant.find("initialState")
             x = init_state.get("x")
             y = init_state.get("y")
-            assert x is not None and y is not None, "x and y coordinates must be set."
+            assert x is not None and y is not None, "x and y coordinates of traffic participants must be set."
             z = 0 if init_state.get("z") is None else init_state.get("z")
             x_rot = 0 if init_state.get("x_rot") is None else init_state.get("x_rot")
             y_rot = 0 if init_state.get("y_rot") is None else init_state.get("y_rot")
@@ -661,6 +696,9 @@ class PrefabCreator:
             self.scenario.add_vehicle(vehicle=vehicle, pos=pos, rot=rot)
 
     def _add_waypoints(self):
+        """Adds waypoints to the Prefab file.
+        :return: Void.
+        """
         prefab_path = join(ENV["BNG_HOME"], "levels", "urban", "scenarios", "urban_{}.prefab".format(self.index))
         prefab_file = open(prefab_path, "r")
         original_content = prefab_file.readlines()
@@ -677,6 +715,8 @@ class PrefabCreator:
             current_index = int(waypoints[0].attrib.get("lane"))
             while i < len(waypoints):
                 attr = waypoints[i].attrib
+                # I'm not using BNG waypoints because participants can't keep lanes and you can't control speed,
+                # e.g. forcing cars to stop. I'm calling setAiLine for this purpose.
                 """
                 z = 0 if attr.get("z") is None else attr.get("z")
                 original_content.extend([
@@ -710,11 +750,17 @@ class PrefabCreator:
         prefab_file.close()
 
     def _get_on_race_start_line_content(self):
+        """Adds content of participants to the onRaceStart method, so when the simulation starts, vehicles starts
+         driving.
+        :return: List of content for the Prefab file.
+        """
         participants = self.dbc_root.findall("participants/participant")
         content = ""
         for participant in participants:
             vid = participant.get("id")
             if vid == "other_0":
+                # Exclude participant spawning only at intersections. Needs a better way to check whether cars should
+                # drive at simulation start or not.
                 continue
             lines = None
             for entry in self.lines:
@@ -740,49 +786,10 @@ class PrefabCreator:
                        '  sh.setAiLine(vehicleName, arg)\n'
         return content
 
-    def _get_vehicle_lines_content(self, idx):
-        participants = self.dbc_root.findall("participants/participant")
-        triggers = self.dbc_root.find("triggerPoints")
-        content = ""
-        for participant in participants:
-            vid = participant.get("id")
-            break_flag = False
-            for trigger in triggers:
-                if trigger.get("triggers") == vid:
-                    break_flag = True
-                    break
-            if break_flag:
-                continue
-            lines = None
-            for entry in self.lines:
-                if entry.get("vid") == vid:
-                    lines = entry.get("lines")
-                    break
-            assert lines is not None, "Missing line of vehicle \"" + vid + "\"."
-            if idx >= len(lines) - 1:
-                continue
-            content += '    if ego_time_' + str(idx) + ' == 7 then\n' \
-                       '      local vehicleName = \"' + vid + '\"\n'\
-                       '      local arg = {line = {\n                 '
-            i = 0
-            while i < len(lines[idx+1]):
-                pos = lines[idx+1][i].get("pos")
-                speed = lines[idx+1][i].get("speed")
-                content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
-                           + str(speed) + "}"
-                if i + 1 == len(lines[idx+1]):
-                    content += "\n                  }"
-                else:
-                    content += ", \n                   "
-                i += 1
-            content += '}\n' \
-                       '      sh.setAiLine(vehicleName, arg)\n' \
-                       '    end\n'
-        return content
-
     def _write_lua_file(self):
-        """
-        :return:
+        """Creates a Lua file for traffic light switches and makes participants drive a certain route with at a certain
+         speed.
+        :return: Void.
         """
         triggers = self.dbc_root.find("triggerPoints")
         if triggers is None:
@@ -802,6 +809,8 @@ class PrefabCreator:
             elif trigger.attrib.get("action") == "stop":
                 stop_triggers.append(trigger.attrib)
         for idx, trigger in enumerate(teleport_triggers):
+            # Adds trigger points for spawning participants. trigger_idx is the position of the trigger point,
+            # triggered_teleport_idx is a flag whether the trigger point was entered or not.
             spawn_point = trigger.find("spawnPoint").attrib
             spawn_points.append(spawn_point)
             trigger_point = trigger.attrib
@@ -813,6 +822,8 @@ class PrefabCreator:
             trigger_list.append("trigger_" + str(idx))
 
         for idx, trigger in enumerate(stop_triggers):
+            # Adds trigger points to stop participants. ego_time is the current duration of standing, triggered_stop is
+            # a flag whether the trigger point was entered or not, trigger_stop is the position of the trigger point.
             z = 0 if trigger.get("z") is None else trigger.get("z")
             trigger_content += "local ego_time_" + str(idx) + " = 0\n" \
                                "local triggered_stop_" + str(idx) + " = 0\n" \
@@ -820,6 +831,10 @@ class PrefabCreator:
                                + str(trigger.get("y")) + ", " + str(z) + ")\n"
 
         for idx, trigger in enumerate(traffic_triggers):
+            # Adds trigger points for traffic light switching. trigger_traffic_idx is the position of the trigger
+            # point, triggered_traffic_idx is a flag whether the trigger point was entered, traffic time_idx is a time
+            # variable which starts counting when the trigger point was entered, yellow_triggered_idx is a flag whether
+            # the yellow light is visible or not.
             z = 0 if trigger.get("z") is None else trigger.get("z")
             trigger_content += "local trigger_traffic_" + str(idx) + " = Point3F(" + str(trigger.get("x")) + ", " \
                                + str(trigger.get("y")) + ", " + str(z) + ")\n" \
@@ -827,6 +842,7 @@ class PrefabCreator:
                                "local traffic_time_" + str(idx) + " = 0\n" \
                                "local yellow_triggered_" + str(idx) + " = 0\n"
 
+        # points_1 is the list with invisible points, points_2 is the list with visible points, for traffic lights.
         content = "local M = {}\n" \
                   "local points_1 = {}\n" \
                   "local points_2 = {}\n" \
@@ -836,6 +852,7 @@ class PrefabCreator:
 
         for idx, trigger in enumerate(self.traffic_lights):
             for idx_1, light in enumerate(trigger):
+                # Add light bulb objects to the points lists.
                 pos = light.get("position")
                 content += "local " + light.get("id") + " = nil\n" \
                            "points_1[" + str(3 * idx + idx_1 + 1) + "] = Point3F(" + str(pos[0]) + ", " \
@@ -851,10 +868,12 @@ class PrefabCreator:
 
         for idx, trigger in enumerate(self.traffic_lights):
             for idx_1, light in enumerate(trigger):
+                # Find all point light objects (the traffic light bulbs).
                 content += "  " + light.get("id") + " = scenetree.findObject(\"" + light.get("id") + "\")\n"
 
         for light_trigger in traffic_triggers:
             for idx, light in enumerate(self.traffic_lights):
+                # Initialize traffic lights on simulation start.
                 if light[0].get("id").startswith(light_trigger.get("triggers")):
                     init_state = light_trigger.get("initState")
                     i = 0 if init_state == "green" else 2
@@ -862,12 +881,15 @@ class PrefabCreator:
 
         content += "end\n\n"
         content += trigger_content
+
+        # Function which gets executed every 250ms.
         content += "\nlocal function onRaceTick(raceTickTime)\n" \
                    "  time = time + raceTickTime\n" \
                    "  local pos = ego:getPosition()\n"
         line_index = 0
         prev_vehicle = ""
         for idx, trigger_point in enumerate(trigger_list):
+            # Add trigger points for spawning and starting participants to drive.
             spawn_point = spawn_points[idx]
             z = 0 if spawn_point.get("z") is None else spawn_point.get("z")
             z_rot_spawn = -90 if spawn_point.get("orientation") is None \
@@ -913,39 +935,43 @@ class PrefabCreator:
             content += line_content
             content += "  end\n\n"
 
-        for idx, trigger in enumerate(stop_triggers):
-            content += "  if math.sqrt((trigger_stop_" + str(idx) + ".x - pos.x) ^ 2 + (trigger_stop_" + str(idx) \
-                       + ".y - pos.y) ^ 2) <= " + str(float(trigger.get("tolerance"))*4) \
-                       + " and triggered_stop_" + str(idx) + " == 0 then\n" \
-                       "    triggered_stop_" + str(idx) + " = 1\n" \
-                       "  end\n" \
-                       "  if triggered_stop_" + str(idx) + " == 1 then\n" \
-                       "    ego_time_" + str(idx) + " = ego_time_" + str(idx) + " + raceTickTime\n" \
-                       "  end\n"
-            lines = list()
-            for entry in self.lines:
-                if entry.get("vid") == "ego":
-                    lines = entry.get("lines")
-                    break
-            content += '    if ego_time_' + str(idx) + ' == 7 then\n' \
-                       '      local vehicleName = \"ego\"\n'\
-                       '      local arg = {line = {\n                 '
-            i = 0
-            while i < len(lines[idx+1]):
-                pos = lines[idx+1][i].get("pos")
-                speed = lines[idx+1][i].get("speed")
-                content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
-                           + str(speed) + "}"
-                if i + 1 == len(lines[idx+1]):
-                    content += "\n                  }"
-                else:
-                    content += ", \n                   "
-                i += 1
-            content += '}\n' \
-                       '      sh.setAiLine(vehicleName, arg)\n' \
-                       '    end\n'
+        lines = list()
+        for entry in self.lines:
+            if entry.get("vid") == "ego":
+                lines = entry.get("lines")
+                break
+        if len(lines) != 0:
+            for idx, trigger in enumerate(stop_triggers):
+                # Adds triggers to stop the ego car.
+                print(stop_triggers)
+                content += "  if math.sqrt((trigger_stop_" + str(idx) + ".x - pos.x) ^ 2 + (trigger_stop_" + str(idx) \
+                           + ".y - pos.y) ^ 2) <= " + str(float(trigger.get("tolerance"))*4) \
+                           + " and triggered_stop_" + str(idx) + " == 0 then\n" \
+                           "    triggered_stop_" + str(idx) + " = 1\n" \
+                           "  end\n" \
+                           "  if triggered_stop_" + str(idx) + " == 1 then\n" \
+                           "    ego_time_" + str(idx) + " = ego_time_" + str(idx) + " + raceTickTime\n" \
+                           "  end\n"
+                content += '    if ego_time_' + str(idx) + ' == 7 then\n' \
+                           '      local vehicleName = \"ego\"\n'\
+                           '      local arg = {line = {\n                 '
+                i = 0
+                while i < len(lines[idx+1]):
+                    pos = lines[idx+1][i].get("pos")
+                    speed = lines[idx+1][i].get("speed")
+                    content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
+                               + str(speed) + "}"
+                    if i + 1 == len(lines[idx+1]):
+                        content += "\n                  }"
+                    else:
+                        content += ", \n                   "
+                    i += 1
+                content += '}\n' \
+                           '      sh.setAiLine(vehicleName, arg)\n' \
+                           '    end\n'
 
         for idx, light in enumerate(self.lights):
+            # Position of visible and invisible point lights (traffic light bulbs).
             pos = light.get("position")
             content += "  local light_" + str(idx) + " = scenetree.findObject(\"" + light.get("id") + "\")\n" \
                        "  local p1_" + str(idx) + " = Point3F(" + str(pos[0]) + ", " + str(pos[1]) + ", -33)\n" \
