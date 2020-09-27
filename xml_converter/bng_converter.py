@@ -1,4 +1,4 @@
-"""This module creates BNG Prefab files from XML files."""
+"""This module creates BNG Prefab and Lua files from XML files."""
 
 from beamngpy import BeamNGpy, Scenario, Road, StaticObject, Vehicle
 from beamngpy.beamngcommon import ENV
@@ -87,8 +87,8 @@ def b_spline(old_coords, samples=NUM_NODES, degree=2):
     return splines
 
 
-class PrefabCreator:
-    """This class provides functions to generate Prefab files for BeamNG out of XML files."""
+class Converter:
+    """This class provides functions to generate Prefab and Lua files for BeamNG out of XML files."""
     def __init__(self, dbc_root, dbe_root, index):
         """Initialize class specific variables.
         :param dbc_root: Root tag of the criteria XML file.
@@ -654,8 +654,8 @@ class PrefabCreator:
         self.light_content.append(yellow)
         self.light_content.append(red)
         self.traffic_lights.append([{"id": oid + "_green_" + str(index), "position": (pos[0], pos[1], pos[2] - 0.5)},
-                            {"id": oid + "_yellow_" + str(index), "position": (pos[0], pos[1], pos[2])},
-                            {"id": oid + "_red_" + str(index), "position": (pos[0], pos[1], pos[2] + 0.5)}])
+                                    {"id": oid + "_yellow_" + str(index), "position": (pos[0], pos[1], pos[2])},
+                                    {"id": oid + "_red_" + str(index), "position": (pos[0], pos[1], pos[2] + 0.5)}])
 
     def _add_lights_to_prefab(self):
         """Writes traffic light content to the Prefab file.
@@ -1066,7 +1066,7 @@ class PrefabCreator:
             for idx_1, traffic_light in enumerate(self.traffic_lights):
                 if traffic_light[0].get("id").startswith(trigger.get("triggers")) and init_state == "green":
                     content += "    " + traffic_light[0].get("id") + ":setPosition(points_1[" \
-                               + str(3 * idx_1  + 1) + "])\n"
+                               + str(3 * idx_1 + 1) + "])\n"
                     content += "    " + traffic_light[1].get("id") + ":setPosition(points_2[" \
                                + str(3 * idx_1 + 2) + "])\n"
             content += "  end\n"

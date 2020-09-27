@@ -1,4 +1,4 @@
-"""This class converts XML files to BeamNG json and prefab files."""
+"""This class converts XML files to BeamNG json, Lua and prefab files."""
 
 from pathlib import Path
 from glob import glob
@@ -10,7 +10,7 @@ from beamngpy.beamngcommon import ENV
 from json import dump
 import xml.etree.ElementTree as Etree
 
-from xml_converter.prefab_creator import PrefabCreator
+from xml_converter.bng_converter import Converter
 
 
 def get_next_test(files_name):
@@ -27,7 +27,7 @@ def get_next_test(files_name):
 
 
 def get_index():
-    """Gets the unique index which reflects the number of executions.
+    """Gets the unique index which reflects the number of executions. Index is stored in index.txz.
     :return: Index (Integer).
     """
     filepath = join(dirname(abspath(__file__)), "index.txt")
@@ -42,7 +42,7 @@ def get_index():
 
 
 def update_index(index):
-    """Increments the index in the text file.
+    """Increments the index in the index.txt text file.
     :param index: Old index (Integer).
     :return: Void.
     """
@@ -58,7 +58,7 @@ def create_json_file(index, participants, author, tod, multiple_prefabs=False, s
     :param index: Index of this execution/file.
     :param participants: Array containing dict type information about each participant.
     :param author: Author of the XML file.
-    :param tod: Time of the day. Must be between 0 and 8.
+    :param tod: Time of the day. Must be between 0 and 1.
     :param multiple_prefabs: Option to add multiple prefab files. Needs starting index.
     :param start_index: Index where prefab inclusion stops.
     :return: Void.
@@ -89,7 +89,7 @@ def convert_test(dbc, dbe, move_files=True):
     """Converts the XML files into BeamNG files.
     :param dbc: Path to the criteria XML file.
     :param dbe: Path to the environment XML file.
-    :param move_files: Flag whether files should moves to BNG's scenarios folder or not.
+    :param move_files: Flag whether files should be moved to BNG's scenarios folder or not.
     :return: Returns BNG scenario.
     """
     print(colored("Converting XML files to BNG files...", "grey", attrs=['bold']))
@@ -104,7 +104,7 @@ def convert_test(dbc, dbe, move_files=True):
         participants.append(participant.attrib)
     assert len(participants) > 0, "Please add participants to your test case. Check the example for reference."
     create_json_file(index, participants, author, tod)
-    converter = PrefabCreator(dbc_root, dbe_root, index)
+    converter = Converter(dbc_root, dbe_root, index)
     converter.add_to_prefab()
     if move_files:
         matches = glob("urban_*")
