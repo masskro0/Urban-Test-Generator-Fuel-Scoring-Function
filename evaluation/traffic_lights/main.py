@@ -18,7 +18,7 @@ from test_execution.test_oracle import TrafficLightLabel, TestOracle, TestCaseSt
 from test_execution.test_execution import setup_test_case
 from utils.utility_functions import get_angle
 from utils.plotter import plot_road_traffic_light
-from fuel_consumption_test_generator import FuelConsumptionTestGenerator
+from urban_test_generator import UrbanTestGenerator
 from xml_converter.xml_to_bng_files import convert_test
 from evaluation.traffic_lights.detector.main import main as predict, init_function
 
@@ -30,7 +30,7 @@ def create_tests(num_tests, collect, experiments):
     :param experiments: List of experiment names.
     :return: Void.
     """
-    gen = FuelConsumptionTestGenerator()
+    gen = UrbanTestGenerator()
     gen.POPULATION_SIZE = num_tests
     gen.traffic = False
     for paths in gen.get_test():

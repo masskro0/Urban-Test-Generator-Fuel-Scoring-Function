@@ -1,4 +1,6 @@
-"""Module to setup the correct folders. Run this module first before you run anything else."""
+"""Module to create necessary folders and move files to the correct directories. Run this module first before you run
+ anything else.
+"""
 
 from os import environ, mkdir
 from os.path import exists, join

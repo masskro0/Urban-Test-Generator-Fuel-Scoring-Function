@@ -16,7 +16,7 @@ from utils.utility_functions import convert_points_to_lines, get_angle, calc_wid
     get_resize_factor_intersection, multilinestrings_to_linestring, calc_speed_waypoints
 from utils.validity_checks import intersection_check_width, intersection_check_last
 from utils.xml_creator import build_all_xml
-from xml_converter.bng_converter import Converter
+from xml_converter.bng_converter import b_spline
 
 MIN_DEGREES = 90
 MAX_DEGREES = 270
@@ -26,33 +26,38 @@ COLORS = ["White", "Red", "Green", "Yellow", "Black", "Blue", "Orange", "Gray", 
 PARTICIPANTS_SAMPLES = 45
 
 
-def _add_parked_cars(individual):
+def _add_parked_cars(lanes):
+    """Adds parked cars to the test case.
+    :param lanes: List of lanes. One lane is a dict type, which must contain the keys "control_points"
+     (list of points), "type" (intersection or road), width (int).
+    :return: List of parked cars, color of the first car.
+    """
     car_positions = list()
-    for idx, lane in enumerate(individual.get("lanes")):
+    for idx, lane in enumerate(lanes):
         control_points = lane.get("control_points")
         if lane.get("type") == "intersection" or control_points[0] == control_points[-1]:
             continue
         width = lane.get("width")
-        rotations = [0, 45, 90]
+        rotations = [0, 45, 90]         # One of three alignments.
         rotation = choice(rotations)
-        noise = [x / 10 for x in range(-10, 10)]
+        noise = [x / 10 for x in range(-10, 10)]    # Noise for rotation.
         if rotation == 45:
-            offset = 3.5
-            max_distance = 4
+            offset = 3.5        # Offset to the road border.
+            min_distance = 4    # Minimum distance between two parked cars.
         elif rotation == 90:
             offset = 3
-            max_distance = 4.5
+            min_distance = 4.5
         else:
             offset = 2
-            max_distance = 5.5
-        right = True if random() >= 0.3 else False
-        left = True if random() >= 0.3 else False
+            min_distance = 5.5
+        right = True if random() >= 0.3 else False      # Parked cars on the right side?
+        left = True if random() >= 0.3 else False       # Parked cars on the left side?
         line = LineString(control_points)
-        line = multilinestrings_to_linestring(line)
-        prev_lane = LineString(individual.get("lanes")[idx - 1].get("control_points")) if idx != 0 else None
-        prev_width = int(individual.get("lanes")[idx - 1].get("width")) / 2 + offset if idx != 0 else 0
+        line = multilinestrings_to_linestring(line)     # Shapely bugfix.
+        prev_road = LineString(lanes[idx - 1].get("control_points")) if idx != 0 else None      # Previous road.
+        prev_width = int(lanes[idx - 1].get("width")) / 2 + offset if idx != 0 else 0
         if left:
-            left_lines = [line.parallel_offset(width / 2 + offset + x, "left") for x in noise]
+            left_lines = [line.parallel_offset(width / 2 + offset + x, "left") for x in noise]  # Adds noise to offset.
             left_lines = [multilinestrings_to_linestring(x) for x in left_lines]
             iterator = 1
             while iterator < len(left_lines[0].coords):
@@ -60,11 +65,12 @@ def _add_parked_cars(individual):
                 coords = b_spline(left_line.coords)
                 point = coords[iterator]
                 if abs(euclidean(point, coords[-1])) < 12:
+                    # Parked cars must be at least 12 meters away from intersections.
                     break
-                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
-                                               (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
+                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > min_distance and
+                                               (prev_road is None or Point(point).distance(prev_road) > prev_width)):
                     angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
-                                      coords[iterator - 1], point) - rotation + randint(-8, 8)
+                                      coords[iterator - 1], point) - rotation + randint(-8, 8)  # Angle with noise.
                     car_positions.append((point, angle, idx))
                 iterator += 1
         if right:
@@ -78,26 +84,21 @@ def _add_parked_cars(individual):
                 point = coords[iterator]
                 if abs(euclidean(point, coords[-1])) < 12:
                     break
-                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > max_distance and
-                                               (prev_lane is None or Point(point).distance(prev_lane) > prev_width)):
+                if len(car_positions) == 0 or (abs(euclidean(point, car_positions[-1][0])) > min_distance and
+                                               (prev_road is None or Point(point).distance(prev_road) > prev_width)):
                     angle = get_angle((coords[iterator - 1][0] + 5, coords[iterator - 1][1]),
                                       coords[iterator - 1], point) + 180 - rotation + randint(-8, 8)
                     car_positions.append((point, angle, idx))
                 iterator += 1
-        lane["parked_left"] = left
-        lane["parked_right"] = right
-        lane["parked_rotation"] = rotation
-        lane["parked_offset"] = offset
-        lane["parked_max_distance"] = max_distance
     parked_cars = list()
     color = (round(uniform(0, 1), 2), round(uniform(0, 1), 2), round(uniform(0, 1), 2), round(uniform(1, 1.3), 2))
-    individual["parked_color"] = color
     for position in car_positions:
         if random() <= 0.4:
+            # Discard with probability of 40% the car to create gaps.
             continue
         parked_cars.append({"name": "parkedCar", "position": (position[0][0], position[0][1]), "zRot": position[1],
                             "color": color, "lane": position[2]})
-    individual["obstacles"].extend(parked_cars)
+    return parked_cars, color
 
 
 def _add_ego_car(individual, add_ego_car=True):
@@ -174,7 +175,7 @@ def _add_ego_car(individual, add_ego_car=True):
             while iterator < len(control_points):
                 if len(waypoints) == 0 or (euclidean(control_points[iterator], waypoints[-1].get("position")) >= 1.5
                                            and (not opposite_dir
-                                            or euclidean(control_points[0], control_points[iterator]) > 4)):
+                                           or euclidean(control_points[0], control_points[iterator]) > 4)):
                     waypoint = {"position": control_points[iterator],
                                 "tolerance": 2,
                                 "movementMode": "_BEAMNG",
@@ -194,8 +195,16 @@ def _add_ego_car(individual, add_ego_car=True):
                     iterator += 1
                 del waypoints[-1]
 
-    init_state = {"position": waypoints[0].get("position") if add_ego_car else lanes[0].get("control_points")[0],
-                  "orientation": 0}
+    first_lane = LineString(lanes[0].get("control_points"))
+    left_lanes = (lanes[0].get("left_lanes"))
+    right_lanes = (lanes[0].get("right_lanes"))
+    width = lanes[0].get("width")
+    width_per_lane = width / (left_lanes + right_lanes)
+    offset = (left_lanes + right_lanes - 1) * width_per_lane / 2
+    first_point = first_lane.parallel_offset(offset, "right").coords[::-1][0]
+    first_point = (first_point[0] + 3, first_point[1])
+
+    init_state = {"position": first_point, "orientation": 0}
     model = "ETK800"
     ego = {"id": "ego",
            "init_state": init_state,
@@ -255,7 +264,7 @@ def _add_other_0(individual, lanes_start=None, lanes_end=None):
             else lanes[end_index].get("control_points")[0]
         middle_point = lanes[spawn_index].get("control_points")[-1]
         orientation = get_angle((spawn_point[0] + 1, spawn_point[1]), spawn_point,
-                                 lanes[spawn_index].get("control_points")[1]) + 180
+                                lanes[spawn_index].get("control_points")[1]) + 180
         if (three_way and spawn_index == spawn_lanes[i] + 1) or (not three_way and spawn_index != spawn_lanes[i] + 2):
             orientation += 0
         temp_lane = lanes[spawn_lanes[i] - 1] if spawn_index != spawn_lanes[i] + 2 else lanes[spawn_lanes[i] - 2]
@@ -654,7 +663,9 @@ def _add_traffic_signs(last_point, current_left_lanes, current_right_lanes, widt
 def _preparation(population, traffic=True, add_ego_car=True, add_parked_cars=True):
     for individual in population:
         if add_parked_cars:
-            _add_parked_cars(individual)
+            parked_cars, color = _add_parked_cars(individual.get("lanes"))
+            individual["obstacles"].extend(parked_cars)
+            individual["parked_color"] = color
         _add_ego_car(individual, add_ego_car)
         if traffic:
             _add_other_participants(individual)
@@ -662,7 +673,7 @@ def _preparation(population, traffic=True, add_ego_car=True, add_parked_cars=Tru
             calc_speed_waypoints(individual["participants"])
 
 
-class FuelConsumptionTestGenerator:
+class UrbanTestGenerator:
 
     def __init__(self, files_name="urban", traffic=True, spline_degree=2, max_tries=20, population_size=1,
                  add_ego=True):
@@ -981,7 +992,6 @@ class FuelConsumptionTestGenerator:
 #       TODO Right turns are buggy
 #       TODO Comments
 #       TODO Refactor
-#       TODO Rename files
 #       TODO XML failure criteria is actually read
 #       TODO Check if other participants fail (damage etc.)
 #       TODO Test setup.py

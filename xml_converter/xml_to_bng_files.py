@@ -111,6 +111,7 @@ def convert_test(dbc, dbe, move_files=True):
         print(colored("Moving files to folder {}...".format(join(ENV['BNG_HOME'], "levels", "urban", "scenarios")),
                       "grey", attrs=['bold']))
         for match in matches:
-            move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
+            if match.endswith("json") or match.endswith("lua"):
+                move(join(getcwd(), match), join(ENV['BNG_HOME'], "levels", "urban", "scenarios", match))
     update_index(index)
     return converter
