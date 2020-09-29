@@ -1131,36 +1131,3 @@ class UrbanTestGenerator:
             self.POPULATION[i]["fitness"] = score
             i += 1
             yield
-
-# TODO Desired features:
-#       TODO Retest experiments
-#       TODO Remove TODOS
-
-# TODO Future Work:
-#       TODO Update to newest BeamNG version
-#       TODO Buggy traffic
-#       TODO Right turns are buggy
-#       TODO Obstacles are on the street
-#       TODO Only ego-car should be in onRaceStart.
-#       TODO Make traffic participant 2 spawn earlier
-#       TODO Make all objects collidable
-#       TODO Fix Shapely errors
-#       TODO Traffic for standing at the traffic light or stop sign
-#       TODO Improve speed of car
-#       TODO Teleporting cars shouldnt be visible to ego(line triggered by ego, teleport by other)
-#       TODO Test oracle: Out of map
-#       TODO Roundabouts
-#       TODO Add weather presets
-#       TODO Converter:
-#           TODO Add input checking
-#           TODO Implement Sensor deployment
-#       TODO Manual traffic lights for all directions
-#       TODO Fix lane markings
-#       TODO Fix BNG errors and warnings
-#       TODO Parallel offset instead of width lines
-#       TODO Improve performance
-#       TODO Crossover
-#       TODO Traffic light color cant be determined correctly
-#       TODO Ego shouldn't stop at yield sign when other car spawns on opposite lane
-#       TODO Find more/other ways to save fuel by looking at the driving style.
-#        (engine brake before intersection&smooth braking, constant dist to car in front of ego)
