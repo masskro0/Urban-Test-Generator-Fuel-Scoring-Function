@@ -27,9 +27,9 @@ def move_files_to_bng_folder():
     :return: Void.
     """
     assert environ.get("BNG_HOME") is not None, "Please set the BNG_HOME environment variable."
-    vehicle_folder = join(ENV['BNG_HOME'], "vehicles")
+    vehicle_folder = join(ENV['BNG_HOME'], "vehicles", "87Golf")
     copy_tree("87Golf", vehicle_folder)
-    levels_folder = join(ENV['BNG_HOME'], "levels")
+    levels_folder = join(ENV['BNG_HOME'], "levels", "urban")
     copy_tree("urban", levels_folder)
     lua_folder = join(ENV['BNG_HOME'], "lua", "ge", "extensions", "scenario", "scenariohelper.lua")
     copyfile("scenariohelper.lua", lua_folder)
