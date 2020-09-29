@@ -5,7 +5,7 @@ Download Tortoise SVN from [here](https://tortoisesvn.net/downloads.de.html).
 
 Usage of this project requires BeamNG.research to be installed. A copy can be downloaded from
 [here](https://beamng.gmbh/research/). Use SVN to download BeamNG.research and make sure to download 
-revision 45. Once downloaded and extracted, it is mandatory to set the environment variable
+revision 35. Once downloaded and extracted, it is mandatory to set the environment variable
 `BNG_HOME` to the trunk folder.
 
 Additionally, download the Python version 3.7.0 (not tested with other versions) from
