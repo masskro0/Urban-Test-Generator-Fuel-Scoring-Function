@@ -1,7 +1,6 @@
 $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path $scriptpath
-Write-host "My directory is $dir"
-Write-host "The line above should point to the path of the project"
+Write-host "Project path: $dir"
 python -m venv venv
 .\venv\Scripts\activate
 pip install Shapely-1.6.4.post2-cp37-cp37m-win_amd64.whl

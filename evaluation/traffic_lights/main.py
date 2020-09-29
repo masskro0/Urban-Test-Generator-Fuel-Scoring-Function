@@ -377,7 +377,7 @@ if __name__ == '__main__':
     for experiment in experiment_names:
         if experiment != "random":
             continue
-        collect_images_existing_tests(join(experiment, "test_case_*"))
+        # collect_images_existing_tests(join(experiment, "test_case_*"))
         predict_all_images(join(experiment, "test_case_*"))
 
     """Example of how to generate a confusion matrix. You need to check manually, which test cases should have passed
