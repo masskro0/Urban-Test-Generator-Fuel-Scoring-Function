@@ -76,7 +76,7 @@ def b_spline(old_coords, samples=NUM_NODES, degree=2):
     :param old_coords: List of tuples.
     :param degree: Degree of the spline curve. 2 is the lowest with the best interpolation. Higher degrees has worse
      interpolation.
-    :return: Array with samples, representing a bspline of the given control points of the lanes.
+    :return: Array with samples, representing a bspline of the given control points of the roads.
     """
     old_coords = asarray(old_coords)
     count = len(old_coords)
@@ -141,7 +141,7 @@ class Converter:
         :return: Void.
         """
         self._init()
-        self._add_lanes()
+        self._add_roads()
         self._add_obstacles()
         self._add_participants()
         self._finalize_prefab()
@@ -176,29 +176,29 @@ class Converter:
         success_points = self.dbc_root.findall("success/scPosition")
         self.success_point = (float(success_points[0].get("x")), float(success_points[0].get("y")))
 
-    def _add_lanes(self):
+    def _add_roads(self):
         """Adds roads and road markings to the prefab file.
         :return: Void.
         """
-        lanes = self.dbe_root.findall("lanes/lane")
+        roads = self.dbe_root.findall("roads/road")
         rid = 0
-        for lane in lanes:
-            self._add_road(lane, rid)
-            if bool(lane.attrib.get("markings")):
-                self._add_lane_markings(lane, rid)
+        for road in roads:
+            self._add_road(road, rid)
+            if bool(road.attrib.get("markings")):
+                self._add_road_markings(road, rid)
             rid += 1
 
-    def _add_road(self, lane, rid):
+    def _add_road(self, road, rid):
         """Adds a single road to the Prefab file.
-        :param lane: Road with road segments.
+        :param road: Road with road segments.
         :param rid: Road ID (Integer).
         :return: Void.
         """
-        road = Road(material='road_rubber_sticky', rid='road_{}'.format(rid), interpolate=False, texture_length=2.5,
-                    drivability=1)
+        road_bng = Road(material='road_rubber_sticky', rid='road_{}'.format(rid), interpolate=False, texture_length=2.5,
+                        drivability=1)
         nodes = list()
         tuples = list()
-        road_segments = lane.findall("laneSegment")
+        road_segments = road.findall("roadSegment")
         width = None
         for segment in road_segments:
             d = segment.attrib
@@ -207,18 +207,18 @@ class Converter:
         tuples = b_spline(tuples)       # Interpolate nodes
         for coords in tuples:
             nodes.append((coords[0], coords[1], 0.01, width))
-        road.nodes.extend(nodes)
-        self.scenario.add_road(road)        # Add to Prefab
+        road_bng.nodes.extend(nodes)
+        self.scenario.add_road(road_bng)        # Add to Prefab
 
-    def _add_lane_markings(self, lane, rid):
+    def _add_road_markings(self, road, rid):
         """Add road markings to the Prefab file.
-        :param lane: Road of the XML file.
+        :param road: Road of the XML file.
         :param rid: Road ID (Integer).
         :return: Void.
         """
         linestring_nodes = list()
         widths = list()
-        road_segments = lane.findall("laneSegment")
+        road_segments = road.findall("roadSegment")
         for segment in road_segments:
             d = segment.attrib
             linestring_nodes.append((float(d.get("x")), float(d.get("y"))))
@@ -238,8 +238,8 @@ class Converter:
             outer_offset = int(road_segments[0].attrib.get("width")) / 2 - 0.4
             self._add_outer_marking(road_segments, rid, line, outer_offset, "left")
             self._add_outer_marking(road_segments, rid, line, outer_offset, "right")
-            left_lanes = int(lane.attrib.get("leftLanes"))
-            right_lanes = int(lane.attrib.get("rightLanes"))
+            left_lanes = int(road.attrib.get("leftLanes"))
+            right_lanes = int(road.attrib.get("rightLanes"))
             if left_lanes != 0 and right_lanes != 0:
                 self._add_yellow_divider_line(road_segments, rid, line, left_lanes, right_lanes)
             if left_lanes > 1:
@@ -274,7 +274,7 @@ class Converter:
         :return: Void.
         """
         mid = int(road_segments[0].attrib.get("width")) / 2
-        lane_width = int(road_segments[0].attrib.get("width")) / (left_lanes + right_lanes)
+        road_width = int(road_segments[0].attrib.get("width")) / (left_lanes + right_lanes)
         nodes = []
         if left_lanes == right_lanes:
             for node in road_segments:
@@ -283,10 +283,10 @@ class Converter:
                 nodes.append((d.get("x"), d.get("y"), z, 0.3))
         else:
             if left_lanes > right_lanes:
-                offset = left_lanes * lane_width - mid
+                offset = left_lanes * road_width - mid
                 direction = "right"
             elif left_lanes < right_lanes:
-                offset = right_lanes * lane_width - mid
+                offset = right_lanes * road_width - mid
                 direction = "left"
             else:
                 raise TypeError("leftLanes and rightLanes must be Integers.")
@@ -712,7 +712,7 @@ class Converter:
             line = list()
             vid = participant.get("id")
             i = 0
-            current_index = int(waypoints[0].attrib.get("lane"))
+            current_index = int(waypoints[0].attrib.get("road"))
             while i < len(waypoints):
                 attr = waypoints[i].attrib
                 # I'm not using BNG waypoints because participants can't keep lanes and you can't control speed,
@@ -733,8 +733,8 @@ class Converter:
                     "    };\n"
                 ])
                 """
-                if int(attr.get("lane")) != current_index:
-                    current_index = int(attr.get("lane"))
+                if int(attr.get("road")) != current_index:
+                    current_index = int(attr.get("road"))
                     lines.append(line)
                     line = list()
                 z = 0 if attr.get("z") is None else attr.get("z")
@@ -943,7 +943,6 @@ class Converter:
         if len(lines) != 0:
             for idx, trigger in enumerate(stop_triggers):
                 # Adds triggers to stop the ego car.
-                print(stop_triggers)
                 content += "  if math.sqrt((trigger_stop_" + str(idx) + ".x - pos.x) ^ 2 + (trigger_stop_" + str(idx) \
                            + ".y - pos.y) ^ 2) <= " + str(float(trigger.get("tolerance"))*4) \
                            + " and triggered_stop_" + str(idx) + " == 0 then\n" \

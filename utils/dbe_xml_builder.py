@@ -63,7 +63,7 @@ class DBEBuilder:
 
         self.timeOfDay = ElementTree.SubElement(self.root, "timeOfDay")
 
-        self.lanes = ElementTree.SubElement(self.root, "lanes")
+        self.roads = ElementTree.SubElement(self.root, "roads")
 
     def add_obstacles(self, obstacle_list):
         """Adds obstacles to the XML files.
@@ -136,39 +136,39 @@ class DBEBuilder:
         """
         self.timeOfDay.text = str(tod)
 
-    def add_lanes(self, lanes):
-        """Adds new lanes to the environment file.
-        :param lanes: List of lanes as dict type. Must contain:
+    def add_roads(self, roads):
+        """Adds new roads to the environment file.
+        :param roads: List of roads as dict type. Must contain:
                  control_points: List of points with x and y coordinates,
-                 width: Width for whole lane as int,
+                 width: Width for whole road as int,
                  left_lanes: Number of left lanes as int,
                  right_lanes: Number of right lanes as int.
         :return: Void.
         """
-        for lane in lanes:
-            self.add_lane(control_points=lane.get("control_points"),
-                          width=lane.get("width"),
-                          left_lanes=lane.get("left_lanes"),
-                          right_lanes=lane.get("right_lanes")
+        for road in roads:
+            self.add_road(control_points=road.get("control_points"),
+                          width=road.get("width"),
+                          left_lanes=road.get("left_lanes"),
+                          right_lanes=road.get("right_lanes")
                           )
 
-    def add_lane(self, control_points, width, markings=True, left_lanes=0, right_lanes=0):
-        """Adds a lane and road segments.
+    def add_road(self, control_points, width, markings=True, left_lanes=0, right_lanes=0):
+        """Adds a road and road segments.
         :param control_points: List of tuples containing x-coordinate and y-coordinate.
-        :param width: Width of the whole lane as a Integer.
+        :param width: Width of the whole road as a Integer.
         :param markings: {@code True} Enables road markings, {@code False} makes them invisible.
         :param left_lanes: Number of left lanes.
         :param right_lanes: Number of right lanes.
         :return: Void.
         """
-        lane = ElementTree.SubElement(self.lanes, "lane")
+        road = ElementTree.SubElement(self.roads, "road")
         if markings:
-            lane.set("markings", "true")
+            road.set("markings", "true")
         if left_lanes != 0 and left_lanes is not None:
-            lane.set("leftLanes", str(left_lanes))
+            road.set("leftLanes", str(left_lanes))
         if right_lanes != 0 and right_lanes is not None:
-            lane.set("rightLanes", str(right_lanes))
+            road.set("rightLanes", str(right_lanes))
         for segment in control_points:
-            ElementTree.SubElement(lane, 'laneSegment x="{}" y="{}" width="{}"'
+            ElementTree.SubElement(road, 'roadSegment x="{}" y="{}" width="{}"'
                                    .format('{0:.10f}'.format(round(segment[0], 2)),
                                            '{0:.10f}'.format(round(segment[1], 2)), str(width)))

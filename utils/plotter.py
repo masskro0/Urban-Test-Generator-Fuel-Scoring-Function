@@ -5,7 +5,7 @@ import xml.etree.ElementTree as Etree
 from os.path import join
 
 
-def plotter(lanes, markersize=8, color="-og", marker=True, linewidth=None, title="Road Overview", show=True, dpi=200,
+def plotter(roads, markersize=8, color="-og", marker=True, linewidth=None, title="Road Overview", show=True, dpi=200,
             save_path=None):
     """Plots every point and lines between them. Used to visualize a road network.
     :param save_path: Path where the plot should be saved. If none is given, the images won't be saved.
@@ -16,18 +16,18 @@ def plotter(lanes, markersize=8, color="-og", marker=True, linewidth=None, title
     :param marker: {@code True} to show the points.
     :param color: Color of the polylines.
     :param markersize: Size of the points.
-    :param lanes: List of dicts containing multiple lanes.
+    :param roads: List of dicts containing multiple roads.
     :return: Void.
     """
-    for lane in lanes:
+    for road in roads:
         x = []
         y = []
-        control_points = lane.get("control_points")
+        control_points = road.get("control_points")
         for point in control_points:
             x.append(point[0])
             y.append(point[1])
         plt.plot(x, y, color=color, marker="o" if marker else None, markersize=markersize,
-                 linewidth=lane.get("width") / 6 if linewidth is None else linewidth)
+                 linewidth=road.get("width") / 6 if linewidth is None else linewidth)
     plt.axis('scaled')
     if title is not None and title != "":
         plt.title(title)
@@ -44,7 +44,7 @@ def plot_all(population):
     :return: Void.
     """
     for individual in population:
-        plotter(individual.get("lanes"))
+        plotter(individual.get("roads"))
 
 
 def plot_lines(lines):
@@ -67,10 +67,10 @@ def plot_splines_and_width(width_lines, control_point_lines):
     :param control_point_lines: List of connected control points (e.g. LineStrings).
     :return: Void.
     """
-    for lane in width_lines:
-        plot_lines(lane)
-    for lane in control_point_lines:
-        plot_lines(lane)
+    for road in width_lines:
+        plot_lines(road)
+    for road in control_point_lines:
+        plot_lines(road)
     plt.axis('scaled')
     plt.title('Road overview with width lines')
     plt.show()
@@ -81,13 +81,13 @@ def plot_splined_list(splined_list):
     :param splined_list: List containing tuples of points.
     :return: Void.
     """
-    for lane in splined_list:
+    for road in splined_list:
         x = []
         y = []
-        for point in lane:
+        for point in road:
             x.append(point[0])
             y.append(point[1])
-        plt.plot(x, y, '-og', markersize=8, linewidth=lane.get("width") / 2)
+        plt.plot(x, y, '-og', markersize=8, linewidth=road.get("width") / 2)
     plt.axis('scaled')
     plt.title('Road overview')
     plt.show()
@@ -104,12 +104,12 @@ def plot_road_traffic_light(dbc, dbe, save_path=None, show=False):
     """
     dbe_root = Etree.parse(dbe).getroot()
     dbc_root = Etree.parse(dbc).getroot()
-    lanes = dbe_root.findall("lanes/lane")
-    for lane in lanes:
-        # Plot lanes.
+    roads = dbe_root.findall("roads/road")
+    for road in roads:
+        # Plot roads.
         x = list()
         y = list()
-        segments = lane.findall("laneSegment")
+        segments = road.findall("roadSegment")
         width = 10
         for seg in segments:
             width = seg.attrib.get("width")

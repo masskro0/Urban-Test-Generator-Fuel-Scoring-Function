@@ -6,7 +6,7 @@ from test_execution.test_execution import run_test_case
 
 
 if __name__ == '__main__':
-    gen = UrbanTestGenerator(add_ego=False)
+    gen = UrbanTestGenerator()
     while True:
         for paths in gen.get_test():
             dbe = paths[0]

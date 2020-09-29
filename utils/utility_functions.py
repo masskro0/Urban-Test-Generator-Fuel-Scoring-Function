@@ -25,14 +25,14 @@ def multilinestrings_to_linestring(linestring):
     return linestring
 
 
-def convert_points_to_lines(lanes):
+def convert_points_to_lines(roads):
     """Converts a list of points into a list of LineStrings.
-    :param lanes: List of lanes (dict type) with control_points key, which is a list containing 2D points.
+    :param roads: List of roads (dict type) with "control_points" key, which is a list containing 2D points.
     :return: List of LineStrings.
     """
-    lanes_lines = list()
-    for lane in lanes:
-        control_points = lane.get("control_points")
+    road_lines = list()
+    for road in roads:
+        control_points = road.get("control_points")
         lines = list()
         i = 0
         while i < (len(control_points) - 1):
@@ -40,14 +40,14 @@ def convert_points_to_lines(lanes):
                                (control_points[i + 1][0], control_points[i + 1][1])])
             lines.append(line)
             i += 1
-        lanes_lines.append(lines)
-    return lanes_lines
+        road_lines.append(lines)
+    return road_lines
 
 
 def get_resize_factor(length, width):
     """Returns the resize factor for the width lines so all lines have one specific length.
     :param length: Length of a LineString.
-    :param width: Width of the lane.
+    :param width: Width of the road.
     :return: Resize factor.
     """
     return width / length if length != 0 else 0
@@ -62,14 +62,14 @@ def get_resize_factor_intersection(linestring_length, intersection_length):
     return (linestring_length + intersection_length) / linestring_length if linestring_length != 0 else 0
 
 
-def get_width_lines(splined_lanes):
+def get_width_lines(splined_roads):
     """Determines the width lines of the road by flipping the LineString between two points by 90 degrees in both
      directions.
-    :param splined_lanes: List of splined lanes.
+    :param splined_roads: List of splined roads.
     :return: List of LineStrings which represent the width of the road.
     """
     complete_width_list = list()
-    for spline_list in splined_lanes:
+    for spline_list in splined_roads:
         linestring_list = list()
         i = 0
 
@@ -145,21 +145,21 @@ def calc_min_max_angles(num_lanes):
     return MIN_DEGREES + (num_lanes - 2) * 25, MAX_DEGREES - (num_lanes - 2) * 25
 
 
-def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right_lanes, lane_index):
-    """Splits the intersection into lanes, assigns the right number of lanes and width to the lanes and
-    determines the lanes that the ego car needs for its waypoints.
+def get_roads_of_intersection(intersection, last_point, width, left_lanes, right_lanes, road_index):
+    """Splits the intersection into roads, assigns the right number of lanes and width to the roads and
+    determines the roads that the ego car needs for its waypoints.
     :param intersection: Dict after calling _create_intersection.
     :param last_point: Latest added point of the individual.
     :param width: Width of the current road.
     :param left_lanes: Number of left lanes of the current road.
     :param right_lanes: Number of right lanes of the current road.
-    :param lane_index: Current lane index.
-    :return: New lanes, lanes for the ego car, latest added point, number of left/right lanes of the lane which
-    should receive new points, lane indices for this intersection as list type, current lane index.
+    :param road_index: Current road index.
+    :return: New roads, roads for the ego car, latest added point, number of left/right lanes of the road which
+    should receive new points, road indices for this intersection as list type, current road index.
     """
-    lanes = list()
-    ego_lanes = list()
-    intersection_lanes = list()
+    roads = list()
+    ego_roads = list()
+    intersection_roads = list()
     new_left_lanes = intersection.get("new_left_lanes")
     new_right_lanes = intersection.get("new_right_lanes")
     new_width = intersection.get("new_width")
@@ -170,54 +170,54 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
     number_of_ways = intersection.get("number_of_ways")
     layout = intersection.get("layout")
 
-    lanes.append({"control_points": [last_point, intersec_point], "width": width, "left_lanes": left_lanes,
+    roads.append({"control_points": [last_point, intersec_point], "width": width, "left_lanes": left_lanes,
                   "right_lanes": right_lanes, "samples": 25, "type": "intersection"})
-    ego_lanes.append(lane_index + 1)
+    ego_roads.append(road_index + 1)
 
     if layout == "straight":
-        lanes.append({"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
+        roads.append({"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
                       "right_lanes": right_lanes, "samples": 25, "type": "intersection"})
     elif layout == "left":
-        lanes.append({"control_points": [intersec_point, left_point], "width": new_width, "left_lanes": new_right_lanes,
+        roads.append({"control_points": [intersec_point, left_point], "width": new_width, "left_lanes": new_right_lanes,
                       "right_lanes": new_left_lanes, "samples": 25, "type": "intersection"})
     elif layout == "right":
-        lanes.append({"control_points": [intersec_point, right_point], "width": new_width,
+        roads.append({"control_points": [intersec_point, right_point], "width": new_width,
                       "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
                       "type": "intersection"})
     if intersection.get("direction") == "straight":
         if number_of_ways == 4:
-            lanes.extend([{"control_points": [intersec_point, left_point], "width": new_width,
+            roads.extend([{"control_points": [intersec_point, left_point], "width": new_width,
                            "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
                            "type": "intersection"},
                           {"control_points": [intersec_point, right_point], "width": new_width,
                            "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
                            "type": "intersection"}])
-            intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
-            lane_index += 5
+            intersection_roads.append([road_index + 1, road_index + 2, road_index + 3, road_index + 4])
+            road_index += 5
         else:
-            intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3])
-            lane_index += 4
-        lanes.extend([{"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
+            intersection_roads.append([road_index + 1, road_index + 2, road_index + 3])
+            road_index += 4
+        roads.extend([{"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
                        "right_lanes": right_lanes, "samples": 25, "type": "intersection"},
                       {"control_points": [straight_point], "width": width, "left_lanes": left_lanes,
                        "right_lanes": right_lanes, "samples": 100, "type": "normal"}])
         last_point = straight_point
     else:
         if number_of_ways == 4:
-            lanes.append({"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
+            roads.append({"control_points": [intersec_point, straight_point], "width": width, "left_lanes": left_lanes,
                           "right_lanes": right_lanes, "samples": 25, "type": "intersection"})
-            intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3, lane_index + 4])
-            lane_index += 5
+            intersection_roads.append([road_index + 1, road_index + 2, road_index + 3, road_index + 4])
+            road_index += 5
         else:
-            intersection_lanes.append([lane_index + 1, lane_index + 2, lane_index + 3])
-            lane_index += 4
+            intersection_roads.append([road_index + 1, road_index + 2, road_index + 3])
+            road_index += 4
 
         if intersection.get("direction") == "left":
             if number_of_ways == 4:
-                lanes.append({"control_points": [intersec_point, right_point], "width": new_width,
+                roads.append({"control_points": [intersec_point, right_point], "width": new_width,
                               "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
                               "type": "intersection"})
-            lanes.extend([{"control_points": [intersec_point, left_point], "width": new_width,
+            roads.extend([{"control_points": [intersec_point, left_point], "width": new_width,
                            "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
                            "type": "intersection"},
                           {"control_points": [left_point], "width": new_width, "left_lanes": new_left_lanes,
@@ -225,10 +225,10 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
             last_point = left_point
         else:
             if number_of_ways == 4:
-                lanes.append({"control_points": [intersec_point, left_point], "width": new_width,
+                roads.append({"control_points": [intersec_point, left_point], "width": new_width,
                               "left_lanes": new_right_lanes, "right_lanes": new_left_lanes, "samples": 25,
                               "type": "intersection"})
-            lanes.extend([{"control_points": [intersec_point, right_point], "width": new_width,
+            roads.extend([{"control_points": [intersec_point, right_point], "width": new_width,
                            "left_lanes": new_left_lanes, "right_lanes": new_right_lanes, "samples": 25,
                            "type": "intersection"},
                           {"control_points": [right_point], "width": new_width, "left_lanes": new_left_lanes,
@@ -237,9 +237,9 @@ def get_lanes_of_intersection(intersection, last_point, width, left_lanes, right
         left_lanes = new_left_lanes
         right_lanes = new_right_lanes
 
-    ego_lanes.extend([lane_index - 1, lane_index])
-    return {"lanes": lanes, "ego_lanes": ego_lanes, "last_point": last_point, "left_lanes": left_lanes,
-            "right_lanes": right_lanes, "intersection_lanes": intersection_lanes, "lane_index": lane_index}
+    ego_roads.extend([road_index - 1, road_index])
+    return {"roads": roads, "ego_roads": ego_roads, "last_point": last_point, "left_lanes": left_lanes,
+            "right_lanes": right_lanes, "intersection_roads": intersection_roads, "road_index": road_index}
 
 
 def get_intersection_lines(last_point, intersection):
@@ -259,21 +259,21 @@ def get_intersection_lines(last_point, intersection):
                                (intersection.get("intersection_point")[0],
                                 intersection.get("intersection_point")[1])])
     if number_of_ways == 4:
-        new_lane_line = LineString([(intersection.get("left_point")[0],
+        new_road_line = LineString([(intersection.get("left_point")[0],
                                      intersection.get("left_point")[1]),
                                     (intersection.get("right_point")[0],
                                      intersection.get("right_point")[1])])
     elif layout == "left":
-        new_lane_line = LineString([(intersection.get("left_point")[0],
+        new_road_line = LineString([(intersection.get("left_point")[0],
                                      intersection.get("left_point")[1]),
                                     (intersection.get("intersection_point")[0],
                                      intersection.get("intersection_point")[1])])
     else:
-        new_lane_line = LineString([(intersection.get("intersection_point")[0],
+        new_road_line = LineString([(intersection.get("intersection_point")[0],
                                      intersection.get("intersection_point")[1]),
                                     (intersection.get("right_point")[0],
                                      intersection.get("right_point")[1])])
-    return new_line, new_lane_line
+    return new_line, new_road_line
 
 
 def calc_speed_waypoints(participants):
@@ -286,13 +286,13 @@ def calc_speed_waypoints(participants):
         if len(waypoints) == 0:
             continue
         i = 0
-        current_index = int(waypoints[0].get("lane"))
+        current_index = int(waypoints[0].get("road"))
         while i < len(waypoints):
             if 1 < i < len(waypoints) - 1:
-                if int(waypoints[i].get("lane")) != current_index:
+                if int(waypoints[i].get("road")) != current_index:
                     # A new road means that the car must stop. This must be done several waypoints before otherwise
                     # the car would enter the area, e.g. intersection.
-                    current_index = int(waypoints[i].get("lane"))
+                    current_index = int(waypoints[i].get("road"))
                     waypoints[i - 1]["speed"] = 0
                     waypoints[i - 2]["speed"] = 0
                     waypoints[i - 3]["speed"] = 0

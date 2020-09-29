@@ -5,10 +5,10 @@ from utils.dbc_xml_builder import DBCBuilder
 from utils.dbe_xml_builder import save_xml
 
 
-def build_environment_xml(lanes, tod=0, file_name="fuelTesting", obstacles=None):
+def build_environment_xml(roads, tod=0, file_name="fuelTesting", obstacles=None):
     """Creates a environment (dbe) XML file.
     :param tod: Time of day as integer.
-    :param lanes: List of lanes.
+    :param roads: List of roads.
     :param file_name: Name of this dbe file.
     :param obstacles: List of dicts containing obstacles.
     :return: Void.
@@ -16,7 +16,7 @@ def build_environment_xml(lanes, tod=0, file_name="fuelTesting", obstacles=None)
     if obstacles is None:
         obstacles = list()
     dbe = DBEBuilder()
-    dbe.add_lanes(lanes)
+    dbe.add_roads(roads)
     if len(obstacles) > 0:
         dbe.add_obstacles(obstacles)
     dbe.set_tod(tod)
@@ -50,14 +50,14 @@ def build_criteria_xml(participants, ego_car, success_points, triggers=None, fil
 
 def build_xml(individual, iterator: int = 0):
     """Builds an environment and criteria XML file of the output of the test generator.
-    :param individual: Individual containing obstacles (list), file_name (str), lanes (list), participants (list),
+    :param individual: Individual containing obstacles (list), file_name (str), roads (list), participants (list),
         success_point (dict)
     :param iterator: Unique index of a population.
     :return: Void.
     """
     obstacles = individual.get("obstacles")
     file_name = individual.get("file_name")
-    lanes = individual.get("lanes")
+    roads = individual.get("roads")
     participants = individual.get("participants")
     file_name = file_name + str(iterator)
     success_point = individual.get("success_point")
@@ -69,7 +69,7 @@ def build_xml(individual, iterator: int = 0):
         if participant.get("id") == "ego":
             ego = participant
             break
-    build_environment_xml(lanes=lanes, file_name=file_name, obstacles=obstacles, tod=tod)
+    build_environment_xml(roads=roads, file_name=file_name, obstacles=obstacles, tod=tod)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,
                        file_name=file_name, triggers=triggers)
 
