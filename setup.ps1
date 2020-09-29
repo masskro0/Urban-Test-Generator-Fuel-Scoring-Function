@@ -3,6 +3,7 @@ $dir = Split-Path $scriptpath
 Write-host "Project path: $dir"
 python -m venv venv
 .\venv\Scripts\activate
+pip install PyScaffold
 pip install Shapely-1.6.4.post2-cp37-cp37m-win_amd64.whl
 pip install -r requirements.txt
 python .\setup.py

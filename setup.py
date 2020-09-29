@@ -3,7 +3,8 @@
 """
 
 from os import environ, mkdir
-from os.path import exists, join
+from os.path import exists, join, dirname
+import beamngpy
 from beamngpy.beamngcommon import ENV
 from shutil import move
 
@@ -30,11 +31,11 @@ def move_files_to_bng_folder():
     move("87Golf", vehicle_folder)
     levels_folder = join(ENV['BNG_HOME'], "levels")
     move("urban", levels_folder)
-    lua_folder = join(ENV['BNG_HOME'], "lua", "ge", "extensions", "scenario")
+    lua_folder = join(ENV['BNG_HOME'], "lua", "ge", "extensions", "scenario", "scenariohelper.lua")
     move("scenariohelper.lua", lua_folder)
-    weather_folder = join(ENV['BNG_HOME'], "art", "weather")
+    weather_folder = join(ENV['BNG_HOME'], "art", "weather", "defaults.json")
     move("defaults.json", weather_folder)
-    rve_folder = join(ENV['BNG_HOME'], "lua", "vehicle", "extensions")
+    rve_folder = join(dirname(beamngpy.__file__), "lua", "researchVE.lua")
     move("researchVE.lua", rve_folder)
 
 
