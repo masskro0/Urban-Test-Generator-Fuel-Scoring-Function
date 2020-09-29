@@ -3,10 +3,10 @@
 """
 
 from os import environ, mkdir
-from os.path import exists, join, dirname
-import beamngpy
+from os.path import exists, join
 from beamngpy.beamngcommon import ENV
-from shutil import move
+from shutil import move, copyfile
+from distutils.dir_util import copy_tree
 
 
 def init_scenario_folder():
@@ -28,15 +28,15 @@ def move_files_to_bng_folder():
     """
     assert environ.get("BNG_HOME") is not None, "Please set the BNG_HOME environment variable."
     vehicle_folder = join(ENV['BNG_HOME'], "vehicles")
-    move("87Golf", vehicle_folder)
+    copy_tree("87Golf", vehicle_folder)
     levels_folder = join(ENV['BNG_HOME'], "levels")
-    move("urban", levels_folder)
+    copy_tree("urban", levels_folder)
     lua_folder = join(ENV['BNG_HOME'], "lua", "ge", "extensions", "scenario", "scenariohelper.lua")
-    move("scenariohelper.lua", lua_folder)
+    copyfile("scenariohelper.lua", lua_folder)
     weather_folder = join(ENV['BNG_HOME'], "art", "weather", "defaults.json")
-    move("defaults.json", weather_folder)
-    rve_folder = join(dirname(beamngpy.__file__), "lua", "researchVE.lua")
-    move("researchVE.lua", rve_folder)
+    copyfile("defaults.json", weather_folder)
+    rve_folder = join(ENV['BNG_HOME'], "lua", "vehicle", "extensions", "researchVE.lua")
+    copyfile("researchVE.lua", rve_folder)
 
 
 if __name__ == '__main__':

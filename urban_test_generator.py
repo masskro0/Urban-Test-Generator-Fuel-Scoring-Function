@@ -530,7 +530,8 @@ def _add_other_participants(roads, ego_roads, actions):
     """
     participants = list()
     other, sr, triggers = _add_other_0(roads, ego_roads, actions)
-    participants.append(other)
+    if other is not None:
+        participants.append(other)
     # other = _add_other_1(roads, ego_roads, individual.get("participants"), sr)
     # participants.append(other)
     other = _add_other_2(roads, ego_roads, triggers)
@@ -973,7 +974,7 @@ class UrbanTestGenerator:
                 tries += 1
         if number_of_pieces >= self.MIN_NODES and one_intersection:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
-            return {"roads": roads, "success_point": {"position": last_point, "tolerance": 10}, "ego_roads": ego_roads,
+            return {"roads": roads, "success_point": {"position": last_point, "tolerance": 13}, "ego_roads": ego_roads,
                     "obstacles": obstacles, "directions": directions, "triggers": triggers, "tod": random(),
                     "intersection_roads": intersection_roads, "actions": actions, "damage_requests": ["ego"]}
         else:
@@ -1132,11 +1133,11 @@ class UrbanTestGenerator:
             yield
 
 # TODO Desired features:
-#       TODO Test setup.py
 #       TODO Retest experiments
 #       TODO Remove TODOS
 
 # TODO Future Work:
+#       TODO Update to newest BeamNG version
 #       TODO Buggy traffic
 #       TODO Right turns are buggy
 #       TODO Obstacles are on the street

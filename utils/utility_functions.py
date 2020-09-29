@@ -282,8 +282,8 @@ def calc_speed_waypoints(participants):
     :return: Void.
     """
     for participant in participants:
-        waypoints = participant["waypoints"]
-        if len(waypoints) == 0:
+        waypoints = participant.get("waypoints")
+        if len(waypoints) == 0 or waypoints is None:
             continue
         i = 0
         current_index = int(waypoints[0].get("road"))

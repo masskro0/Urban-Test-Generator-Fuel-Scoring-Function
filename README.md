@@ -1,8 +1,11 @@
 # Test Generator for Urban-like Scenarios
 
 ## Prerequisites
-Uage of this project requires BeamNG.research to be installed. A copy can be downloaded from
-[here](https://beamng.gmbh/research/). Once downloaded and extracted, it is mandatory to set the environment variable
+Download Tortoise SVN from [here](https://tortoisesvn.net/downloads.de.html).
+
+Usage of this project requires BeamNG.research to be installed. A copy can be downloaded from
+[here](https://beamng.gmbh/research/). Use SVN to download BeamNG.research and make sure to download 
+revision 45. Once downloaded and extracted, it is mandatory to set the environment variable
 `BNG_HOME` to the trunk folder.
 
 Additionally, download the Python version 3.7.0 (not tested with other versions) from
@@ -10,7 +13,9 @@ Additionally, download the Python version 3.7.0 (not tested with other versions)
 You can check it with `python --version` .
 
 ## Installation
-Right-click on setup.ps1 and choose `Run with Powershell`. This creates the virtual environment and installs the
+Clone the repository: `git clone https://github.com/masskro0/bachelorthesis`
+
+After extracting, right-click on setup.ps1 and choose `Run with Powershell`. This creates the virtual environment and installs the
 required packages automatically. You will be asked whether you want to install the additional packages which are needed
 for the traffic lights experiment. You can either install them [Y] or not [N].
 

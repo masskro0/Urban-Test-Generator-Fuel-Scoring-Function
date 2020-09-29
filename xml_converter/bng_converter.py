@@ -955,7 +955,7 @@ class Converter:
                            '      local vehicleName = \"ego\"\n'\
                            '      local arg = {line = {\n                 '
                 i = 0
-                while i < len(lines[idx+1]):
+                while idx + 1 < len(lines) and i < len(lines[idx+1]):
                     pos = lines[idx+1][i].get("pos")
                     speed = lines[idx+1][i].get("speed")
                     content += "{pos = {" + str(pos[0]) + ", " + str(pos[1]) + ", " + str(pos[2]) + "}, speed = " \
