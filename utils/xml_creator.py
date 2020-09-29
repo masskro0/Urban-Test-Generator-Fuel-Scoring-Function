@@ -24,7 +24,7 @@ def build_environment_xml(roads, tod=0, file_name="fuelTesting", obstacles=None)
 
 
 def build_criteria_xml(participants, ego_car, success_points, triggers=None, file_name="fuelTesting",
-                       name="Fuel Efficiency Test"):
+                       name="Fuel Efficiency Test", damage_requests=None):
     """Creates a dbc XML file. Failure, success and preconditions are controlled manually for this test generation.
     :param triggers: List of trigger points. Check the dbc_xml_builder.py to see how the list should look like.
     :param participants: List of dicts of car states. See the add_car method in dbc_xml_builder.py for more
@@ -33,6 +33,7 @@ def build_criteria_xml(participants, ego_car, success_points, triggers=None, fil
     :param success_points: List with points of success. Each one is a dict with x, y and tolerance.
     :param file_name: Name of this dbc file. Should be the same as the environment file.
     :param name: Self defined description name of this file.
+    :param damage_requests: List of vehicle IDs which are not allowed to take damage.
     :return: Void.
     """
     dbc = DBCBuilder()
@@ -42,7 +43,8 @@ def build_criteria_xml(participants, ego_car, success_points, triggers=None, fil
         dbc.add_car(participant)
     for success_point in success_points:
         dbc.add_success_point(ego_car.get("id"), success_point)
-    dbc.add_failure_conditions(ego_car.get("id"))
+    for vid in damage_requests:
+        dbc.add_failure_damage(vid)
     if triggers is not None:
         dbc.add_trigger_points(triggers)
     save_xml(file_name, dbc.root, "criteria")
@@ -63,6 +65,7 @@ def build_xml(individual, iterator: int = 0):
     success_point = individual.get("success_point")
     triggers = individual.get("triggers")
     success_points = [success_point]
+    damage_requests = individual.get("damage_requests")
     ego = None
     tod = individual.get("tod")
     for participant in participants:
@@ -71,7 +74,7 @@ def build_xml(individual, iterator: int = 0):
             break
     build_environment_xml(roads=roads, file_name=file_name, obstacles=obstacles, tod=tod)
     build_criteria_xml(participants=participants, ego_car=ego, success_points=success_points,
-                       file_name=file_name, triggers=triggers)
+                       file_name=file_name, triggers=triggers, damage_requests=damage_requests)
 
 
 def build_all_xml(population):

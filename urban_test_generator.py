@@ -372,16 +372,19 @@ def _add_other_0(roads, ego_roads, actions):
         else:
             i += 1
         action_index += 1
-    init_state = {"position": waypoints[0].get("position"),
-                  "orientation": triggers[0].get("spawnPoint").get("orientation")}
-    other = {"id": "other_0",
-             "init_state": init_state,
-             "waypoints": waypoints,
-             "model": "ETK800",
-             "color": choice(COLORS),
-             "spawn_roads": spawns,
-             "end_roads": ends}
-    return other, spawn_roads, triggers
+    if len(waypoints) != 0:
+        init_state = {"position": waypoints[0].get("position"),
+                      "orientation": triggers[0].get("spawnPoint").get("orientation")}
+        other = {"id": "other_0",
+                 "init_state": init_state,
+                 "waypoints": waypoints,
+                 "model": "ETK800",
+                 "color": choice(COLORS),
+                 "spawn_roads": spawns,
+                 "end_roads": ends}
+        return other, spawn_roads, triggers
+    else:
+        return None, spawn_roads, list()
 
 
 def _add_other_1(roads, ego_roads, participants, end_roads):
@@ -785,24 +788,26 @@ def _preparation(population, traffic=True, ego_waypoints=True, add_parked_cars=T
 class UrbanTestGenerator:
     """Procedural content generator to generate test cases in urban-like environments."""
     def __init__(self, files_name="urban", traffic=True, spline_degree=2, max_tries=20, population_size=1,
+                 min_segment_length=10, max_segment_length=30, min_nodes=6, max_nodes=16, intersection_length=30,
+                 opposite_road_length=30, straight_length=20, max_left_lanes=2, max_right_lanes=2, max_width=5,
                  ego_waypoints=True):
-        self.FILES_NAME = files_name                 # File name for XML file series.
-        self.TRAFFIC = traffic                       # Enable traffic or not.
-        self.SPLINE_DEGREE = spline_degree           # Degree of the interpolation curve.
-        self.MAX_TRIES = max_tries                   # Maximum number of consecutive invalid generated points/segments.
-        self.POPULATION_SIZE = population_size       # Minimum number of generated roads for each generation.
-        self.MIN_SEGMENT_LENGTH = 10                 # Minimum length of a road segment.
-        self.MAX_SEGMENT_LENGTH = 30                 # Maximum length of a road segment.
-        self.MIN_NODES = 6                           # Minimum number of control points for each road.
-        self.MAX_NODES = 16                          # Maximum number of control points for each road.
-        self.POPULATION = list()                     # List of individuals.
-        self.INTERSECTION_LENGTH = 50                # Distance between last generated point to intersection center.
-        self.OPPOSITE_ROAD = 30                      # Length between the left and right road of an intersection.
-        self.STRAIGHT_LENGTH = 20                    # Length between intersection center and straight road segment.
-        self.MAX_LEFT_LANES = 2                      # Maximum allowed number of left lanes.
-        self.MAX_RIGHT_LANES = 2                     # Maximum allowed number of right lanes.
-        self.MAX_WIDTH = 5                           # Maximum allowed width per lane.
-        self.EGO_WAYPOINTS = ego_waypoints           # Add waypoints for ego-car.
+        self.FILES_NAME = files_name                    # File name for XML file series.
+        self.TRAFFIC = traffic                          # Enable traffic or not.
+        self.SPLINE_DEGREE = spline_degree              # Degree of the interpolation curve.
+        self.MAX_TRIES = max_tries                      # Max number of consecutive invalid generated points/segments.
+        self.POPULATION_SIZE = population_size          # Minimum number of generated roads for each generation.
+        self.MIN_SEGMENT_LENGTH = min_segment_length    # Minimum length of a road segment.
+        self.MAX_SEGMENT_LENGTH = max_segment_length    # Maximum length of a road segment.
+        self.MIN_NODES = min_nodes                      # Minimum number of control points for each road.
+        self.MAX_NODES = max_nodes                      # Maximum number of control points for each road.
+        self.POPULATION = list()                        # List of individuals.
+        self.INTERSECTION_LENGTH = intersection_length  # Distance between last generated point to intersection center.
+        self.OPPOSITE_ROAD = opposite_road_length       # Length between the left and right road of an intersection.
+        self.STRAIGHT_LENGTH = straight_length          # Length between intersection center and straight road segment.
+        self.MAX_LEFT_LANES = max_left_lanes            # Maximum allowed number of left lanes.
+        self.MAX_RIGHT_LANES = max_right_lanes          # Maximum allowed number of right lanes.
+        self.MAX_WIDTH = max_width                      # Maximum allowed width per lane.
+        self.EGO_WAYPOINTS = ego_waypoints              # Add waypoints for ego-car.
 
     def _bspline(self, roads):
         """Calculate samples of a b-spline interpolation curve. This is the road representation function.
@@ -970,7 +975,7 @@ class UrbanTestGenerator:
             print(colored("Finished creating urban scenario!", "grey", attrs=['bold']))
             return {"roads": roads, "success_point": {"position": last_point, "tolerance": 10}, "ego_roads": ego_roads,
                     "obstacles": obstacles, "directions": directions, "triggers": triggers, "tod": random(),
-                    "intersection_roads": intersection_roads, "actions": actions}
+                    "intersection_roads": intersection_roads, "actions": actions, "damage_requests": ["ego"]}
         else:
             print(colored("Couldn't create a valid road network. Restarting...", "grey", attrs=['bold']))
 
@@ -1087,7 +1092,8 @@ class UrbanTestGenerator:
                                         "triggers": urban.get("triggers"),
                                         "tod": urban.get("tod"),
                                         "intersection_roads": urban.get("intersection_roads"),
-                                        "actions": urban.get("actions")})
+                                        "actions": urban.get("actions"),
+                                        "damage_requests": urban.get("damage_requests")})
                 i += 1
 
     def create_test_cases(self):
@@ -1126,8 +1132,6 @@ class UrbanTestGenerator:
             yield
 
 # TODO Desired features:
-#       TODO XML failure criteria is actually read
-#       TODO Check if other participants fail (damage etc.)
 #       TODO Test setup.py
 #       TODO Retest experiments
 #       TODO ReadMe

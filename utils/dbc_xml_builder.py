@@ -139,21 +139,3 @@ class DBCBuilder:
         :return: Void.
         """
         ElementTree.SubElement(self.failure, 'scDamage participant="{}"'.format(participant_id))
-
-    def add_failure_lane(self, participant_id, lane="offroad"):
-        """Adds validation for driving on the lane as a test failure condition.
-        :param participant_id: participant id (string)
-        :param lane: on which lane should the test fail? (markings, leftLanes, rightLanes, offroad). No effect
-         currently.
-        :return: Void.
-        """
-        ElementTree.SubElement(self.failure, 'scLane participant="{}" onLane="{}"'
-                               .format(participant_id, lane))
-
-    def add_failure_conditions(self, participant_id):
-        """Adds both lane and damage validation as a test failure condition.
-        :param participant_id: participant id (string)
-        :return: Void
-        """
-        ElementTree.SubElement(self.failure, 'scDamage participant="{}"'.format(participant_id))
-        ElementTree.SubElement(self.failure, 'scLane participant="{}"'.format(participant_id))
