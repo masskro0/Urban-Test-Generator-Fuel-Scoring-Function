@@ -322,6 +322,7 @@ def main():
                     results.append({"profile": profile_name, "test_case": test_case_name,
                                     "results": run_test_case(converter, files[0], files[1])})
                     i += 1
+    print(results)
     visualize_results(results)  # Create plots.
     copyfile(join("ai_profiles", "default", "ai.lua"), ai_path)     # Restore default AI file.
 
