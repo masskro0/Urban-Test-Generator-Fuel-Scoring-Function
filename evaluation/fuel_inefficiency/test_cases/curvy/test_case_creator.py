@@ -30,7 +30,7 @@ def main():
            "waypoints": ego.get("waypoints")}
     dbc.add_car(ego)
     dbc.add_success_point("ego", {"position": ego["waypoints"][-2].get("position"), "tolerance": 6})
-    dbc.add_failure_conditions("ego")
+    dbc.add_failure_damage(["ego"])
     save_xml(file_name, dbc.root, "criteria", abspath(dirname(__file__)))
 
 
