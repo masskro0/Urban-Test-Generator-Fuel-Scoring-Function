@@ -42,15 +42,15 @@ def create_tests(num_tests, collect, experiments):
             destination_path = join(exp, "test_case_" + str(time()))
             if not exists(destination_path):
                 mkdir(destination_path)
-            test_case_dir = join(destination_path, "\\test_case")
+            test_case_dir = join(destination_path, "test_case")
             if not exists(test_case_dir):
                 mkdir(test_case_dir)
             if exp != "default":
                 image_dir = join(destination_path, "images")
                 if not exists(image_dir):
                     mkdir(image_dir)
-            move(str(dbe), join(getcwd(), test_case_dir))
-            move(str(dbc), join(getcwd(), test_case_dir))
+            move(str(dbe), join(getcwd(), test_case_dir, str(dbe).split("\\")[-1]))
+            move(str(dbc), join(getcwd(), test_case_dir, str(dbc).split("\\")[-1]))
             if collect:
                 collect_images(destination_path)
 
@@ -129,7 +129,6 @@ def collect_images(destination_path, min_distance=None, max_distance=None):
 
             # Angle between ego-car direction vector and traffic light.
             angle = get_angle(traffic_light_pos, p0, p1)
-            print(distance_light, angle, label)
             if min_distance <= distance_light <= max_distance \
                     and (0 <= angle <= fov / 2 or 360 - fov / 2 <= angle <= 360) and label is not None:
                 # Is distance between ego-car and traffic light within the allowed range, the traffic light in the
@@ -375,9 +374,7 @@ if __name__ == '__main__':
     experiment_names = ["15m", "45m", "cloudy", "daylight", "nighttime", "random"]
     # create_tests(1, True, experiment_names)
     for experiment in experiment_names:
-        if experiment != "random":
-            continue
-        # collect_images_existing_tests(join(experiment, "test_case_*"))
+        #collect_images_existing_tests(join(experiment, "test_case_*"))
         predict_all_images(join(experiment, "test_case_*"))
 
     """Example of how to generate a confusion matrix. You need to check manually, which test cases should have passed
