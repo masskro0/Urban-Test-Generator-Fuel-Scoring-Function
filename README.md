@@ -41,7 +41,7 @@ If you want to run the evaluation for the traffic light detection, you need to s
 I used this one: https://github.com/affinis-lab/traffic-light-detection-module
 
 ## Features
-*The test generator generates randomly an urban-like scenario as XML files. The scenarios contain
+* The test generator generates randomly an urban-like scenario as XML files. The scenarios contain
 	* intersections,
 	* multi-lane roads,
 	* valid road configurations,
