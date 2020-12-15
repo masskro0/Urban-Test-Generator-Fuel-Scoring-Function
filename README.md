@@ -1,5 +1,3 @@
-# Test Generator for Urban-like Scenarios
-
 ## Prerequisites
 Download Tortoise SVN from [here](https://tortoisesvn.net/downloads.de.html).
 
@@ -13,14 +11,14 @@ Additionally, download the Python version 3.7.0 (not tested with other versions)
 You can check it with `python --version` .
 
 ## Installation
-Clone the repository: `git clone https://github.com/masskro0/bachelorthesis`
+Clone the repository: `git clone https://github.com/masskro0/Urban-Test-Generator-Fuel-Scoring-Function`
 
 After extracting, right-click on setup.ps1 and choose `Run with Powershell`. This creates the virtual environment and installs the
 required packages automatically. You will be asked whether you want to install the additional packages which are needed
-for the traffic lights experiment. You can either install them [Y] or not [N].
+for the traffic lights evaluation experiment (optional and not needed for test generation). You can either install them [Y] or not [N].
 
 This script will also run setup.py which creates folders and moves files to the correct directories. This requires to
-set the `BNG_HOME` environment variable.
+set the `BNG_HOME` environment variable as well as using BeamNGpy 1.15.
 
 ## Usage
 
@@ -41,3 +39,27 @@ confusion matrix; I included examples for this method.
 ## Traffic Light Detection
 If you want to run the evaluation for the traffic light detection, you need to setup a traffic light detection model.
 I used this one: https://github.com/affinis-lab/traffic-light-detection-module
+
+## Features
+*The test generator generates randomly an urban-like scenario as XML files. The scenarios contain
+	* intersections,
+	* multi-lane roads,
+	* valid road configurations,
+	* positions for traffic lights and signs,
+	* traffic light sequences and states,
+	* parked cars positions,
+	* other traffic participants (waypoints and spawn points),
+	* waypoints for ego-car with lane switches
+	* choosing the daytime
+
+* A scoring function for assessing how fuel inefficient a driver drives. The function contains the following metrics:
+	* RPM (Rounds per minute) infraction checking
+	* Throttle infraction checking
+	* Brake infraction checking
+	* Accelerate-and-Stop behaviour checking
+	* Engine idling while standing checking
+	
+* A test oracle for checking test-specific infractions during runtime to consider a test case as succeeded or failed. The oracles are:
+	* Timeout
+	* Crashing
+	* Violating traffic rules at intersections
