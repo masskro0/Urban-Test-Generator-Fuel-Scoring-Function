@@ -1,4 +1,0 @@
-all failed
-[17, 45, 49, 19, 94]
-[29, 45, 71, 19, 138]
-1 out of 302 wrong label

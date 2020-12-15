@@ -37,3 +37,7 @@ experiments and collects images, while `collect_images()` collects images of onl
 experiment. Since I already collected images, you can just run `predict_all_images()` which will use the pretrained
 traffic light detection system to make predictions and visualize the results. `plot_confusion_matrix()` will plot a
 confusion matrix; I included examples for this method.
+
+## Traffic Light Detection
+If you want to run the evaluation for the traffic light detection, you need to setup a traffic light detection model.
+I used this one: https://github.com/affinis-lab/traffic-light-detection-module
