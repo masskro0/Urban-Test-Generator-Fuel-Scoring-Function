@@ -1,3 +1,6 @@
+## Paper
+You can find my bachelor thesis related to this repository <a href="https://beamng.tech/research/University%20of%20Passau%20-%20Michal%20Heine%20%28Bachelor%20thesis%29.pdf">here</a>.
+
 ## Prerequisites
 Download Tortoise SVN from [here](https://tortoisesvn.net/downloads.de.html).
 
